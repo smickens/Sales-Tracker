@@ -123,6 +123,10 @@
           }
         }
       }
-    }},
-  "defaultProject": "state-farm-app-tracker"
+    }
+  },
+  "defaultProject": "state-farm-app-tracker",
+  "cli": {
+    "analytics": false
+  }
 }

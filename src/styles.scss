@@ -1,1 +1,76 @@
 /* You can add global styles to this file, and also import other style files */
+
+/* overriding bootstrap colors */
+$primary: #bf32d2;
+
+@import "../node_modules/bootstrap/scss/bootstrap.scss";
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Nunito:wght@300;600;800&display=swap');
+
+/* custom styling */
+
+$colors: (
+    blue: #005dff,
+    user: #03fcd3
+);
+
+$colors-1: (
+    teal: #63b7af,
+    medium-blue: #abf0e9,
+    light-blue: #d4f3ef,
+    red-orange: #ee8572
+);
+
+$colors-2: (
+    red-orange: #ea907a,
+    light-orange: #fbc687,
+    tan: #f4f7c5,
+    light-green: #aacdbe
+);
+
+$colors-3: (
+    yellow: #ffd31d,
+    tan: #fae7cb,
+    orange: #ffb385,
+    bright-red: #ff7272
+);
+
+@function color($color-name) {
+    @return map-get($colors-1, $color-name)
+}
+
+$desktop: 840px;
+
+@mixin desktop {
+    @media(min-width: #{$desktop}) {
+        @content;
+    }
+}
+
+$main: #ffffff;
+
+body {
+    font-family: "Nunito";
+    font-weight: 400;
+    background-color: color(tan);
+
+    @include desktop {
+        // adds in changes for when window width is >= $desktop
+    }
+}
+
+.user {
+    display: inline-block;
+    background-color: lighten(color(medium-blue), 12%);
+    padding: 10px 20px;
+    margin: 10px 5px;
+    border-radius: 4px;
+
+    &:hover {
+        background-color: color(medium-blue);
+    }
+
+    &.showing {
+        background-color: color(medium-blue);
+    }
+}
+
