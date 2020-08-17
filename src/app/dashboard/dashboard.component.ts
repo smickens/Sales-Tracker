@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { User, USERS } from "../user";
+import { Producer, PRODUCERS } from "../producer";
 import { Color } from "ng2-charts";
-import { Application } from '../application';
 
 @Component({
   selector: 'app-dashboard',
@@ -10,12 +9,7 @@ import { Application } from '../application';
 })
 export class DashboardComponent implements OnInit {
 
-  users: User[] = USERS;
-  bankApps: Application[] = [
-    { type: "bank", name: "john smith", member: this.users[0] },
-    { type: "bank", name: "jane smith", member: this.users[0] },
-    { type: "bank", name: "bob johnson", member: this.users[1] }
-  ];
+  producers: Producer[] = PRODUCERS;
 
   public barChartOptions = {
     scaleShowVerticalLines: false,
@@ -31,7 +25,7 @@ export class DashboardComponent implements OnInit {
   ];
 
   public barChartColors: Color[] = [
-    { backgroundColor: '#f79b8b' }
+    { backgroundColor: '#E8AA9F' }
   ]
 
   constructor() { }
@@ -39,8 +33,8 @@ export class DashboardComponent implements OnInit {
   ngOnInit(): void {
   }
 
-  toggleUser(user: User): void {
-    user.showing = !user.showing;
+  toggleUser(producer: Producer): void {
+    producer.showing = !producer.showing;
   }
 
   chartClicked(): void {

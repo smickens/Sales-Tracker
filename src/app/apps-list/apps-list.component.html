@@ -1,0 +1,85 @@
+<div class="row" style="height: 100%;">
+    <div style="margin: 30px; width: 100%;">
+        <div class="block">
+            <div style="display: flex; align-items: center;">
+                <h4 class="header" style="margin-bottom: 0px; padding-right: 15px;">{{ this.app_type | titlecase }} Apps 2020 - </h4>
+                <select class="custom-select" style="width: 250px;" id=producer>
+                    <option selected>All Producers</option>
+                    <option *ngFor="let producer of producers" value="{{producer.name}}">{{ producer.name }}</option>
+                </select>
+            </div>
+            <a routerLink="/add-{{ this.app_type }}" style="text-decoration: none; display: block;">Add New App</a>
+            
+            <div style="overflow-x: auto; overflow-y: auto;">
+                <table class="table table-hover">
+                    <thead>
+                      <tr>
+                        <th *ngFor="let header of headers" scope="col">{{header}}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let app of apps" (click)="editApp()">
+                        <th scope="row">1</th>
+                        <td>{{ app.date }}</td>
+                        <td>{{ app.client_name | titlecase }}</td>
+                        <td>{{ app.producer_name | titlecase }}</td>
+                        <ng-container *ngIf="app.type === 'life'">
+                          <td>${{ app.premium }}</td>
+                          <td>{{ app.mode }}</td>
+                          <td>${{ app.annual_premium }}</td>
+                          <td>{{ app.policy_type }}</td>
+                          <td>{{ app.product }}</td>
+                          <td>{{ app.client_type }}</td>
+                          <td>${{ app.bonus }}</td>
+                          <td>{{ app.status }}</td>
+                          <td>${{ app.paid_bonus }}</td>
+                          <td>{{ app.issue_month }}</td>
+                          <td>{{ app.life_pivot_bonus }}</td>
+                        </ng-container>
+
+                        <ng-container *ngIf="app.type === 'auto'">
+                          <td>{{ app.auto_type }}</td>
+                          <td>{{ app.tiers }}</td>
+                          <td>${{ app.bonus }}</td>
+                          <td>${{ app.submitted_premium }}</td>
+                          <td>{{app.issued ? 'Issued' : 'Not Taken'}}</td>
+                          <td>${{ app.issued_premium }}</td>
+                          <td>{{ app.marketing_source }}</td>
+                        </ng-container>
+
+                        
+                      </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- 
+<div *ngIf="hero">
+  <h2>{{hero.name | uppercase}} Details</h2>
+  <div>
+    <span>id: </span>{{hero.id}}
+  </div>
+  <div>
+    <label>name:
+      <input [(ngModel)]="hero.name" placeholder="name"/>
+    </label>
+  </div>
+</div>
+<button (click)="goBack()">go back</button>
+<button (click)="save()">save</button>
+ -->
+
+ <!-- 
+ <div class="grid grid-pad">
+  <a *ngFor="let hero of heroes" class="col-1-4"
+    routerLink="/detail/{{hero.id}}">
+    <div class="module hero">
+      <h4>{{hero.name}}</h4>
+    </div>
+  </a>
+</div>    
+  -->

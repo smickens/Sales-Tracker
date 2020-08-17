@@ -2,8 +2,8 @@
 <div class="container">
     <div class="row justify-content-center">
         <div class="col">
-            <div *ngFor="let user of users" class="user" (click)="toggleUser(user)" [ngClass]="{ 'showing': user.showing }">
-                {{user.name}}
+            <div *ngFor="let producer of producers" class="user" (click)="toggleUser(producer)" [ngClass]="{ 'showing': producer.showing }">
+                {{producer.name}}
              </div>
         </div>
     </div>

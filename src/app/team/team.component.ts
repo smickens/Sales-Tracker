@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { User, USERS } from "../user";
+import { Producer, PRODUCERS } from "../producer";
 
 @Component({
   selector: 'app-team',
@@ -8,15 +8,15 @@ import { User, USERS } from "../user";
 })
 export class TeamComponent implements OnInit {
 
-  users: User[] = USERS;
+  producers: Producer[] = PRODUCERS;
 
   constructor() { }
 
   ngOnInit(): void {
   }
 
-  toggleUser(user: User): void {
-    user.showing = !user.showing;
+  toggleUser(producer: Producer): void {
+    producer.showing = !producer.showing;
   }
 
 }

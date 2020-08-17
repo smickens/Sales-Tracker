@@ -1,0 +1,97 @@
+<div class="container center">
+    <div class="block_bg">
+        <div class="block">
+            <div class="form-row">
+                <h4 style="font-weight: 600; color: #63B7AF;">Add Auto App</h4>
+            </div>
+            
+            <form [formGroup]="addAutoAppForm">
+            <div class="form-row mb-2">
+                <div class="col form-group">
+                    <label for="date">DATE</label>
+                    <input type="date" class="form-control" formControlName="date" id="date">
+                </div>
+                <div class="col form-group">
+                    <label for="producer_name">PRODUCER</label>
+                    <select class="custom-select" formControlName="producer_name" id="producer_name">
+                        <option selected>Select Producer</option>
+                        <option *ngFor="let producer of producers" value="{{producer.name}}"> {{ producer.name }} </option>
+                    </select>
+                </div>
+                <div class="col form-group">
+                    <label for="client_name">CLIENT</label>
+                    <input type="text" class="form-control" formControlName="client_name" id="client_name" autocomplete="off">
+                </div>
+            </div>
+    
+            <div class="form-row mb-2">
+                <div class="col-auto form-group">
+                    <label for="auto_type">AUTO TYPE</label>
+                    <select class="custom-select" formControlName="auto_type" id="auto_type">
+                        <option selected>Select Auto Type</option>
+                        <option *ngFor="let option of auto_types" value="{{option}}"> {{ option }} </option>
+                    </select>
+                </div>
+    
+                <div class="col form-group">
+                    <label for="tiers">TIERS</label>
+                    <select class="custom-select" formControlName="tiers" id="tiers">
+                        <option selected>Select Tier</option>
+                        <option *ngFor="let option of tiers" value="{{option}}"> {{ option }} </option>
+                    </select>
+                </div>
+    
+                <div class="col-auto form-group">
+                    <label for="bonus">BONUS</label>
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">$</span>
+                        </div>
+                        <input type="number" class="form-control" formControlName="bonus" id="bonus" autocomplete="off" style="max-width: 120px;">
+                    </div>
+                </div>
+    
+                <div class="col-auto form-group">
+                    <label for="submitted_premium">SUBMITTED PREMIUM</label>
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">$</span>
+                        </div>
+                        <input type="number" class="form-control" formControlName="submitted_premium" id="submitted_premium" autocomplete="off" style="max-width: 120px;">
+                    </div>
+                </div>
+            </div>
+    
+            <div class="form-row mb-2">    
+                <div class="col-auto form-group">
+                    <label for="issued_premium">ISSUED PREMIUM</label>
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">$</span>
+                        </div>
+                        <input type="number" class="form-control" formControlName="issued_premium" id="issued_premium" autocomplete="off" style="max-width: 120px;">
+                    </div>
+                </div>
+
+                <div class="col-auto form-group">
+                    <label for="issued">ISSUED</label>
+                    <label class="switch">
+                        <input type="checkbox" formControlName="issued" id="issued">
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+
+                <div class="col form-group">
+                    <label for="marketing_source">MARKETING SOURCE</label>
+                    <input type="text" class="form-control" formControlName="marketing_source" id="marketing_source" autocomplete="off" placeholder="Enter Marketing Source">  
+                </div>
+            </div>
+    
+            <div style="display: flex; justify-content: center;">
+                <input class="submit_btn" type="submit" value="SUBMIT" (click)="addApp()">
+            </div>
+            </form>
+
+        </div>
+    </div>    
+</div>

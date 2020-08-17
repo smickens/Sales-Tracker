@@ -1,22 +1,47 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { ChartsModule } from 'ng2-charts';
-
+import { AngularFireModule } from 'angularfire2';
+import { environment } from 'src/environments/environment';
+import { AngularFireDatabaseModule } from 'angularfire2/database';
+import { ReactiveFormsModule } from '@angular/forms';
 import { AppRoutingModule } from './app-routing.module';
+
 import { AppComponent } from './app.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { TeamComponent } from './team/team.component';
+import { SidebarComponent } from './sidebar/sidebar.component';
+import { MainViewComponent } from './main-view/main-view.component';
+import { SettingsComponent } from './settings/settings.component';
+import { AddLifeComponent } from './add-life/add-life.component';
+import { AppsListComponent } from './apps-list/apps-list.component';
+import { AddAutoComponent } from './add-auto/add-auto.component';
+import { AddBankComponent } from './add-bank/add-bank.component';
+import { AddFireComponent } from './add-fire/add-fire.component';
+import { AddHealthComponent } from './add-health/add-health.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     DashboardComponent,
-    TeamComponent
+    TeamComponent,
+    SidebarComponent,
+    MainViewComponent,
+    SettingsComponent,
+    AddLifeComponent,
+    AppsListComponent,
+    AddAutoComponent,
+    AddBankComponent,
+    AddFireComponent,
+    AddHealthComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
-    ChartsModule
+    ChartsModule,
+    AngularFireModule.initializeApp(environment.firebase),
+    AngularFireDatabaseModule,
+    ReactiveFormsModule
   ],
   providers: [],
   bootstrap: [AppComponent]
