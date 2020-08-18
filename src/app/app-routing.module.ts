@@ -1,10 +1,15 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
+
 import { SettingsComponent } from './settings/settings.component';
-import { AddLifeComponent } from './add-life/add-life.component';
 import { MainViewComponent } from './main-view/main-view.component';
 import { AppsListComponent } from './apps-list/apps-list.component';
+
+import { AddLifeComponent } from './add-life/add-life.component';
 import { AddAutoComponent } from './add-auto/add-auto.component';
+import { AddBankComponent } from './add-bank/add-bank.component';
+import { AddFireComponent } from './add-fire/add-fire.component';
+import { AddHealthComponent } from './add-health/add-health.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/main-view', pathMatch: 'full'},
@@ -12,6 +17,9 @@ const routes: Routes = [
   { path: 'settings', component: SettingsComponent },
   { path: 'add-life', component: AddLifeComponent },
   { path: 'add-auto', component: AddAutoComponent },
+  { path: 'add-bank', component: AddBankComponent },
+  { path: 'add-fire', component: AddFireComponent },
+  { path: 'add-health', component: AddHealthComponent },
   //{ path: 'edit-life', component: AddLifeComponent },
   //{ path: 'life/:id', component: AddLifeComponent },
   { path: ':type', component: AppsListComponent }

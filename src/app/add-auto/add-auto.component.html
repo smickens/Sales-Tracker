@@ -73,12 +73,12 @@
                     </div>
                 </div>
 
-                <div class="col-auto form-group">
-                    <label for="issued">ISSUED</label>
-                    <label class="switch">
-                        <input type="checkbox" formControlName="issued" id="issued">
-                        <span class="slider round"></span>
-                    </label>
+                <div class="col form-group">
+                    <label for="status">STATUS</label>
+                    <select class="custom-select" formControlName="status" id="status">
+                        <option selected>Select Status</option>
+                        <option *ngFor="let option of status_options" value="{{option}}"> {{ option }} </option>
+                    </select>
                 </div>
 
                 <div class="col form-group">

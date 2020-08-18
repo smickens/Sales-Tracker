@@ -26,7 +26,7 @@ export interface AutoApp extends Application {
     tiers?: string;
     bonus?: number;
     submitted_premium?: number;
-    issued?: boolean;
+    status?: boolean;
     issued_premium?: number;
     marketing_source?: string;
 }
@@ -35,6 +35,7 @@ export interface BankApp extends Application {
     deposit?: number;
     premium?: number;
     mode?: string;
+    status?: string;
     annual_premium?: number;
     product_type?: string;
     product?: string;
@@ -45,7 +46,7 @@ export interface BankApp extends Application {
 export interface FireApp extends Application {
     product?: string;
     submitted_premium?: number;
-    issued?: boolean;
+    status?: boolean;
     issued_premium?: number;
     marketing_source?: string;
 }
@@ -53,6 +54,7 @@ export interface FireApp extends Application {
 export interface HealthApp extends Application {
     premium?: number;
     mode?: string;
+    status?: string;
     annual_premium?: number;
     product?: string;
     bonus?: number;

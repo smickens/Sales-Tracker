@@ -15,6 +15,7 @@ export class AddAutoComponent implements OnInit {
 
   auto_types: string[] = ["R/N", "Added", "State to State", "Prior SF", "Reinstated"];
   tiers: string[] = ["Tier 1", "Tier 2", "Tier 3", "Tier 4", "Tier 5", "Tier 6"];
+  status_options: string[] = ["Issued", "Declined", "Canceled"];
 
   private today = new Date();
   addAutoAppForm = this.fb.group({
@@ -25,7 +26,7 @@ export class AddAutoComponent implements OnInit {
     tiers: ['Select Tier'],
     bonus: [],
     submitted_premium: [],
-    issued: [false],
+    status: ['Select Status'],
     issued_premium: [],
     marketing_source: ['Select Marketing Source']
   });
@@ -55,7 +56,7 @@ export class AddAutoComponent implements OnInit {
       tiers: this.get("tiers"),
       bonus: this.get("bonus"),
       submitted_premium: this.get("submitted_premium"),
-      issued: this.get("issued"),
+      status: this.get("status"),
       issued_premium: this.get("issued_premium"),
       marketing_source: this.get("marketing_source")
     }

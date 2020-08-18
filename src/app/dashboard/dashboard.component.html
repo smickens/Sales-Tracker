@@ -9,7 +9,7 @@
             - https://medium.com/codingthesmartway-com-blog/angular-chart-js-with-ng2-charts-e21c8262777f 
             - https://www.npmjs.com/package/ng2-charts
         -->
-        <canvas baseChart
+        <canvas *ngIf="apps_loaded" #chart baseChart
                 [datasets]="barChartData"
                 [labels]="barChartLabels"
                 [options]="barChartOptions"
@@ -19,6 +19,7 @@
                 (chartClick)="chartClicked()"
                 (chartHover)="chartHovered()">
         </canvas>
+        <!-- <canvas #chart></canvas> -->
     </div>
     <!-- <div class="row justify-content-center">
         <div class="col">

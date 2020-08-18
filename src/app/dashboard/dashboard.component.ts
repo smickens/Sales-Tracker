@@ -1,6 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { Producer, PRODUCERS } from "../producer";
 import { Color } from "ng2-charts";
+import { Observable } from 'rxjs';
+
+import { FormBuilder } from '@angular/forms';
+
+import { AngularFireDatabase } from 'angularfire2/database';
+import { apps } from 'firebase';
 
 @Component({
   selector: 'app-dashboard',
@@ -8,7 +14,6 @@ import { Color } from "ng2-charts";
   styleUrls: ['./dashboard.component.scss']
 })
 export class DashboardComponent implements OnInit {
-
   producers: Producer[] = PRODUCERS;
 
   public barChartOptions = {
@@ -16,21 +21,67 @@ export class DashboardComponent implements OnInit {
     responsive: true
   };
 
-  public barChartLabels = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November'];
+  public barChartLabels = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
   public barChartType = 'bar';
   public barChartLegend = false;
 
   public barChartData = [
-    {data: [65, 59, 60, 71, 56, 55, 40], label: ''}
+    {data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], label: ''}
   ];
 
   public barChartColors: Color[] = [
     { backgroundColor: '#E8AA9F' }
   ]
 
-  constructor() { }
+  apps_loaded = false;
+
+  constructor(private db: AngularFireDatabase) { 
+    let total = 0;
+
+    // this.loadAppTotals().subscribe(message => {
+    //     console.log(message);
+    //     this.apps_loaded = true;
+    // });
+
+    this.db.list('applications').snapshotChanges().subscribe(
+      (snapshot: any) => snapshot.map(snap => {
+        const date = snap.payload.val().date as string;
+        const month = parseInt(date.substring(5, 7));
+        this.barChartData[0].data[month-1] += 1;
+        this.apps_loaded = true;
+      })
+    );
+
+    // this.db.list('applications').snapshotChanges().subscribe(
+    //   (snapshot: any) => snapshot.map(snap => {
+    //     const date = snap.payload.val().date as string;
+    //     const month = parseInt(date.substring(5, 7));
+    //     console.log(month);
+    //     this.barChartData[0].data[month-1] += 1;
+
+    //     total += 1;
+    //     if (total == 3) {
+    //       this.apps_loaded = true;
+    //     }
+    //    })
+    // );
+  }
 
   ngOnInit(): void {
+  }
+
+  loadAppTotals(): Observable<string> {
+    return Observable.create(observer => {
+        this.db.list('applications').snapshotChanges().subscribe(
+          (snapshot: any) => snapshot.map(snap => {
+            const date = snap.payload.val().date as string;
+            const month = parseInt(date.substring(5, 7));
+            this.barChartData[0].data[month-1] += 1;
+            observer.complete();
+            this.apps_loaded = true;
+          })
+        );
+    });
   }
 
   toggleUser(producer: Producer): void {

@@ -42,8 +42,20 @@
                           <td>{{ app.tiers }}</td>
                           <td>${{ app.bonus }}</td>
                           <td>${{ app.submitted_premium }}</td>
-                          <td>{{app.issued ? 'Issued' : 'Not Taken'}}</td>
+                          <td>{{ app.status }}</td>
                           <td>${{ app.issued_premium }}</td>
+                          <td>{{ app.marketing_source }}</td>
+                        </ng-container>
+
+                        <ng-container *ngIf="app.type === 'bank'">
+                          <td>${{ app.deposit }}</td>
+                          <td>${{ app.premium }}</td>
+                          <td>{{ app.mode }}</td>
+                          <td>{{ app.status }}</td>
+                          <td>${{ app.annual_premium }}</td>
+                          <td>{{ app.product_type }}</td>
+                          <td>{{ app.product }}</td>
+                          <td>${{ app.bonus }}</td>
                           <td>{{ app.marketing_source }}</td>
                         </ng-container>
 

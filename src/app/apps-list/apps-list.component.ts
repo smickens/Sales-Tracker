@@ -19,10 +19,10 @@ export class AppsListComponent implements OnInit {
   producers: Producer[] = PRODUCERS;
 
   life_headers: string[] = ["Premium", "Mode", "Annual Premium", "Policy Type", "Product", "Client Type", "Bonus", "Taken", "Paid Bonus", "Issue / Bonus Month", "Life Pivot Bonus"];
-  auto_headers: string[] = ["Auto Type", "Tiers", "Bonus", "Submitted Premium", "Issued", "Issued Premium", "Marketing Source"];
-  bank_headers: string[] = ["Deposit", "Premium", "Mode", "Annual Premium", "Product Type", "Product", "Bonus", "Marketing Source"];
-  fire_headers: string[] = ["Product", "Submitted Premium", "Issued", "Issued Premium", "Marketing Source"];
-  health_headers: string[] = ["Premium", "Mode", "Annual Premium", "Product", "Bonus", "Marketing Source"];
+  auto_headers: string[] = ["Auto Type", "Tiers", "Bonus", "Submitted Premium", "Status", "Issued Premium", "Marketing Source"];
+  bank_headers: string[] = ["Deposit", "Premium", "Mode", "Status", "Annual Premium", "Product Type", "Product", "Bonus", "Marketing Source"];
+  fire_headers: string[] = ["Product", "Submitted Premium", "Status", "Issued Premium", "Marketing Source"];
+  health_headers: string[] = ["Premium", "Mode", "Status", "Annual Premium", "Product", "Bonus", "Marketing Source"];
 
   life_apps: LifeApp[] = [];
   auto_apps: AutoApp[] = [];
@@ -48,17 +48,23 @@ export class AppsListComponent implements OnInit {
           this.health_apps.push(app as HealthApp);
         }
       });
-      this.getHeaders();
+      // this.getHeaders();
       this.getApps();
     });
     // i think this connection stays open even when leaving page, so look into how you do a once check
   }
 
   ngOnInit(): void {
-    this.app_type = this.route.snapshot.paramMap.get('type');
+    //this.app_type = this.route.snapshot.paramMap.get('type');
+    this.route.params.subscribe(params => {
+      this.app_type = params['type'];
+      this.getHeaders();
+      this.getApps();
+    });
   }
 
   getHeaders() {
+    this.headers = ["#", "Date", "Producer", "Client"];
     let headers_to_copy;
     if (this.app_type === "life") {
       headers_to_copy = this.life_headers;
@@ -77,6 +83,7 @@ export class AppsListComponent implements OnInit {
   }
 
   getApps() {
+    this.apps = [];
     let apps_to_copy;
     if (this.app_type === "life") {
       apps_to_copy = this.life_apps;
