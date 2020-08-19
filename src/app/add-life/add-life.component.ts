@@ -1,9 +1,12 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder } from '@angular/forms';
+import { FormBuilder, FormGroup } from '@angular/forms';
 
 import { Producer, PRODUCERS } from "../producer";
 import { AngularFireDatabase } from 'angularfire2/database';
 import { LifeApp } from '../application';
+
+import { ActivatedRoute } from "@angular/router";  //  holds information about the route to this instance of the HeroDetailComponent
+import { Location } from "@angular/common"; // Angular service for interacting with the browser
 
 @Component({
   selector: 'app-add-life',
@@ -11,9 +14,14 @@ import { LifeApp } from '../application';
   styleUrls: ['./add-life.component.scss']
 })
 export class AddLifeComponent implements OnInit {
+
+  form_title: string = "";
+  button_text: string = "";
+  app_id: string = ""; // if page is in edit mode, then app_id is set to app's id in database
+
   producers: Producer[] = PRODUCERS;
 
-  modes: string[] = ["Ann", "Semi", "Q", "Monthly"];
+  modes: string[] = ["Annual", "Monthly"];
   policy_types: string[] = ["Permanent", "Term"];
   products: string[] = ["WL", "UL", "..."];
   client_types: string[] = ["New", "Add", "COP", "CONV", "JUV"];
@@ -21,41 +29,61 @@ export class AddLifeComponent implements OnInit {
   life_pivot_bonuses: string[] = ["Full", "80%", "20%", "..."];
 
   private today = new Date();
-  addLifeAppForm = this.fb.group({
-    date: [this.today],
-    producer_name: ['Select Producer'],
-    client_name: [''],
-    premium: [],
-    mode: ['Select Mode'],
-    annual_premium: [],
-    policy_type: ['Select Policy Type'],
-    product: ['Select Product'],
-    client_type: ['Select Client Type'],
-    bonus: [],
-    bound: [false],
-    status: ['Select Status'],
-    paid_bonus: [],
-    issue_month: ['Select Issue Month'],
-    life_pivot_bonus: ['Select Pivot Bonus']
-  });
+  addLifeAppForm: FormGroup = this.fb.group({ });
 
-  constructor(private db: AngularFireDatabase, private fb: FormBuilder) {
-    db.list('/producers').valueChanges().subscribe(producers => {
+  app_loaded = false;
+
+  constructor(private db: AngularFireDatabase, private fb: FormBuilder, private route: ActivatedRoute, private location: Location) {
+    db.list('producers').valueChanges().subscribe(producers => {
       this.producers = producers as Producer[];
     });
     // i think this connection stays open even when leaving page, so look into how you do a once check
   }
 
   ngOnInit(): void {
+    this.app_id = this.route.snapshot.paramMap.get('id');
+    console.log(this.app_id);
+
+    if (this.app_id == null) {
+      console.log("add form");
+      this.form_title = "Add Life App";
+      this.button_text = "SUBMIT";
+      this.addLifeAppForm = this.fb.group({
+        date: [this.today],
+        producer_name: ['Select Producer'],
+        client_name: [''],
+        premium: [],
+        mode: ['Select Mode'],
+        annual_premium: [],
+        policy_type: ['Select Policy Type'],
+        product: ['Select Product'],
+        client_type: ['Select Client Type'],
+        bonus: [],
+        bound: [false],
+        status: ['Select Status'],
+        paid_bonus: [],
+        issue_month: ['Select Issue Month'],
+        life_pivot_bonus: ['Select Pivot Bonus']
+      });
+      this.app_loaded = true;
+    } else {
+      console.log("edit form");
+      this.form_title = "Edit Life App";
+      this.button_text = "UPDATE";
+      this.db.list('applications/' + this.app_id).snapshotChanges().subscribe(
+        (snapshot: any) => snapshot.map(snap => {
+        this.addLifeAppForm.addControl(snap.payload.key, this.fb.control(snap.payload.val()));
+        this.app_loaded = true;
+      }));
+    }
   }
 
   get(field: string) {
     return this.addLifeAppForm.get(field).value;
   }
   
-  addApp() {
-    console.log("add");
-    let newApp: LifeApp = {
+  onSubmit() {
+    let app: LifeApp = {
       type: "life",
       date: this.get("date"),
       client_name: this.get("client_name"),
@@ -73,10 +101,15 @@ export class AddLifeComponent implements OnInit {
       issue_month: this.get("issue_month"),
       life_pivot_bonus: this.get("life_pivot_bonus")
     }
-    console.log(newApp);
+    console.log(app);
 
-    let id = this.randomString(16);
-    this.db.list('/applications').update(id, newApp);
+    if (this.app_id == null) {
+      // adds new application
+      this.db.list('/applications').update(this.randomString(16), app);
+    } else {
+      // updates existing application
+      this.db.list('/applications').update(this.app_id, app);
+    }
   }
 
   randomString(length: number) {

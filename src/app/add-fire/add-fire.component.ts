@@ -5,30 +5,31 @@ import { Producer, PRODUCERS } from "../producer";
 import { AngularFireDatabase } from 'angularfire2/database';
 import { FireApp } from '../application';
 
+import { ActivatedRoute } from "@angular/router";  //  holds information about the route to this instance of the HeroDetailComponent
+import { Location } from "@angular/common"; // Angular service for interacting with the browser
+
 @Component({
   selector: 'app-add-fire',
   templateUrl: './add-fire.component.html',
   styleUrls: ['./add-fire.component.scss']
 })
 export class AddFireComponent implements OnInit {
+
+  form_title: string = "";
+  button_text: string = "";
+  app_id: string = ""; // if page is in edit mode, then app_id is set to app's id in database
+
   producers: Producer[] = PRODUCERS;
 
   products: string[] = ["Homeowners", "Renters", "PLUP", "PAP", "RDP", "Condo", "Manufac Home", "Boat", "Contractors", "Business", "Workmans Comp", "Bonds", "FLOOD", "CLUP"];
   status_options: string[] = ["Issued", "Declined", "Canceled"];
 
   private today = new Date();
-  addFireAppForm = this.fb.group({
-    date: [this.today],
-    producer_name: ['Select Producer'],
-    client_name: [],
-    product: ['Select Product'],
-    submitted_premium: [],
-    status: ['Select Status'],
-    issued_premium: [],
-    marketing_source: []
-  });
+  addFireAppForm = this.fb.group({ });
 
-  constructor(private db: AngularFireDatabase, private fb: FormBuilder) {
+  app_loaded = false;
+
+  constructor(private db: AngularFireDatabase, private fb: FormBuilder, private route: ActivatedRoute, private location: Location) {
     db.list('/producers').valueChanges().subscribe(producers => {
       this.producers = producers as Producer[];
     });
@@ -36,6 +37,31 @@ export class AddFireComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.app_id = this.route.snapshot.paramMap.get('id');
+
+    if (this.app_id == null) {
+      this.form_title = "Add Life App";
+      this.button_text = "SUBMIT";
+      this.addFireAppForm = this.fb.group({
+        date: [this.today],
+        producer_name: ['Select Producer'],
+        client_name: [],
+        product: ['Select Product'],
+        submitted_premium: [],
+        status: ['Select Status'],
+        issued_premium: [],
+        marketing_source: []
+      });
+      this.app_loaded = true;
+    } else {
+      this.form_title = "Edit Life App";
+      this.button_text = "UPDATE";
+      this.db.list('applications/' + this.app_id).snapshotChanges().subscribe(
+        (snapshot: any) => snapshot.map(snap => {
+        this.addFireAppForm.addControl(snap.payload.key, this.fb.control(snap.payload.val()));
+        this.app_loaded = true;
+      }));
+    }
   }
 
   get(field: string) {
@@ -43,8 +69,7 @@ export class AddFireComponent implements OnInit {
   }
   
   addApp() {
-    console.log("add");
-    let newApp: FireApp = {
+    let app: FireApp = {
       type: "fire",
       date: this.get("date"),
       client_name: this.get("client_name"),
@@ -55,10 +80,15 @@ export class AddFireComponent implements OnInit {
       issued_premium: this.get("issued_premium"),
       marketing_source: this.get("marketing_source")
     }
-    console.log(newApp);
+    console.log(app);
 
-    let id = this.randomString(16);
-    this.db.list('/applications').update(id, newApp);
+    if (this.app_id == null) {
+      // adds new application
+      this.db.list('/applications').update(this.randomString(16), app);
+    } else {
+      // updates existing application
+      this.db.list('/applications').update(this.app_id, app);
+    }
 
     // after add should redirect to app page and maybe bring up alert saying successfully added app
   }

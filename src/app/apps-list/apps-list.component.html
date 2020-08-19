@@ -3,7 +3,7 @@
         <div class="block">
             <div style="display: flex; align-items: center;">
                 <h4 class="header" style="margin-bottom: 0px; padding-right: 15px;">{{ this.app_type | titlecase }} Apps 2020 - </h4>
-                <select class="custom-select" style="width: 250px;" id=producer>
+                <select class="custom-select" style="width: 250px;" id=producer (change)="updateList($event.target.value)">
                     <option selected>All Producers</option>
                     <option *ngFor="let producer of producers" value="{{producer.name}}">{{ producer.name }}</option>
                 </select>
@@ -18,7 +18,7 @@
                       </tr>
                     </thead>
                     <tbody>
-                      <tr *ngFor="let app of apps" (click)="editApp()">
+                      <tr *ngFor="let app of apps" (click)="editApp(app.id)" >
                         <th scope="row">1</th>
                         <td>{{ app.date }}</td>
                         <td>{{ app.client_name | titlecase }}</td>

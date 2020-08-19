@@ -5,6 +5,7 @@ import { AngularFireDatabase } from 'angularfire2/database';
 
 import { ActivatedRoute } from "@angular/router";  //  holds information about the route to this instance of the HeroDetailComponent
 import { Location } from "@angular/common"; // Angular service for interacting with the browser
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-apps-list',
@@ -30,12 +31,14 @@ export class AppsListComponent implements OnInit {
   fire_apps: FireApp[] = [];
   health_apps: HealthApp[] = [];
 
-  constructor(db: AngularFireDatabase, private route: ActivatedRoute, private location: Location) {
+  constructor(private db: AngularFireDatabase, private route: ActivatedRoute, private location: Location, private router: Router) {
     db.list('/producers').valueChanges().subscribe(producers => {
       this.producers = producers as Producer[];
     });
-    db.list('/applications').valueChanges().subscribe(apps => {
-      apps.forEach(app => {
+    db.list('applications').snapshotChanges().subscribe(
+      (snapshot: any) => snapshot.map(snap => {
+        const app = snap.payload.val();
+        console.log(app);
         if (app["type"] == "life") {
           this.life_apps.push(app as LifeApp);
         } else if (app["type"] == "auto") {
@@ -47,10 +50,32 @@ export class AppsListComponent implements OnInit {
         } else if (app["type"] == "health") {
           this.health_apps.push(app as HealthApp);
         }
-      });
+        const app_id = snap.key;
+        console.log(app_id);
+        app.id = app_id;
+
+        this.getHeaders();
+        this.getApps();
+       })
+    );
+    // db.list('/applications').valueChanges().subscribe(apps => {
+    //   apps.forEach(app => {
+    //     console.log(app);
+    //     if (app["type"] == "life") {
+    //       this.life_apps.push(app as LifeApp);
+    //     } else if (app["type"] == "auto") {
+    //       this.auto_apps.push(app as AutoApp);
+    //     } else if (app["type"] == "bank") {
+    //       this.bank_apps.push(app as BankApp);
+    //     } else if (app["type"] == "fire") {
+    //       this.fire_apps.push(app as FireApp);
+    //     } else if (app["type"] == "health") {
+    //       this.health_apps.push(app as HealthApp);
+    //     }
+    //   });
       // this.getHeaders();
-      this.getApps();
-    });
+      //this.getApps();
+    //});
     // i think this connection stays open even when leaving page, so look into how you do a once check
   }
 
@@ -61,6 +86,8 @@ export class AppsListComponent implements OnInit {
       this.getHeaders();
       this.getApps();
     });
+
+    // maybe have it set producers to all producers on app list change
   }
 
   getHeaders() {
@@ -101,8 +128,28 @@ export class AppsListComponent implements OnInit {
     }
   }
 
-  editApp() {
-    console.log("edit");
+  editApp(id: string) {
+    console.log("edit" + id);
+    this.router.navigate([this.app_type + '/' + id]);
+  }
+
+  updateList(producer: string) {
+    let filter = producer;
+    this.apps = [];
+    this.db.list('applications').snapshotChanges().subscribe(
+      (snapshot: any) => snapshot.map(snap => {
+        const app = snap.payload.val();
+        console.log(app);
+        if (app["producer_name"] == filter || filter == "All Producers") {
+          if (app["type"] == this.app_type) {
+            this.apps.push(app);
+          }
+          const app_id = snap.key;
+          console.log(app_id);
+          app.id = app_id;
+        }
+       })
+    );
   }
 
 }

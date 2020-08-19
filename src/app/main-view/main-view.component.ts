@@ -3,6 +3,7 @@ import { FormBuilder } from '@angular/forms';
 
 import { Producer, PRODUCERS } from "../producer";
 import { AngularFireDatabase } from 'angularfire2/database';
+import { runInThisContext } from 'vm';
 
 @Component({
   selector: 'app-main-view',
@@ -20,8 +21,14 @@ export class MainViewComponent implements OnInit {
     health: [0, 0]
   };
 
-  constructor(private db: AngularFireDatabase) {
-    this.db.list('applications').snapshotChanges().subscribe(
+  addNoteForm = this.fb.group({
+    note: []
+  });
+  notes = ["16 Life apps by end of August", "Qualify for trip to D.C.", "Hire 2 more people"];
+
+  constructor(private db: AngularFireDatabase, private fb: FormBuilder) {
+    // loads in application totals for the year
+    db.list('applications').snapshotChanges().subscribe(
       (snapshot: any) => snapshot.map(snap => {
         const type = snap.payload.val().type as string;
         this.apps_this_year[type][0] += 1;
@@ -31,20 +38,19 @@ export class MainViewComponent implements OnInit {
         }
        })
     );
+
+    // loads in goals/notes
   }
 
   ngOnInit(): void {
   }
 
-}
+  onSubmit() {
+    // updates notes on screen
+    let note = this.addNoteForm.get('note').value;
+    this.notes.push(note);
 
-/*this.db.list('/applications', ref => ref.orderByChild('date').equalTo('August'))
-  .snapshotChanges().subscribe(
-    (snapshot: any) => snapshot.map(snap => {
-      const data = snap.payload.val();
-      const id = snap.payload.id;
-      console.log(data);
-      //console.log(id);
-      return { id, ...data };
-     })
-  );*/
+    // updates database w/ new goal/note
+  }
+
+}

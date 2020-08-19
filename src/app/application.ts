@@ -1,5 +1,6 @@
 
 export interface Application {
+    id?: string;
     type: string;
     date: string;
     client_name: string;

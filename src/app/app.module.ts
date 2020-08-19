@@ -19,6 +19,7 @@ import { AddAutoComponent } from './add-auto/add-auto.component';
 import { AddBankComponent } from './add-bank/add-bank.component';
 import { AddFireComponent } from './add-fire/add-fire.component';
 import { AddHealthComponent } from './add-health/add-health.component';
+import { BonusesComponent } from './bonuses/bonuses.component';
 
 @NgModule({
   declarations: [
@@ -33,7 +34,8 @@ import { AddHealthComponent } from './add-health/add-health.component';
     AddAutoComponent,
     AddBankComponent,
     AddFireComponent,
-    AddHealthComponent
+    AddHealthComponent,
+    BonusesComponent
   ],
   imports: [
     BrowserModule,

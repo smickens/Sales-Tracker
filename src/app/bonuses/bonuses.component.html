@@ -1,0 +1,29 @@
+<div class="row" style="height: 100%;">
+    <div style="margin: 30px; width: 100%;">
+        <div class="block">
+            <div style="display: flex; align-items: center;">
+                <h4 class="header" style="margin-bottom: 0px; padding-right: 15px;"> Bonuses 2020 - </h4>
+                <select class="custom-select" style="width: 250px;" id=producer (change)="updateList($event.target.value)">
+                    <option selected>All Producers</option>
+                    <option *ngFor="let producer of producers" value="{{producer.name}}">{{ producer.name }}</option>
+                </select>
+            </div>
+            
+            <div style="overflow-x: auto; overflow-y: auto;">
+                <table class="table table-hover">
+                    <thead>
+                      <tr>
+                        <th *ngFor="let header of headers" scope="col">{{header}}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let producer of producers">
+                        <th scope="row">Total Bonus</th>
+                        <td>{{ producer.total_bonus }}</td>
+                      </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

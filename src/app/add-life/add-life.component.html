@@ -2,10 +2,10 @@
     <div class="block_bg">
         <div class="block">
             <div class="form-row">
-                <h4 style="font-weight: 600; color: #63B7AF;">Add Life App</h4>
+                <h4 style="font-weight: 600; color: #63B7AF;">{{ form_title }}</h4>
             </div>
             
-            <form [formGroup]="addLifeAppForm">
+            <form *ngIf="app_loaded" [formGroup]="addLifeAppForm">
             <div class="form-row mb-2">
                 <div class="col form-group">
                     <label for="date">DATE</label>
@@ -134,10 +134,24 @@
                         <option value="November">November</option>
                         <option value="December">December</option>
                     </select>
-                </div>
-    
+                </div>                
+            </div>
+
+            <div class="form-row mb-2">
+                <!-- add co producer to all apps -->
+                
+                <!-- add co-producer -->
                 <div class="col form-group">
-                    <label for="life_pivot_bonus">LIFE PIVOT BONUS</label>
+                    <label for="co_producer_name">CO-PRODUCER</label>
+                    <select class="custom-select" formControlName="co_producer_name" id="co_roducer_name">
+                        <option selected>Select Producer</option>
+                        <option *ngFor="let producer of producers" value="{{producer.name}}"> {{ producer.name }} </option>
+                    </select>
+                </div>
+                <!-- co-producer bonus -->
+                <!-- add manual -->
+                <div class="col form-group">
+                    <label for="life_pivot_bonus">CO-PRODUCER BONUS</label>
                     <select class="custom-select" formControlName="life_pivot_bonus" id="life_pivot_bonus">
                         <option selected>Select Pivot Bonus</option>
                         <option *ngFor="let option of life_pivot_bonuses" value="{{option}}"> {{ option }} </option>
@@ -146,7 +160,7 @@
             </div>
     
             <div style="display: flex; justify-content: center;">
-                <input class="submit_btn" type="submit" value="SUBMIT" (click)="addApp()">
+                <input class="submit_btn" type="submit" value="{{ button_text }}" (click)="onSubmit()">
             </div>
             </form>
 
