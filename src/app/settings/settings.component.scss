@@ -1,0 +1,33 @@
+
+.block {
+    padding: 15px 30px;
+}
+
+.header {
+    font-size: 20px;
+    font-weight: 500;
+    margin: 0px;
+    color: black;
+}
+
+.active {
+    font-weight: 600;
+    color: #63B7AF;
+}
+
+.submit_btn {
+    padding: 10px 25px;
+}
+
+li {
+    list-style: none;
+}
+
+.hide { 
+    display: none;
+}
+
+.option:hover + .hide {
+    display: block;
+    color: red;
+  }

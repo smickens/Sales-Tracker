@@ -1,56 +1,74 @@
 <div class="row" style="height: 100%;">
-    <div class="col-8" style="display: flex; flex-flow: column;">
+    <div class="col">
+        <div class="row" style="height: 70px;">
+            <div class="col-auto spacing" style="padding-right: 0px;">
+                <div class="block" (click)="setActive('producers')">
+                    <h4 class="header" [ngClass]="{'active': active_page == 'producers'}">STAFF</h4>
+                </div>
+            </div>
+            <div class="col-auto spacing" style="padding-right: 0px;">
+                <div class="block" (click)="setActive('life')">
+                    <h4 class="header" [ngClass]="{'active': active_page == 'life'}">LIFE</h4>
+                </div>
+            </div>
+            <div class="col-auto spacing" style="padding-right: 0px;">
+                <div class="block" (click)="setActive('auto')">
+                    <h4 class="header" [ngClass]="{'active': active_page == 'auto'}">AUTO</h4>
+                </div>
+            </div>
+            <div class="col-auto spacing" style="padding-right: 0px;">
+                <div class="block" (click)="setActive('bank')">
+                    <h4 class="header" [ngClass]="{'active': active_page == 'bank'}">BANK</h4>
+                </div>
+            </div>
+            <div class="col-auto spacing" style="padding-right: 0px;">
+                <div class="block" (click)="setActive('fire')">
+                    <h4 class="header" [ngClass]="{'active': active_page == 'fire'}">FIRE</h4>
+                </div>
+            </div>
+            <div class="col-auto spacing" style="padding-right: 0px;">
+                <div class="block" (click)="setActive('health')">
+                    <h4 class="header" [ngClass]="{'active': active_page == 'health'}">HEALTH</h4>
+                </div>
+            </div>
+        </div>
         <div class="row spacing" style="padding-bottom: 0px;">
-            <div class="block" style="width: 100%; height: 100%;">
-                <h4 class="header">Settings</h4>
-                <label for="new_producer">Add New Producer</label>
-                <form [formGroup]="addProducerForm" style="width: 100%;">
-                    <div class="row" style="align-items: center;">
-                        <div class="col form-group">
-                            <input type="text" class="form-control" formControlName="new_producer" id="new_producer" placeholder="Enter New Producer Name" autocomplete="off">
-                        </div>
-                        <div class="col form-group">
-                            <input class="enter_btn" type="submit" value="ENTER" (click)="addProducer()">
-                        </div>
-                    </div>
+            <div class="col-auto">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th *ngFor="let header of headers" scope="col" style="padding-right: 60px;">{{ header | titlecase }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <td *ngFor="let options of constants">
+                            <ng-container *ngIf="options.length > 1">
+                                <li *ngFor="let constant of options" (click)="deleteConstant()" style="padding-bottom: 5px; display: flex;">
+                                    <span class="option">{{constant}}</span>
+                                    <span class="hide" style="padding-left: 10px;">x</span>
+                                </li>
+                            </ng-container>
+                        </td>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="row spacing" style="padding-top: 0px;">
+            <div *ngIf="active_page == 'producers'" class="col form-group">
+                <form [formGroup]="addProducerForm" style="display: flex; align-items: center;">
+                    <label for="new_producer" style="margin: 0px;">New Producer: </label>
+                    <input type="text" class="form-control" formControlName="new_producer" id="new_producer" style="max-width: 400px; margin: 0px 15px;" autocomplete="off">
+                    <input class="submit_btn" type="submit" value="SUBMIT" (click)="addProducer()">
                 </form>
             </div>
-        </div>
-        <div class="row" style="height: 50%; flex: 1; overflow: auto;">
-            <div class="col spacing"  style="padding-right: 15px;">
-                <div class="block">
-                    <h4 class="header">Constants</h4>
-                    <ul>
-                        <li>Life - 4</li>
-                        <li>Auto - 2</li>
-                        <li>Bank - 1</li>
-                        <li>Fire - 12</li>
-                        <li>Health - 3</li>
-                    </ul>
-                </div>
+            <div *ngIf="active_page != 'producers'" class="col form-group">
+                <form [formGroup]="addConstantForm" style="display: flex; align-items: center;">
+                    <label for="new_constant" style="margin: 0px;">New Constant: </label>
+                    <input type="text" class="form-control" formControlName="new_constant" id="new_constant" style="max-width: 400px; margin: 0px 15px;" autocomplete="off">
+                    <input class="submit_btn" type="submit" value="SUBMIT" (click)="addConstant()">
+                </form>
             </div>
-            <div class="col spacing" style="padding-left: 15px;">
-                <div class="block">
-                    <h4 class="header">June Taken</h4>
-                    <ul>
-                        <li>Life - 3</li>
-                        <li>Auto - 1</li>
-                        <li>Bank - 1</li>
-                        <li>Fire - 9</li>
-                        <li>Health - 2</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-4 spacing" style="padding-left: 0px;">
-        <div class="block">
-            <h4 class="header">Goals / Notes</h4>
-            <ul>
-                <li>16 Life apps by end of August</li>
-                <li>Qualify for trip to D.C.</li>
-                <li>Hire 2 more people</li>
-            </ul>
-        </div>
-    </div>
+        </div> 
+    </div> 
 </div>
+

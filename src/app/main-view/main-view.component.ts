@@ -3,7 +3,6 @@ import { FormBuilder } from '@angular/forms';
 
 import { Producer, PRODUCERS } from "../producer";
 import { AngularFireDatabase } from 'angularfire2/database';
-import { runInThisContext } from 'vm';
 
 @Component({
   selector: 'app-main-view',
@@ -24,7 +23,7 @@ export class MainViewComponent implements OnInit {
   addNoteForm = this.fb.group({
     note: []
   });
-  notes = ["16 Life apps by end of August", "Qualify for trip to D.C.", "Hire 2 more people"];
+  notes = {};
 
   constructor(private db: AngularFireDatabase, private fb: FormBuilder) {
     // loads in application totals for the year
@@ -39,7 +38,21 @@ export class MainViewComponent implements OnInit {
        })
     );
 
+    //https://github.com/angular/angularfire/issues/380
+    //db.object('someLocation').take(1).subscribe();
+
+
     // loads in goals/notes
+
+    // would look better if it ordered notes by date added
+
+    db.list('notes').snapshotChanges().subscribe(
+      (snapshot: any) => snapshot.map(snap => {
+        if (!(snap.payload.key in this.notes)) {
+          this.notes[snap.payload.key] = snap.payload.val();
+        }
+       })
+    );
   }
 
   ngOnInit(): void {
@@ -48,9 +61,28 @@ export class MainViewComponent implements OnInit {
   onSubmit() {
     // updates notes on screen
     let note = this.addNoteForm.get('note').value;
-    this.notes.push(note);
+    //this.notes.push(note);
 
     // updates database w/ new goal/note
+    let id = this.randomString(4);
+
+    // check id doesn't exist
+    let note_object = {};
+    note_object[id] = note;
+    this.db.list('notes').update('/', note_object);
+
+    // clears note input
+    this.addNoteForm.setValue({'note': ''});
+  }
+
+  randomString(length: number) {
+    // returns a random alphanumerica string of the inputed length
+    let chars = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ";
+    let randString = "";
+    for (let i = 0; i < length; i++) {
+      randString += chars[Math.floor(Math.random() * chars.length)];
+    }
+    return randString;
   }
 
 }

@@ -12,13 +12,50 @@ import { AutoApp } from '../application';
 })
 export class SettingsComponent implements OnInit {
 
+  active_page = 'producers';
+  headers = [];
+  constants = [];
+
   addProducerForm = this.fb.group({
     new_producer: []
   });
+  addConstantForm = this.fb.group({
+    new_constant: []
+  });
 
-  constructor(private db: AngularFireDatabase, private fb: FormBuilder) { }
+  constructor(private db: AngularFireDatabase, private fb: FormBuilder) {
+    this.setActive('producers');
+  }
 
   ngOnInit(): void {
+  }
+
+  setActive(page: string) {
+    this.active_page = page;
+    this.headers = [];
+    this.constants = [];
+
+    // have them not keep listening
+
+    if (this.active_page == 'producers') {
+      this.headers = ["Producers"];
+      this.constants[0] = [];
+      this.db.list('producers').snapshotChanges().subscribe(
+        (snapshot: any) => snapshot.map(snap => {
+          console.log(snap.payload.val().name);
+          this.constants[0].push(snap.payload.val().name);
+      }));
+    } else {
+      this.db.list('constants/' + this.active_page).snapshotChanges().subscribe(
+        (snapshot: any) => snapshot.map(snap => {
+        this.headers.push(snap.key);
+        this.constants.push(snap.payload.val());
+      }));
+    }
+
+    // update headers array
+
+    // update constants array
   }
 
   get(field: string) {
@@ -42,7 +79,18 @@ export class SettingsComponent implements OnInit {
 
     this.db.list('/producers').update(id, producer);
 
-    // have it clear input field
+    // clears input field
+    this.addProducerForm.setValue({new_producer: ''});
+  }
+
+  addConstant() {
+    // brings up modal, confirming addition of producer or constant
+    console.log("add");
+  }
+
+  deleteConstant() {
+    // brings up modal, confirming deletion of producer or constant
+    console.log("delete");
   }
 
   randomString(length: number) {

@@ -3,7 +3,7 @@
         <div class="block">
             <div style="display: flex; align-items: center;">
                 <h4 class="header" style="margin-bottom: 0px; padding-right: 15px;"> Bonuses 2020 - </h4>
-                <select class="custom-select" style="width: 250px;" id=producer (change)="updateList($event.target.value)">
+                <select class="custom-select" style="width: 250px;" id=producer>
                     <option selected>All Producers</option>
                     <option *ngFor="let producer of producers" value="{{producer.name}}">{{ producer.name }}</option>
                 </select>

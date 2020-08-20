@@ -37,12 +37,12 @@
         <div class="block">
             <h4 class="header">Goals / Notes</h4>
             <ul>
-                <li *ngFor="let note of notes">{{ note }}</li>
+                <li *ngFor="let note of notes | keyvalue">{{ note.value }}</li>
             </ul>
             <form [formGroup]="addNoteForm">
                 <div class="col form-group">
                     <input type="text" class="form-control" formControlName="note" id="note" placeholder="Enter new note" autocomplete="off">
-                    <input class="submit_btn" type="submit" value="Enter" (click)="onSubmit()">
+                    <input class="submit_btn" type="submit" value="" (click)="onSubmit()">
                 </div>
             </form>
         </div>

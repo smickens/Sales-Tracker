@@ -7,9 +7,16 @@ import { Component, OnInit } from '@angular/core';
 })
 export class BonusesComponent implements OnInit {
 
+  producers = [];
+  headers = [];
+
   constructor() { }
 
   ngOnInit(): void {
+  }
+
+  updateList() {
+    
   }
 
 }
