@@ -11,6 +11,8 @@ export const PRODUCERS: Producer[] = [
 
 export interface Producer {
     name: string;
+
+    // honestly, might not need anything more than the name
     life: number;
     auto: number;
     bank: number;

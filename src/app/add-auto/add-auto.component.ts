@@ -20,10 +20,11 @@ export class AddAutoComponent implements OnInit {
   app_id: string = ""; // if page is in edit mode, then app_id is set to app's id in database
 
   producers: Producer[] = PRODUCERS;
+  constants = {};
 
-  auto_types: string[] = ["R/N", "Added", "State to State", "Prior SF", "Reinstated"];
-  tiers: string[] = ["Tier 1", "Tier 2", "Tier 3", "Tier 4", "Tier 5", "Tier 6"];
-  status_options: string[] = ["Issued", "Declined", "Canceled"];
+  // auto_types: string[] = ["R/N", "Added", "State to State", "Prior SF", "Reinstated"];
+  // tiers: string[] = ["Tier 1", "Tier 2", "Tier 3", "Tier 4", "Tier 5", "Tier 6"];
+  // status_options: string[] = ["Issued", "Declined", "Canceled"];
 
   private today = new Date();
   addAutoAppForm = this.fb.group({ });
@@ -34,6 +35,11 @@ export class AddAutoComponent implements OnInit {
     db.list('/producers').valueChanges().subscribe(producers => {
       this.producers = producers as Producer[];
     });
+
+    db.list('constants/auto').snapshotChanges().subscribe(
+      (snapshot: any) => snapshot.map(snap => {
+      this.constants[snap.payload.key] = snap.payload.val();
+    }));
     // i think this connection stays open even when leaving page, so look into how you do a once check
   }
 
@@ -54,7 +60,9 @@ export class AddAutoComponent implements OnInit {
         submitted_premium: [],
         status: ['Select Status'],
         issued_premium: [],
-        marketing_source: ['Select Marketing Source']
+        marketing_source: ['Select Marketing Source'],
+        co_producer_name: ['Select Co-Producer'],
+        co_producer_bonus: ['Select Pivot Bonus']
       });
       this.app_loaded = true;
     } else {
@@ -85,7 +93,9 @@ export class AddAutoComponent implements OnInit {
       submitted_premium: this.get("submitted_premium"),
       status: this.get("status"),
       issued_premium: this.get("issued_premium"),
-      marketing_source: this.get("marketing_source")
+      marketing_source: this.get("marketing_source"),
+      co_producer_name: this.get("co_producer_name"),
+      co_producer_bonus: this.get("co_producer_bonus")
     }
     console.log(app);
 

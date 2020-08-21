@@ -20,13 +20,14 @@ export class AddLifeComponent implements OnInit {
   app_id: string = ""; // if page is in edit mode, then app_id is set to app's id in database
 
   producers: Producer[] = PRODUCERS;
+  constants = {};
 
-  modes: string[] = ["Annual", "Monthly"];
-  policy_types: string[] = ["Permanent", "Term"];
-  products: string[] = ["WL", "UL", "..."];
-  client_types: string[] = ["New", "Add", "COP", "CONV", "JUV"];
-  status_options: string[] = ["U/W", "Taken", "Not Taken", "Rejected", "Withdrawn", "Pending"];
-  life_pivot_bonuses: string[] = ["Full", "80%", "20%", "..."];
+  // modes: string[] = ["Annual", "Monthly"];
+  // policy_types: string[] = ["Permanent", "Term"];
+  // products: string[] = ["WL", "UL", "..."];
+  // client_types: string[] = ["New", "Add", "COP", "CONV", "JUV"];
+  // status_options: string[] = ["U/W", "Taken", "Not Taken", "Rejected", "Withdrawn", "Pending"];
+  // life_pivot_bonuses: string[] = ["Full", "80%", "20%", "..."];
 
   private today = new Date();
   addLifeAppForm: FormGroup = this.fb.group({ });
@@ -37,7 +38,15 @@ export class AddLifeComponent implements OnInit {
     db.list('producers').valueChanges().subscribe(producers => {
       this.producers = producers as Producer[];
     });
+
+    db.list('constants/life').snapshotChanges().subscribe(
+      (snapshot: any) => snapshot.map(snap => {
+      this.constants[snap.payload.key] = snap.payload.val();
+      console.log(this.constants);
+    }));
     // i think this connection stays open even when leaving page, so look into how you do a once check
+
+    // might unsubscribe in ngOnDestroy
   }
 
   ngOnInit(): void {
@@ -63,7 +72,8 @@ export class AddLifeComponent implements OnInit {
         status: ['Select Status'],
         paid_bonus: [],
         issue_month: ['Select Issue Month'],
-        life_pivot_bonus: ['Select Pivot Bonus']
+        co_producer_name: ['Select Co-Producer'],
+        co_producer_bonus: ['Select Pivot Bonus']
       });
       this.app_loaded = true;
     } else {
@@ -99,7 +109,8 @@ export class AddLifeComponent implements OnInit {
       status: this.get("status"),
       paid_bonus: this.get("paid_bonus"),
       issue_month: this.get("issue_month"),
-      life_pivot_bonus: this.get("life_pivot_bonus")
+      co_producer_name: this.get("co_producer_name"),
+      co_producer_bonus: this.get("co_producer_bonus")
     }
     console.log(app);
 

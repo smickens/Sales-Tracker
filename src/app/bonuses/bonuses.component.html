@@ -10,19 +10,30 @@
             </div>
             
             <div style="overflow-x: auto; overflow-y: auto;">
+              <div *ngFor="let producer of producers">
+                <h4>{{ producer.name }</h4>
                 <table class="table table-hover">
-                    <thead>
-                      <tr>
-                        <th *ngFor="let header of headers" scope="col">{{header}}</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr *ngFor="let producer of producers">
-                        <th scope="row">Total Bonus</th>
-                        <td>{{ producer.total_bonus }}</td>
-                      </tr>
-                    </tbody>
+                  <thead>
+                    <tr>
+                      <th *ngFor="let month of months" scope="col">{{ month }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th scope="row">Production Bonus</th>
+                      <!-- <td *ngFor="let amount of production_bonuses">{{ producer.total_bonus }}</td> -->
+                    </tr>
+                    <tr>
+                      <th scope="row">Corporate Bonus</th>
+                      <!-- <td *ngFor="let producer of corportate_bonuses">{{ producer.total_bonus }}</td> -->
+                    </tr>
+                    <tr>
+                      <th scope="row">Total Bonus</th>
+                      <!-- <td *ngFor="let producer of producer.bonus">{{ producer.total_bonus }}</td> -->
+                    </tr>
+                  </tbody>
                 </table>
+              </div>
             </div>
         </div>
     </div>

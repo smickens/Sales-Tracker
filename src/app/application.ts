@@ -5,6 +5,8 @@ export interface Application {
     date: string;
     client_name: string;
     producer_name: string;
+    co_producer_name?: string;
+    co_producer_bonus?: number;
 }
 
 export interface LifeApp extends Application {
@@ -19,7 +21,6 @@ export interface LifeApp extends Application {
     status?: string;
     paid_bonus?: number;
     issue_month?: string;
-    life_pivot_bonus?: string;
 }
 
 export interface AutoApp extends Application {

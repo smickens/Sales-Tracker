@@ -20,11 +20,12 @@ export class AddBankComponent implements OnInit {
   app_id: string = ""; // if page is in edit mode, then app_id is set to app's id in database
 
   producers: Producer[] = PRODUCERS;
+  constants = {};
 
-  modes: string[] = ["Ann", "Semi", "Q", "Monthly"];
-  status_options: string[] = ["Issued", "Withdrawn", "Declined"];
-  product_types: string[] = ["Financial Cards", "Deposits", "Retirement"];
-  products: string[] = ["Vehicle Loan", "Personal Secured Loan", "HELOC", "Home Equity Loan", "Mortgage Loan", "   ------", "Credit Cards", "Checking/Savings/MM", "   ------", "CD - Standard", "CD - Special", "Coverdell ESA CD", "Roth", "Traditional IRA", "Trust / Estate"];
+  // modes: string[] = ["Ann", "Semi", "Q", "Monthly"];
+  // status_options: string[] = ["Issued", "Withdrawn", "Declined"];
+  // product_types: string[] = ["Financial Cards", "Deposits", "Retirement"];
+  // products: string[] = ["Vehicle Loan", "Personal Secured Loan", "HELOC", "Home Equity Loan", "Mortgage Loan", "   ------", "Credit Cards", "Checking/Savings/MM", "   ------", "CD - Standard", "CD - Special", "Coverdell ESA CD", "Roth", "Traditional IRA", "Trust / Estate"];
 
   private today = new Date();
   addBankAppForm = this.fb.group({ });
@@ -35,6 +36,11 @@ export class AddBankComponent implements OnInit {
     db.list('/producers').valueChanges().subscribe(producers => {
       this.producers = producers as Producer[];
     });
+
+    db.list('constants/bank').snapshotChanges().subscribe(
+      (snapshot: any) => snapshot.map(snap => {
+      this.constants[snap.payload.key] = snap.payload.val();
+    }));
     // i think this connection stays open even when leaving page, so look into how you do a once check
   }
 
@@ -56,7 +62,9 @@ export class AddBankComponent implements OnInit {
         product_type: ['Select Product Type'],
         product: ['Select Product'],
         bonus: [],
-        marketing_source: []
+        marketing_source: [],
+        co_producer_name: ['Select Co-Producer'],
+        co_producer_bonus: ['Select Pivot Bonus']
       });
       this.app_loaded = true;
     } else {
@@ -88,7 +96,9 @@ export class AddBankComponent implements OnInit {
       product_type: this.get("product_type"),
       product: this.get("product"),
       bonus: this.get("bonus"),
-      marketing_source: this.get("marketing_source")
+      marketing_source: this.get("marketing_source"),
+      co_producer_name: this.get("co_producer_name"),
+      co_producer_bonus: this.get("co_producer_bonus")
     }
     console.log(app);
 

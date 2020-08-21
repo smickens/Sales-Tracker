@@ -20,9 +20,10 @@ export class AddFireComponent implements OnInit {
   app_id: string = ""; // if page is in edit mode, then app_id is set to app's id in database
 
   producers: Producer[] = PRODUCERS;
+  constants = {};
 
-  products: string[] = ["Homeowners", "Renters", "PLUP", "PAP", "RDP", "Condo", "Manufac Home", "Boat", "Contractors", "Business", "Workmans Comp", "Bonds", "FLOOD", "CLUP"];
-  status_options: string[] = ["Issued", "Declined", "Canceled"];
+  // products: string[] = ["Homeowners", "Renters", "PLUP", "PAP", "RDP", "Condo", "Manufac Home", "Boat", "Contractors", "Business", "Workmans Comp", "Bonds", "FLOOD", "CLUP"];
+  // status_options: string[] = ["Issued", "Declined", "Canceled"];
 
   private today = new Date();
   addFireAppForm = this.fb.group({ });
@@ -33,6 +34,11 @@ export class AddFireComponent implements OnInit {
     db.list('/producers').valueChanges().subscribe(producers => {
       this.producers = producers as Producer[];
     });
+
+    db.list('constants/fire').snapshotChanges().subscribe(
+      (snapshot: any) => snapshot.map(snap => {
+      this.constants[snap.payload.key] = snap.payload.val();
+    }));
     // i think this connection stays open even when leaving page, so look into how you do a once check
   }
 
@@ -50,7 +56,9 @@ export class AddFireComponent implements OnInit {
         submitted_premium: [],
         status: ['Select Status'],
         issued_premium: [],
-        marketing_source: []
+        marketing_source: [],
+        co_producer_name: ['Select Co-Producer'],
+        co_producer_bonus: ['Select Pivot Bonus']
       });
       this.app_loaded = true;
     } else {
@@ -78,7 +86,9 @@ export class AddFireComponent implements OnInit {
       submitted_premium: this.get("submitted_premium"),
       status: this.get("status"),
       issued_premium: this.get("issued_premium"),
-      marketing_source: this.get("marketing_source")
+      marketing_source: this.get("marketing_source"),
+      co_producer_name: this.get("co_producer_name"),
+      co_producer_bonus: this.get("co_producer_bonus")
     }
     console.log(app);
 
