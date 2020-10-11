@@ -1,17 +1,20 @@
 
-<div class="container" style="color: white; display: flex; flex-flow: column; height: 100%;">
-    <h3 style="font-weight: 550; padding: 25px 0px;">MENU</h3>
+<div *ngIf="env.logged_in" class="container" style="color: white; display: flex; flex-flow: column; height: 100%;">
+    <h3 style="font-weight: 525; padding-top: 35px; padding-bottom: 10px;">TRACKER</h3>
     <div class="menu">
-        <a routerLink="/"><span>-</span> Home</a>
-        <a routerLink="/life"><span>-</span> Life</a>
-        <a routerLink="/auto"><span>-</span> Auto</a>
-        <a routerLink="/bank"><span>-</span> Bank</a>
-        <a routerLink="/fire"><span>-</span> Fire</a>
-        <a routerLink="/health"><span>-</span> Health</a>
-        <a routerLink="/bonuses"><span>-</span> Bonuses</a>
+        <a routerLink="/"><span></span> Home</a>
+        <a routerLink="/life"><span></span> Life</a>
+        <a routerLink="/auto"><span></span> Auto</a>
+        <a routerLink="/bank"><span></span> Bank</a>
+        <a routerLink="/fire"><span></span> Fire</a>
+        <a routerLink="/health"><span></span> Health</a>
+        <a routerLink="/bonuses"><span></span> Bonuses</a>
+    </div>
+    <div class="row">
+        <a routerLink="/settings" style="font-weight: 600; letter-spacing: 1px; padding: 10px 5px;">SETTINGS</a>
     </div>
     <div style="flex: 1; overflow: auto;"></div>
     <div class="row" style="align-items: flex-end; min-height: 50px;">
-        <a routerLink="/settings" style="font-weight: 600; letter-spacing: 1px; padding-left: 8px 10px;">SETTINGS</a>
+        <a (click)="logout()" routerLink="/login" style="font-weight: 600; letter-spacing: 1px; padding-left: 5px;">SIGN OUT</a>
     </div>
 </div>

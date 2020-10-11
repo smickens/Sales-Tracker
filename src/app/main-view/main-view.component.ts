@@ -1,8 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder } from '@angular/forms';
+import { environment } from 'src/environments/environment';
 
-import { Producer, PRODUCERS } from "../producer";
+import { Producer } from "../producer";
 import { AngularFireDatabase } from 'angularfire2/database';
+import { Router } from '@angular/router';
+import { AngularFireAuth } from 'angularfire2/auth';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-main-view',
@@ -23,11 +27,24 @@ export class MainViewComponent implements OnInit {
   addNoteForm = this.fb.group({
     note: []
   });
-  notes = {};
+  notes = [];
+  notes_keys = {};
 
-  constructor(private db: AngularFireDatabase, private fb: FormBuilder) {
+  subscriptions: Subscription[] = [];
+
+  constructor(private db: AngularFireDatabase, private fb: FormBuilder, public  db_auth:  AngularFireAuth, private router: Router) {
+    let auth_sub = db_auth.authState.subscribe(user => {
+      if (user) {
+        environment.logged_in = true;
+      } else {
+        environment.logged_in = false;
+        this.router.navigate(['login']);
+      }
+    });
+    this.subscriptions.push(auth_sub);
+
     // loads in application totals for the year
-    db.list('applications').snapshotChanges().subscribe(
+    let sub1 = db.list('applications').snapshotChanges().subscribe(
       (snapshot: any) => snapshot.map(snap => {
         const type = snap.payload.val().type as string;
         this.apps_this_year[type][0] += 1;
@@ -37,42 +54,75 @@ export class MainViewComponent implements OnInit {
         }
        })
     );
+    this.subscriptions.push(sub1);
 
     //https://github.com/angular/angularfire/issues/380
     //db.object('someLocation').take(1).subscribe();
 
-
     // loads in goals/notes
-
-    // would look better if it ordered notes by date added
-
-    db.list('notes').snapshotChanges().subscribe(
+    let sub2 = db.list('notes').snapshotChanges().subscribe(
       (snapshot: any) => snapshot.map(snap => {
-        if (!(snap.payload.key in this.notes)) {
-          this.notes[snap.payload.key] = snap.payload.val();
-        }
-       })
+        let displayed = false;
+        this.notes.forEach(note => {
+          if (snap.payload.key == note.id) {
+            displayed = true;
+          }
+        });
+        if (!displayed) {
+          let note_object = { 
+            id: snap.payload.key,
+            text: snap.payload.val()['text'],
+            date: snap.payload.val()['date']
+          };
+          this.notes.push(note_object);
+          this.notes.sort((a, b) => a.date - b.date);
+       };
+      })
     );
+    this.subscriptions.push(sub2);
   }
 
   ngOnInit(): void {
   }
 
-  onSubmit() {
+  ngOnDestroy(): void {
+    this.subscriptions.forEach(sub => {
+      sub.unsubscribe();
+    });
+  }
+
+  addNote() {
     // updates notes on screen
     let note = this.addNoteForm.get('note').value;
-    //this.notes.push(note);
-
-    // updates database w/ new goal/note
-    let id = this.randomString(4);
 
     // check id doesn't exist
+    let id = "";
+    console.log(this.notes);
+    while (id in this.notes || id == "") {
+      id = this.randomString(4);
+    }
+    
+    // updates database w/ new goal/note
+    let time = new Date();
     let note_object = {};
-    note_object[id] = note;
+    note_object[id] = {
+      text: note,
+      date: time.getTime()
+    };
     this.db.list('notes').update('/', note_object);
 
     // clears note input
     this.addNoteForm.setValue({'note': ''});
+  }
+
+  deleteNote(id: number) {
+    this.db.list('notes/'+id).remove();
+    for (let i = 0; i < this.notes.length; i++) {
+      if (id == this.notes[i].id) {
+        this.notes.splice(i);
+        break;
+      }
+    }
   }
 
   randomString(length: number) {
@@ -86,3 +136,32 @@ export class MainViewComponent implements OnInit {
   }
 
 }
+
+// this.db.list('notes').query.orderByKey().once('value').then(function(snapshot) {
+    //   snapshot.forEach(function(snap) {
+    //     console.log(snap.key);
+    //     console.log(snap.val());
+    //   });
+    // });
+    // db.list('notes').query.orderByChild('date').on('child_added', function(snap) {
+    //   if (!(snap.key in testing_notes)) {
+    //     testing_notes[snap.key] = snap.val()['text'];
+    //   }
+    //   console.log(testing_notes);
+    // });
+    // db.list('notes').query.orderByChild('date').on('child_added', function(snap) {
+    //   console.log(snap.key);
+    //   console.log(snap.val());
+    //   let key = snap.key as string;
+    //   //this.notes["test"] = "here";
+    //   console.log(this.notes);
+    //   // if (!("key" in this.notes)) {
+    //   //   this.notes[snap.key] = snap.val();
+    //   // }
+    // }); 
+    
+    //.once('value').then(function(snapshot) {
+    //   snapshot.forEach(function(snap) {
+    //     console.log(snap.val());
+    //   });
+    // });

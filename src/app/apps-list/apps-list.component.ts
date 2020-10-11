@@ -1,11 +1,14 @@
 import { Component, OnInit } from '@angular/core';
-import { Producer, PRODUCERS } from "../producer";
-import { Application, LifeApp, AutoApp, BankApp, FireApp, HealthApp } from '../application';
+import { Producer } from "../producer";
+import { LifeApp, AutoApp, BankApp, FireApp, HealthApp } from '../application';
 import { AngularFireDatabase } from 'angularfire2/database';
 
 import { ActivatedRoute } from "@angular/router";  //  holds information about the route to this instance of the HeroDetailComponent
 import { Location } from "@angular/common"; // Angular service for interacting with the browser
 import { Router } from '@angular/router';
+import { Subscription } from 'rxjs';
+import { environment } from 'src/environments/environment';
+import { AngularFireAuth } from 'angularfire2/auth';
 
 @Component({
   selector: 'app-apps-list',
@@ -17,7 +20,7 @@ export class AppsListComponent implements OnInit {
   headers: string[] = ["#", "Date", "Producer", "Client"];
   apps = [];
 
-  producers: Producer[] = PRODUCERS;
+  producers: Producer[];
 
   life_headers: string[] = ["Premium", "Mode", "Annual Premium", "Policy Type", "Product", "Client Type", "Bonus", "Taken", "Paid Bonus", "Issue / Bonus Month", "Life Pivot Bonus"];
   auto_headers: string[] = ["Auto Type", "Tiers", "Bonus", "Submitted Premium", "Status", "Issued Premium", "Marketing Source"];
@@ -31,14 +34,34 @@ export class AppsListComponent implements OnInit {
   fire_apps: FireApp[] = [];
   health_apps: HealthApp[] = [];
 
-  constructor(private db: AngularFireDatabase, private route: ActivatedRoute, private location: Location, private router: Router) {
-    db.list('/producers').valueChanges().subscribe(producers => {
-      this.producers = producers as Producer[];
+  subscriptions: Subscription[] = [];
+
+  constructor(private db: AngularFireDatabase, public  db_auth:  AngularFireAuth, private route: ActivatedRoute, private location: Location, private router: Router) {
+    let auth_sub = db_auth.authState.subscribe(user => {
+      if (user) {
+        environment.logged_in = true;
+      } else {
+        environment.logged_in = false;
+        this.router.navigate(['login']);
+      }
     });
-    db.list('applications').snapshotChanges().subscribe(
+    this.subscriptions.push(auth_sub);
+    
+    let sub1 = db.list('/producers').valueChanges().subscribe(
+      (producers) => { 
+        this.producers = producers as Producer[];
+      }
+    //     {
+    //   next: (producers) => { this.producers = producers as Producer[]; },
+    //   error: (error) => { console.log(error); },
+    //   complete: () => { console.log("done"); }
+    // }
+    );
+    this.subscriptions.push(sub1);
+    let sub2 = db.list('applications').snapshotChanges().subscribe(
       (snapshot: any) => snapshot.map(snap => {
         const app = snap.payload.val();
-        console.log(app);
+        //console.log(app);
         if (app["type"] == "life") {
           this.life_apps.push(app as LifeApp);
         } else if (app["type"] == "auto") {
@@ -51,43 +74,43 @@ export class AppsListComponent implements OnInit {
           this.health_apps.push(app as HealthApp);
         }
         const app_id = snap.key;
-        console.log(app_id);
+        //console.log(app_id);
         app.id = app_id;
 
         this.getHeaders();
         this.getApps();
-       })
+        //console.log(snap.key);
+       }),
+       (error) => console.log(error),
+       () => console.log("done")
+      //  () => {
+      //    console.log("done");
+      //    this.getHeaders();
+      //    this.getApps();
+      //  }
     );
-    // db.list('/applications').valueChanges().subscribe(apps => {
-    //   apps.forEach(app => {
-    //     console.log(app);
-    //     if (app["type"] == "life") {
-    //       this.life_apps.push(app as LifeApp);
-    //     } else if (app["type"] == "auto") {
-    //       this.auto_apps.push(app as AutoApp);
-    //     } else if (app["type"] == "bank") {
-    //       this.bank_apps.push(app as BankApp);
-    //     } else if (app["type"] == "fire") {
-    //       this.fire_apps.push(app as FireApp);
-    //     } else if (app["type"] == "health") {
-    //       this.health_apps.push(app as HealthApp);
-    //     }
-    //   });
-      // this.getHeaders();
-      //this.getApps();
-    //});
-    // i think this connection stays open even when leaving page, so look into how you do a once check
+    this.subscriptions.push(sub2);
+
   }
 
   ngOnInit(): void {
+    this.app_type = this.router.url.substring(1);
+    this.getHeaders();
+    this.getApps();
     //this.app_type = this.route.snapshot.paramMap.get('type');
-    this.route.params.subscribe(params => {
-      this.app_type = params['type'];
-      this.getHeaders();
-      this.getApps();
-    });
+    // this.route.params.subscribe(params => {
+    //   this.app_type = params['type'];
+    //   this.getHeaders();
+    //   this.getApps();
+    // });
 
     // maybe have it set producers to all producers on app list change
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.forEach(sub => {
+      sub.unsubscribe();
+    });
   }
 
   getHeaders() {
@@ -107,6 +130,8 @@ export class AppsListComponent implements OnInit {
     for (const header of headers_to_copy) {
       this.headers.push(header);
     }
+    this.headers.push("Co-Producer Name");
+    this.headers.push("Co-Producer Bonus");
   }
 
   getApps() {
@@ -126,28 +151,50 @@ export class AppsListComponent implements OnInit {
     for (const app of apps_to_copy) {
       this.apps.push(app);
     }
+    //console.log(this.apps);
   }
 
   editApp(id: string) {
-    console.log("edit" + id);
+    //console.log("edit" + id);
     this.router.navigate([this.app_type + '/' + id]);
   }
 
-  updateList(producer: string) {
-    let filter = producer;
+  updateList(filter: string) {
     this.apps = [];
     this.db.list('applications').snapshotChanges().subscribe(
       (snapshot: any) => snapshot.map(snap => {
         const app = snap.payload.val();
-        console.log(app);
+        //console.log(app);
         if (app["producer_name"] == filter || filter == "All Producers") {
           if (app["type"] == this.app_type) {
             this.apps.push(app);
           }
           const app_id = snap.key;
-          console.log(app_id);
+          //console.log(app_id);
           app.id = app_id;
         }
+       })
+    );
+  }
+
+  orderList(filter: string) {
+    this.apps = [];
+    this.db.list('applications').snapshotChanges().subscribe(
+      (snapshot: any) => snapshot.map(snap => {
+        const app = snap.payload.val();
+        //console.log(app);
+        if (app["type"] == this.app_type) {
+          this.apps.push(app);
+          if (filter == "date") {
+            this.apps.sort((a, b) => a.date - b.date);
+          } else if (filter == "client_name") {
+            this.apps.sort((a, b) => a.client_name - b.client_name);
+          }
+        }
+        //console.log(this.apps);
+        const app_id = snap.key;
+        //console.log(app_id);
+        app.id = app_id;
        })
     );
   }

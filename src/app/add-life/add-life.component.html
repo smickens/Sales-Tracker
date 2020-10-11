@@ -148,10 +148,12 @@
 
                     <div class="col form-group">
                         <label for="co_producer_bonus">CO-PRODUCER BONUS</label>
-                        <select class="custom-select" formControlName="co_producer_bonus" id="co_producer_bonus">
-                            <option selected>Select Co-Producer Bonus</option>
-                            <option *ngFor="let option of constants['co_producer_bonuses']" value="{{option}}"> {{ option }} </option>
-                        </select>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">$</span>
+                            </div>
+                            <input type="number" class="form-control" formControlName="co_producer_bonus" id="co_producer_bonus" autocomplete="off">
+                        </div>
                     </div>
                 </div>
         

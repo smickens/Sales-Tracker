@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Producer, PRODUCERS } from "../producer";
+import { Producer } from "../producer";
 
 @Component({
   selector: 'app-team',
@@ -8,7 +8,7 @@ import { Producer, PRODUCERS } from "../producer";
 })
 export class TeamComponent implements OnInit {
 
-  producers: Producer[] = PRODUCERS;
+  producers: Producer[];
 
   constructor() { }
 

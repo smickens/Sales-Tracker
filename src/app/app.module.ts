@@ -2,6 +2,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { ChartsModule } from 'ng2-charts';
 import { AngularFireModule } from 'angularfire2';
+import { AngularFireAuthModule } from 'angularfire2/auth';
 import { environment } from 'src/environments/environment';
 import { AngularFireDatabaseModule } from 'angularfire2/database';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -20,6 +21,7 @@ import { AddBankComponent } from './add-bank/add-bank.component';
 import { AddFireComponent } from './add-fire/add-fire.component';
 import { AddHealthComponent } from './add-health/add-health.component';
 import { BonusesComponent } from './bonuses/bonuses.component';
+import { LoginComponent } from './login/login.component';
 
 @NgModule({
   declarations: [
@@ -35,13 +37,15 @@ import { BonusesComponent } from './bonuses/bonuses.component';
     AddBankComponent,
     AddFireComponent,
     AddHealthComponent,
-    BonusesComponent
+    BonusesComponent,
+    LoginComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     ChartsModule,
     AngularFireModule.initializeApp(environment.firebase),
+    AngularFireAuthModule,
     AngularFireDatabaseModule,
     ReactiveFormsModule
   ],

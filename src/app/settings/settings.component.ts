@@ -1,9 +1,14 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder } from '@angular/forms';
+import { FormBuilder, FormGroup } from '@angular/forms';
 
-import { Producer, PRODUCERS } from "../producer";
+import { Producer } from "../producer";
 import { AngularFireDatabase } from 'angularfire2/database';
 import { AutoApp } from '../application';
+import { app } from 'firebase';
+import { Router } from '@angular/router';
+import { environment } from 'src/environments/environment';
+import { AngularFireAuth } from 'angularfire2/auth';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-settings',
@@ -20,51 +25,81 @@ export class SettingsComponent implements OnInit {
     new_producer: []
   });
   addConstantForm = this.fb.group({
-    new_constant: []
+    new_constant: [],
+    header: []
   });
 
-  constructor(private db: AngularFireDatabase, private fb: FormBuilder) {
+  subscription: Subscription;
+
+  constructor(private db: AngularFireDatabase, private fb: FormBuilder, public  db_auth:  AngularFireAuth, private router: Router) {
+    this.subscription = db_auth.authState.subscribe(user => {
+      if (user) {
+        environment.logged_in = true;
+      } else {
+        environment.logged_in = false;
+        this.router.navigate(['login']);
+      }
+    });
+
     this.setActive('producers');
   }
 
   ngOnInit(): void {
   }
 
+  ngOnDestroy(): void {
+    this.subscription.unsubscribe();
+  }
+
   setActive(page: string) {
     this.active_page = page;
     this.headers = [];
-    this.constants = [];
+    this.constants = [[]];
 
     // have them not keep listening
+    // .unsubscribe() ends the listening but need a way to know when they're finished first
 
     if (this.active_page == 'producers') {
       this.headers = ["Producers"];
-      this.constants[0] = [];
       this.db.list('producers').snapshotChanges().subscribe(
         (snapshot: any) => snapshot.map(snap => {
-          console.log(snap.payload.val().name);
-          this.constants[0].push(snap.payload.val().name);
+          let displayed = false;
+          this.constants[0].forEach(producer => {
+            if (producer[0] == snap.key) {
+              displayed = true;
+            }
+          });
+
+          if (!displayed) {
+            this.constants[0].push([snap.key, snap.payload.val().name]);
+          }
+          //console.log(this.constants);
       }));
     } else {
       this.db.list('constants/' + this.active_page).snapshotChanges().subscribe(
         (snapshot: any) => snapshot.map(snap => {
-        this.headers.push(snap.key);
-        this.constants.push(snap.payload.val());
+        let header = snap.key as string;
+        if (this.headers.includes(header.split("_").join(" ")) == false) {
+          this.headers.push(header.split("_").join(" "));
+        }
+        while (this.constants.length < this.headers.length) {
+          this.constants.push([]);
+        }
+        let index = this.headers.indexOf(header.split("_").join(" "));
+        if (this.constants[index] != snap.payload.val().split("_")) {
+          this.constants[index] = snap.payload.val().split("_");
+        }
       }));
     }
-
-    // update headers array
-
-    // update constants array
   }
 
-  get(field: string) {
-    return this.addProducerForm.get(field).value;
+  get(form: FormGroup, field: string) {
+    return form.get(field).value;
   }
 
   addProducer() {
     let producer: Producer = {
-      name: this.get("new_producer"),
+      name: this.get(this.addProducerForm, "new_producer"),
       life: 0,
       auto: 0,
       bank: 0,
@@ -76,21 +111,51 @@ export class SettingsComponent implements OnInit {
     let id = this.randomString(4);
     
     // add check that id isn't already in use
+    
 
-    this.db.list('/producers').update(id, producer);
+    this.db.list('producers').update(id, producer);
 
     // clears input field
     this.addProducerForm.setValue({new_producer: ''});
+    this.addConstantForm.setValue({new_constant: '', header: ''});
+  }
+
+  deleteProducer(id: number, constant_index: number) {
+    console.log("delete producer " + id);
+    this.db.list('producers/' + id).remove();
+    this.constants[0].splice(constant_index, 1);
   }
 
   addConstant() {
     // brings up modal, confirming addition of producer or constant
-    console.log("add");
+    let app_type = this.active_page;
+    let header = this.get(this.addConstantForm, 'header').toLowerCase().split(" ").join("_");
+    let new_constant = this.get(this.addConstantForm, 'new_constant');
+
+    let header_index = this.headers.indexOf(header.toLowerCase());
+    this.constants[header_index].push(new_constant);
+
+    let constant = {};
+    constant[header] = this.constants[header_index].join("_");
+    this.db.list('constants/' + app_type + '/').update('/', constant);
   }
 
-  deleteConstant() {
+  deleteConstant(header_index: number, constant_index: number) {
     // brings up modal, confirming deletion of producer or constant
-    console.log("delete");
+    let app_type = this.active_page;
+    let header = this.headers[header_index];
+
+    // removes constant from array
+    this.constants[header_index].splice(constant_index, 1);
+
+    // updates database with removed
+    let constant = {};
+    constant[header] = this.constants[header_index].join("_");
+    if (this.active_page == "producers") {
+      this.db.list('producers/' + app_type + '/').update('/', constant);
+    } else {
+      this.db.list('constants/' + app_type + '/').update('/', constant);
+    }
   }
 
   randomString(length: number) {

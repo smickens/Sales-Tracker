@@ -1,4 +1,7 @@
 import { Component, OnInit } from '@angular/core';
+import { environment } from 'src/environments/environment';
+
+import { AngularFireAuth } from 'angularfire2/auth';
 
 @Component({
   selector: 'app-sidebar',
@@ -7,9 +10,15 @@ import { Component, OnInit } from '@angular/core';
 })
 export class SidebarComponent implements OnInit {
 
-  constructor() { }
+  env = environment;
+
+  constructor(public  db_auth:  AngularFireAuth) { }
 
   ngOnInit(): void {
+  }
+
+  async logout(){
+    await this.db_auth.auth.signOut();
   }
 
 }

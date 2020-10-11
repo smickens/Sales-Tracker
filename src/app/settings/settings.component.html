@@ -41,12 +41,20 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <td *ngFor="let options of constants">
+                        <td *ngFor="let options of constants; index as header_index;">
                             <ng-container *ngIf="options.length > 1">
-                                <li *ngFor="let constant of options" (click)="deleteConstant()" style="padding-bottom: 5px; display: flex;">
-                                    <span class="option">{{constant}}</span>
-                                    <span class="hide" style="padding-left: 10px;">x</span>
-                                </li>
+                                <ng-container *ngIf="active_page == 'producers'">
+                                    <li *ngFor="let producer of options; index as constant_index;" (click)="deleteProducer(producer[0], constant_index)" style="padding-bottom: 5px; display: flex;">
+                                        <span class="option">{{ producer[1] }}</span>
+                                        <span class="hide" style="padding-left: 10px;">x</span>
+                                    </li>
+                                </ng-container>
+                                <ng-container *ngIf="active_page != 'producers'">
+                                    <li *ngFor="let constant of options; index as constant_index;" (click)="deleteConstant(header_index, constant_index)" style="padding-bottom: 5px; display: flex;">
+                                        <span class="option">{{ constant }}</span>
+                                        <span class="hide" style="padding-left: 10px;">x</span>
+                                    </li>
+                                </ng-container>
                             </ng-container>
                         </td>
                     </tbody>
@@ -63,7 +71,10 @@
             </div>
             <div *ngIf="active_page != 'producers'" class="col form-group">
                 <form [formGroup]="addConstantForm" style="display: flex; align-items: center;">
-                    <label for="new_constant" style="margin: 0px;">New Constant: </label>
+                    <label for="new_constant" style="margin: 0px; padding-right: 10px;">New Constant: </label>
+                    <select class="custom-select" style="width: 250px;" formControlName="header" id="header">
+                        <option *ngFor="let header of headers" value="{{ header }}">{{ header | titlecase }}</option>
+                    </select>
                     <input type="text" class="form-control" formControlName="new_constant" id="new_constant" style="max-width: 400px; margin: 0px 15px;" autocomplete="off">
                     <input class="submit_btn" type="submit" value="SUBMIT" (click)="addConstant()">
                 </form>

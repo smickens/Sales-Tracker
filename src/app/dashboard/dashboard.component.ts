@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { Producer, PRODUCERS } from "../producer";
+import { Producer } from "../producer";
 import { Color } from "ng2-charts";
 import { Observable } from 'rxjs';
 
@@ -14,7 +14,6 @@ import { apps } from 'firebase';
   styleUrls: ['./dashboard.component.scss']
 })
 export class DashboardComponent implements OnInit {
-  producers: Producer[] = PRODUCERS;
 
   public barChartOptions = {
     scaleShowVerticalLines: false,

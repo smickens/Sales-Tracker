@@ -2,8 +2,9 @@ import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 
 import { MainViewComponent } from './main-view/main-view.component';
-import { SettingsComponent } from './settings/settings.component';
 import { BonusesComponent } from './bonuses/bonuses.component';
+import { SettingsComponent } from './settings/settings.component';
+import { LoginComponent } from './login/login.component';
 
 import { AddLifeComponent } from './add-life/add-life.component';
 import { AddAutoComponent } from './add-auto/add-auto.component';
@@ -14,13 +15,11 @@ import { AddHealthComponent } from './add-health/add-health.component';
 import { AppsListComponent } from './apps-list/apps-list.component';
 
 const routes: Routes = [
-  // default page
-  { path: '', redirectTo: '/main-view', pathMatch: 'full'},
-
   // main pages
-  { path: 'main-view', component: MainViewComponent },
+  { path: 'home', component: MainViewComponent },
   { path: 'bonuses', component: BonusesComponent },
   { path: 'settings', component: SettingsComponent },
+  { path: 'login', component: LoginComponent },
 
   // add app forms
   { path: 'add-life', component: AddLifeComponent },
@@ -37,7 +36,14 @@ const routes: Routes = [
   { path: 'health/:id', component: AddHealthComponent },
 
   // app list pages
-  { path: ':type', component: AppsListComponent }
+  { path: 'life', component: AppsListComponent },
+  { path: 'auto', component: AppsListComponent },
+  { path: 'bank', component: AppsListComponent },
+  { path: 'fire', component: AppsListComponent },
+  { path: 'health', component: AppsListComponent },
+
+  // redirects anything that doesn't match any of above to home page
+  { path: '**', redirectTo: 'home', pathMatch: 'full' }
 ];
 
 @NgModule({

@@ -1,3 +1,16 @@
 .submit_btn {
     display: none;
 }
+
+.hide { 
+    display: none;
+}
+
+.note:hover {
+    color: darkgray;
+}
+
+.note:hover .hide {
+    display: inline-block;
+    color: red;
+}

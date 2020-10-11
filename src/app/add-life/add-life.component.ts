@@ -1,12 +1,15 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 
-import { Producer, PRODUCERS } from "../producer";
+import { Producer } from "../producer";
 import { AngularFireDatabase } from 'angularfire2/database';
 import { LifeApp } from '../application';
 
 import { ActivatedRoute } from "@angular/router";  //  holds information about the route to this instance of the HeroDetailComponent
 import { Location } from "@angular/common"; // Angular service for interacting with the browser
+import { Router } from '@angular/router';
+import { environment } from 'src/environments/environment';
+import { AngularFireAuth } from 'angularfire2/auth';
 
 @Component({
   selector: 'app-add-life',
@@ -19,7 +22,7 @@ export class AddLifeComponent implements OnInit {
   button_text: string = "";
   app_id: string = ""; // if page is in edit mode, then app_id is set to app's id in database
 
-  producers: Producer[] = PRODUCERS;
+  producers: Producer[];
   constants = {};
 
   // modes: string[] = ["Annual", "Monthly"];
@@ -34,16 +37,30 @@ export class AddLifeComponent implements OnInit {
 
   app_loaded = false;
 
-  constructor(private db: AngularFireDatabase, private fb: FormBuilder, private route: ActivatedRoute, private location: Location) {
-    db.list('producers').valueChanges().subscribe(producers => {
+  subscriptions: Subscription[] = [];
+
+  constructor(private db: AngularFireDatabase, private fb: FormBuilder, public  db_auth:  AngularFireAuth, private route: ActivatedRoute, private location: Location, private router: Router) {
+    let auth_sub = db_auth.authState.subscribe(user => {
+      if (user) {
+        environment.logged_in = true;
+      } else {
+        environment.logged_in = false;
+        this.router.navigate(['login']);
+      }
+    });
+    this.subscriptions.push(auth_sub);
+    
+    let sub1 = db.list('producers').valueChanges().subscribe(producers => {
       this.producers = producers as Producer[];
     });
+    this.subscriptions.push(sub1);
 
-    db.list('constants/life').snapshotChanges().subscribe(
+    let sub2 = db.list('constants/life').snapshotChanges().subscribe(
       (snapshot: any) => snapshot.map(snap => {
-      this.constants[snap.payload.key] = snap.payload.val();
-      console.log(this.constants);
+      this.constants[snap.payload.key] = snap.payload.val().split("_");
+      //console.log(this.constants);
     }));
+    this.subscriptions.push(sub2);
     // i think this connection stays open even when leaving page, so look into how you do a once check
 
     // might unsubscribe in ngOnDestroy
@@ -58,7 +75,7 @@ export class AddLifeComponent implements OnInit {
       this.form_title = "Add Life App";
       this.button_text = "SUBMIT";
       this.addLifeAppForm = this.fb.group({
-        date: [this.today],
+        date: [this.today.toISOString().substr(0, 10)],
         producer_name: ['Select Producer'],
         client_name: [''],
         premium: [],
@@ -86,6 +103,12 @@ export class AddLifeComponent implements OnInit {
         this.app_loaded = true;
       }));
     }
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.forEach(sub => {
+      sub.unsubscribe();
+    });
   }
 
   get(field: string) {
@@ -116,11 +139,16 @@ export class AddLifeComponent implements OnInit {
 
     if (this.app_id == null) {
       // adds new application
-      this.db.list('/applications').update(this.randomString(16), app);
+      this.db.list('/applications').update(this.randomString(16), app).then(() => {
+        this.router.navigate(['life']);
+      });
     } else {
       // updates existing application
-      this.db.list('/applications').update(this.app_id, app);
+      this.db.list('/applications').update(this.app_id, app).then(() => {
+        this.router.navigate(['life']);
+      });
     }
+    // after add should bring up alert saying successfully added app
   }
 
   randomString(length: number) {
