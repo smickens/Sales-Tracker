@@ -8,7 +8,6 @@ import { environment } from 'src/environments/environment';
 import { AngularFireAuth } from 'angularfire2/auth';
 import { Subscription } from 'rxjs';
 import { Color } from 'ng2-charts';
-import { database } from 'firebase';
 
 @Component({
   selector: 'app-bonuses',

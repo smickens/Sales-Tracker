@@ -3,7 +3,6 @@ import { FormBuilder, FormGroup } from '@angular/forms';
 
 import { Producer } from "../producer";
 import { AngularFireDatabase } from 'angularfire2/database';
-import { AutoApp } from '../application';
 import { Router } from '@angular/router';
 import { environment } from 'src/environments/environment';
 import { AngularFireAuth } from 'angularfire2/auth';
@@ -184,6 +183,7 @@ export class SettingsComponent implements OnInit {
   }
 
   drop(event: CdkDragDrop<string[]>) {
+    console.log("here")
     moveItemInArray(this.movies, event.previousIndex, event.currentIndex);
   }
 
