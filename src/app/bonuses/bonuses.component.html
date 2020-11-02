@@ -1,14 +1,23 @@
 <div class="row" style="height: 100%;">
     <div style="padding: 30px; width: 100%;">
         <div class="block">
-            <div style="display: flex; align-items: center;">
+            <div style="display: flex; justify-content: space-between;">
+              <div style="display: flex; align-items: center;">
                 <h4 class="header" style="margin-bottom: 0px; padding-right: 15px;"> Bonuses 2020 - </h4>
                 <select class="custom-select" style="width: 250px;" id="producer" (change)="updateList($event.target.value)">
                     <option selected>All Producers</option>
                     <option *ngFor="let producer of all_producers" value="{{producer.name}}">{{ producer.name }}</option>
                 </select>
+              </div>
+              <div style="display: flex; align-items: center;">
+                <p style="margin: 0px; padding-right: 10px;">Year: </p>
+                <select class="custom-select" style="width: 150px;" id="year" (change)="filterByYear($event.target.value)">
+                  <option selected value="year">Current Year</option>
+                  <!-- <option *ngFor="let year of years" value="{{producer.name}}">{{ producer.name }}</option> -->
+                </select>
+              </div>
             </div>
-            <a style="text-decoration: none; display: block;" routerLink="bonuses" (click)="add_bonus = !add_bonus">Add New Bonus</a>
+            <a style="text-decoration: none; display: block; color: #007bff;" (click)="add_bonus = !add_bonus">Add New Bonus</a>
             
             <div style="overflow-x: auto; overflow-y: auto; margin-top: 15px;">
               
@@ -50,6 +59,28 @@
                   </div>
                 </div>
               </form>
+
+              <div class="container" style="display: flex; justify-content: center;">
+                <div class="row" style="width: 80%;">
+                  <!-- 
+                      guides to install chart setup 
+                      - https://medium.com/codingthesmartway-com-blog/angular-chart-js-with-ng2-charts-e21c8262777f 
+                      - https://www.npmjs.com/package/ng2-charts
+                  -->
+                  <canvas *ngIf="bonuses_loaded" #chart baseChart
+                          [datasets]="barChartData"
+                          [labels]="barChartLabels"
+                          [options]="barChartOptions"
+                          [legend]="barChartLegend"
+                          [chartType]="barChartType"
+                          [colors]="barChartColors"
+                          (chartClick)="chartClicked()"
+                          (chartHover)="chartHovered()">
+                  </canvas>
+                  <!-- <canvas #chart></canvas> -->
+                </div>
+              </div>
+              
 
               <div *ngFor="let producer of producers">
                 <h4>{{ producer.name }}</h4>

@@ -20,7 +20,10 @@
                     </div>
                     <div class="col form-group">
                         <label for="client_name">CLIENT</label>
-                        <input type="text" class="form-control" formControlName="client_name" id="client_name" autocomplete="off">
+                        <input type="text" name="client_name" class="form-control" formControlName="client_name" id="client_name" autocomplete="off" required>
+                        <span *ngIf="(addAutoAppForm.get('client_name').dirty || addAutoAppForm.get('client_name').touched) && addAutoAppForm.get('client_name').invalid">    
+                            Enter client name
+                        </span>
                     </div>
                 </div>
         

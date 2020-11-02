@@ -75,11 +75,14 @@
                     <select class="custom-select" style="width: 250px;" formControlName="header" id="header">
                         <option *ngFor="let header of headers" value="{{ header }}">{{ header | titlecase }}</option>
                     </select>
-                    <input type="text" class="form-control" formControlName="new_constant" id="new_constant" style="max-width: 400px; margin: 0px 15px;" autocomplete="off">
+                    <input type="text" class="form-control" placeholder="Enter New Constant" formControlName="new_constant" id="new_constant" style="max-width: 400px; margin: 0px 15px;" autocomplete="off">
                     <input class="submit_btn" type="submit" value="SUBMIT" (click)="addConstant()">
                 </form>
             </div>
         </div> 
+        <div cdkDropList class="example-list" (cdkDropListDropped)="drop($event)">
+            <div class="example-box" *ngFor="let movie of movies" cdkDrag>{{movie}}</div>
+        </div>
     </div> 
 </div>
 

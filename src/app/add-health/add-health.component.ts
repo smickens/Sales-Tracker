@@ -10,6 +10,7 @@ import { Location } from "@angular/common"; // Angular service for interacting w
 import { Router } from '@angular/router';
 import { environment } from 'src/environments/environment';
 import { AngularFireAuth } from 'angularfire2/auth';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-add-health',

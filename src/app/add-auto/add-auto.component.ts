@@ -10,6 +10,7 @@ import { Location } from "@angular/common"; // Angular service for interacting w
 import { Router } from '@angular/router';
 import { environment } from 'src/environments/environment';
 import { AngularFireAuth } from 'angularfire2/auth';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-add-auto',
@@ -72,15 +73,15 @@ export class AddAutoComponent implements OnInit {
         date: [this.today.toISOString().substr(0, 10)],
         producer_name: ['Select Producer'],
         client_name: [''],
-        auto_type: ['Select Auto Type'],
-        tiers: ['Select Tier'],
-        bonus: [],
-        submitted_premium: [],
-        status: ['Select Status'],
-        issued_premium: [],
-        marketing_source: ['Enter Marketing Source'],
+        auto_type: ['RN'],
+        tiers: ['Tier 1'], // only used if RN
+        bonus: [0],
+        submitted_premium: [0],
+        status: ['Submitted'], // initially should be 'submitted'
+        issued_premium: [0], 
+        marketing_source: [''],
         co_producer_name: ['Select Co-Producer'],
-        co_producer_bonus: ['Select Pivot Bonus']
+        co_producer_bonus: [0]
       });
       this.app_loaded = true;
     } else {
@@ -106,6 +107,7 @@ export class AddAutoComponent implements OnInit {
   }
   
   addApp() {
+    console.log(this.addAutoAppForm.valid);
     let app: AutoApp = {
       type: "auto",
       date: this.get("date"),
@@ -121,19 +123,28 @@ export class AddAutoComponent implements OnInit {
       co_producer_name: this.get("co_producer_name"),
       co_producer_bonus: this.get("co_producer_bonus")
     }
+    if (app.producer_name.includes("Select")) {
+      // validation error, no producer is selected
+    }
+    if (app.client_name.includes("Select")) {
+      // validation error, no client name inputed
+    }
+    if (app.co_producer_name.includes("Select")) {
+      app.co_producer_name = "";
+    }
     console.log(app);
 
-    if (this.app_id == null) {
-      // adds new application
-      this.db.list('/applications').update(this.randomString(16), app).then(() => {
-        this.router.navigate(['auto']);
-      });
-    } else {
-      // updates existing application
-      this.db.list('/applications').update(this.app_id, app).then(() => {
-        this.router.navigate(['auto']);
-      });
-    }
+    // if (this.app_id == null) {
+    //   // adds new application
+    //   this.db.list('/applications').update(this.randomString(16), app).then(() => {
+    //     this.router.navigate(['auto']);
+    //   });
+    // } else {
+    //   // updates existing application
+    //   this.db.list('/applications').update(this.app_id, app).then(() => {
+    //     this.router.navigate(['auto']);
+    //   });
+    // }
     // after add should bring up alert saying successfully added app
   }
 

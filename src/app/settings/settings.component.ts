@@ -4,11 +4,11 @@ import { FormBuilder, FormGroup } from '@angular/forms';
 import { Producer } from "../producer";
 import { AngularFireDatabase } from 'angularfire2/database';
 import { AutoApp } from '../application';
-import { app } from 'firebase';
 import { Router } from '@angular/router';
 import { environment } from 'src/environments/environment';
 import { AngularFireAuth } from 'angularfire2/auth';
 import { Subscription } from 'rxjs';
+import {CdkDragDrop, moveItemInArray} from '@angular/cdk/drag-drop';
 
 @Component({
   selector: 'app-settings',
@@ -30,6 +30,18 @@ export class SettingsComponent implements OnInit {
   });
 
   subscription: Subscription;
+
+  movies = [
+    'Episode I - The Phantom Menace',
+    'Episode II - Attack of the Clones',
+    'Episode III - Revenge of the Sith',
+    'Episode IV - A New Hope',
+    'Episode V - The Empire Strikes Back',
+    'Episode VI - Return of the Jedi',
+    'Episode VII - The Force Awakens',
+    'Episode VIII - The Last Jedi',
+    'Episode IX – The Rise of Skywalker'
+  ];
 
   constructor(private db: AngularFireDatabase, private fb: FormBuilder, public  db_auth:  AngularFireAuth, private router: Router) {
     this.subscription = db_auth.authState.subscribe(user => {
@@ -98,26 +110,29 @@ export class SettingsComponent implements OnInit {
   }
 
   addProducer() {
-    let producer: Producer = {
-      name: this.get(this.addProducerForm, "new_producer"),
-      life: 0,
-      auto: 0,
-      bank: 0,
-      fire: 0,
-      health: 0,
-      total_apps: 0
+    let name = this.get(this.addProducerForm, "new_producer");
+    if (name.trim() != "") {
+      let producer: Producer = {
+        name: this.get(this.addProducerForm, "new_producer"),
+        life: 0,
+        auto: 0,
+        bank: 0,
+        fire: 0,
+        health: 0,
+        total_apps: 0
+      }
+
+      let id = this.randomString(4);
+      
+      // add check that id isn't already in use
+      
+
+      this.db.list('producers').update(id, producer);
+
+      // clears input field
+      this.addProducerForm.setValue({new_producer: ''});
+      this.addConstantForm.setValue({new_constant: '', header: ''});
     }
-
-    let id = this.randomString(4);
-    
-    // add check that id isn't already in use
-    
-
-    this.db.list('producers').update(id, producer);
-
-    // clears input field
-    this.addProducerForm.setValue({new_producer: ''});
-    this.addConstantForm.setValue({new_constant: '', header: ''});
   }
 
   deleteProducer(id: number, constant_index: number) {
@@ -129,14 +144,14 @@ export class SettingsComponent implements OnInit {
   addConstant() {
     // brings up modal, confirming addition of producer or constant
     let app_type = this.active_page;
-    let header = this.get(this.addConstantForm, 'header').toLowerCase().split(" ").join("_");
+    let header = this.get(this.addConstantForm, 'header').toLowerCase();
     let new_constant = this.get(this.addConstantForm, 'new_constant');
 
     let header_index = this.headers.indexOf(header.toLowerCase());
     this.constants[header_index].push(new_constant);
 
     let constant = {};
-    constant[header] = this.constants[header_index].join("_");
+    constant[header.split(" ").join("_")] = this.constants[header_index].join("_");
     this.db.list('constants/' + app_type + '/').update('/', constant);
   }
 
@@ -166,6 +181,10 @@ export class SettingsComponent implements OnInit {
       randString += chars[Math.floor(Math.random() * chars.length)];
     }
     return randString;
+  }
+
+  drop(event: CdkDragDrop<string[]>) {
+    moveItemInArray(this.movies, event.previousIndex, event.currentIndex);
   }
 
 }
