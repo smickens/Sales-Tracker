@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { environment } from 'src/environments/environment';
 
-import { AngularFireAuth } from 'angularfire2/auth';
+import { AngularFireAuth } from '@angular/fire/auth';
 
 @Component({
   selector: 'app-sidebar',
@@ -18,7 +18,7 @@ export class SidebarComponent implements OnInit {
   }
 
   async logout(){
-    await this.db_auth.auth.signOut();
+    await this.db_auth.signOut();
   }
 
 }

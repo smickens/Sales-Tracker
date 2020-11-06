@@ -1,14 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { Producer } from "../producer";
 import { LifeApp, AutoApp, BankApp, FireApp, HealthApp } from '../application';
-import { AngularFireDatabase } from 'angularfire2/database';
+import { AngularFireDatabase } from '@angular/fire/database';
 
 import { ActivatedRoute } from "@angular/router";  //  holds information about the route to this instance of the HeroDetailComponent
 import { Location } from "@angular/common"; // Angular service for interacting with the browser
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { environment } from 'src/environments/environment';
-import { AngularFireAuth } from 'angularfire2/auth';
+import { AngularFireAuth } from '@angular/fire/auth';
 
 @Component({
   selector: 'app-apps-list',

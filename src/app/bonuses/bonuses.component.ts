@@ -2,10 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { Producer } from '../producer';
 import { FormBuilder } from '@angular/forms';
 
-import { AngularFireDatabase } from 'angularfire2/database';
+import { AngularFireDatabase } from '@angular/fire/database';
 import { Router } from '@angular/router';
 import { environment } from 'src/environments/environment';
-import { AngularFireAuth } from 'angularfire2/auth';
+import { AngularFireAuth } from '@angular/fire/auth';
 import { Subscription } from 'rxjs';
 import { Color } from 'ng2-charts';
 
@@ -33,6 +33,9 @@ export class BonusesComponent implements OnInit {
   add_bonus = false; // true when add bonus form is being displayed
   private today = new Date();
 
+  colors = ["#173F5F", "#20639B", "#3CAEA3", "#F6D55C", "#ED553B"];
+  hover_colors = ["#235f90", "#277abe", "#67cbc1", "#fae69e", "#f28673"]
+
   // chart for team showing their bonus broken down by month and type
   public barChartOptions = {
     scales: {
@@ -46,6 +49,12 @@ export class BonusesComponent implements OnInit {
             max: 100
           }
       }]
+    },
+    legend: {
+      display: true,
+      labels: {
+          // fontColor: 'rgb(255, 99, 132)'
+      }
     }
   };
 
@@ -56,7 +65,7 @@ export class BonusesComponent implements OnInit {
 
   public barChartLabels = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
   public barChartType = 'bar';
-  public barChartLegend = false;
+  public barChartLegend = true;
 
   public barChartData = [];
 
@@ -66,7 +75,7 @@ export class BonusesComponent implements OnInit {
   // ];
 
   public barChartColors: Color[] = [
-    { backgroundColor: '#E8AA9F' }
+    // { backgroundColor: '#E8AA9F' }
   ]
 
   bonuses_loaded = false;
@@ -77,26 +86,49 @@ export class BonusesComponent implements OnInit {
     let auth_sub = db_auth.authState.subscribe(user => {
       if (user) {
         environment.logged_in = true;
+        this.loadBonusData()
       } else {
         environment.logged_in = false;
         this.router.navigate(['login']);
       }
     });
     this.subscriptions.push(auth_sub);
+  }
 
+  ngOnInit(): void {
+    // sets month/year value on bonus form to current month/year
+    this.addBonusForm.setValue(
+      { 
+        producer_name: 'Select Producer',
+        month: this.months[this.today.getMonth()-1], 
+        year: this.today.getFullYear(),
+        corporate_bonus: 0
+      }
+    );
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.forEach(sub => {
+      sub.unsubscribe();
+    });
+  }
+
+  loadBonusData() {
     //  get current year
     let year = this.today.getFullYear();
 
     // gets list of producers
     let index = 0;
     let producer_indexes = [];
-    let sub1 = db.list('producers').snapshotChanges().subscribe(
+    let sub1 = this.db.list('producers').snapshotChanges().subscribe(
       (snapshot: any) => snapshot.map(snap => {
         const producer = snap.payload.val() as Producer;
         this.all_producers.push(producer);
         this.producers.push(producer);
-        this.barChartData.push({data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], label: producer.name + " CB", stack: producer.name})
-        this.barChartData.push({data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], label: producer.name + " PB", stack: producer.name})
+        this.barChartData.push({data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], label: producer.name + " CB", stack: producer.name, 
+        backgroundColor: this.colors[index], hoverBackgroundColor: this.hover_colors[index]})
+        this.barChartData.push({data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], label: producer.name + " PB", stack: producer.name, 
+        backgroundColor: this.colors[index], hoverBackgroundColor: this.hover_colors[index]})
         producer_indexes.push(producer["name"]);
 
         this.production_bonuses[producer["name"]] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
@@ -123,7 +155,7 @@ export class BonusesComponent implements OnInit {
     this.subscriptions.push(sub1);
 
     // gets production bonuses
-    let sub2 = db.list('applications').snapshotChanges().subscribe(
+    let sub2 = this.db.list('applications').snapshotChanges().subscribe(
       (snapshot: any) => snapshot.map(snap => {
         const app = snap.payload.val();
 
@@ -183,24 +215,6 @@ export class BonusesComponent implements OnInit {
        })
     );
     this.subscriptions.push(sub2);
-  }
-
-  ngOnInit(): void {
-    // sets month/year value on bonus form to current month/year
-    this.addBonusForm.setValue(
-      { 
-        producer_name: 'Select Producer',
-        month: this.months[this.today.getMonth()-1], 
-        year: this.today.getFullYear(),
-        corporate_bonus: 0
-      }
-    );
-  }
-
-  ngOnDestroy(): void {
-    this.subscriptions.forEach(sub => {
-      sub.unsubscribe();
-    });
   }
 
   updateList(filter: string) {

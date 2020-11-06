@@ -2,12 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 
 import { Producer } from "../producer";
-import { AngularFireDatabase } from 'angularfire2/database';
+import { AngularFireDatabase } from '@angular/fire/database';
 import { Router } from '@angular/router';
 import { environment } from 'src/environments/environment';
-import { AngularFireAuth } from 'angularfire2/auth';
+import { AngularFireAuth } from '@angular/fire/auth';
 import { Subscription } from 'rxjs';
-import {CdkDragDrop, moveItemInArray} from '@angular/cdk/drag-drop';
+import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 
 @Component({
   selector: 'app-settings',
@@ -183,7 +183,6 @@ export class SettingsComponent implements OnInit {
   }
 
   drop(event: CdkDragDrop<string[]>) {
-    console.log("here")
     moveItemInArray(this.movies, event.previousIndex, event.currentIndex);
   }
 

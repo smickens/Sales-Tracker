@@ -4,7 +4,7 @@ import { Color } from "ng2-charts";
 import { Observable } from 'rxjs';
 
 import { FormBuilder } from '@angular/forms';
-import { AngularFireDatabase } from 'angularfire2/database';
+import { AngularFireDatabase } from '@angular/fire/database';
 
 @Component({
   selector: 'app-dashboard',

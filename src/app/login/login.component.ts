@@ -2,8 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { environment } from 'src/environments/environment';
 
-import { AngularFireDatabase } from 'angularfire2/database';
-import { AngularFireAuth } from 'angularfire2/auth';
+import { AngularFireDatabase } from '@angular/fire/database';
+import { AngularFireAuth } from '@angular/fire/auth';
 
 import { ActivatedRoute } from "@angular/router";  //  holds information about the route to this instance of the HeroDetailComponent
 import { Location } from "@angular/common"; // Angular service for interacting with the browser
@@ -47,7 +47,7 @@ export class LoginComponent implements OnInit {
   }
 
   async login() {
-    let result = await this.db_auth.auth.signInWithEmailAndPassword(this.get("email").trim(), this.get("password"));
+    let result = await this.db_auth.signInWithEmailAndPassword(this.get("email").trim(), this.get("password"));
   }
 
 }
