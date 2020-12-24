@@ -12,10 +12,10 @@
                         <input type="date" class="form-control" formControlName="date" id="date">
                     </div>
                     <div class="col form-group">
-                        <label for="producer_name">PRODUCER</label>
-                        <select class="custom-select" formControlName="producer_name" id="producer_name">
+                        <label for="producer_id">PRODUCER</label>
+                        <select class="custom-select" formControlName="producer_id" id="producer_id">
                             <option selected>Select Producer</option>
-                            <option *ngFor="let producer of producers" value="{{producer.name}}"> {{ producer.name }} </option>
+                            <option *ngFor="let producer of producers" value="{{producer.id}}"> {{ producer.name }} </option>
                         </select>
                     </div>
                     <div class="col form-group">
@@ -107,10 +107,10 @@
 
                 <div class="form-row mb-2">
                     <div class="col form-group">
-                        <label for="co_producer_name">CO-PRODUCER</label>
-                        <select class="custom-select" formControlName="co_producer_name" id="co_roducer_name">
+                        <label for="co_producer_id">CO-PRODUCER</label>
+                        <select class="custom-select" formControlName="co_producer_id" id="co_producer_id">
                             <option selected>Select Co-Producer</option>
-                            <option *ngFor="let producer of producers" value="{{producer.name}}"> {{ producer.name }} </option>
+                            <option *ngFor="let producer of producers" value="{{producer.id}}"> {{ producer.name }} </option>
                         </select>
                     </div>
 

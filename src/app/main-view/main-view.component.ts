@@ -30,56 +30,55 @@ export class MainViewComponent implements OnInit {
   notes = [];
   notes_keys = {};
 
+  selected_note_id = 0
+
   subscriptions: Subscription[] = [];
 
   constructor(private db: AngularFireDatabase, private fb: FormBuilder, public  db_auth:  AngularFireAuth, private router: Router) {
     let auth_sub = db_auth.authState.subscribe(user => {
       if (user) {
         environment.logged_in = true;
+
+        // loads in application totals for the year
+        let sub1 = db.list('applications').snapshotChanges().subscribe(
+          (snapshot: any) => snapshot.map(snap => {
+            const type = snap.payload.val().type as string;
+            this.apps_this_year[type][0] += 1;
+            const status = snap.payload.val().status as string;
+            if (status == "Issued" || status == "Taken") {
+              this.apps_this_year[type][1] += 1;
+            }
+          })
+        );
+        this.subscriptions.push(sub1);
+
+        // loads in goals/notes
+        let sub2 = db.list('notes').snapshotChanges().subscribe(
+          (snapshot: any) => snapshot.map(snap => {
+            let displayed = false;
+            this.notes.forEach(note => {
+              if (snap.payload.key == note.id) {
+                displayed = true;
+              }
+            });
+            if (!displayed) {
+              let note_object = { 
+                id: snap.payload.key,
+                text: snap.payload.val()['text'],
+                date: snap.payload.val()['date']
+              };
+              this.notes.push(note_object);
+              this.notes.sort((a, b) => a.date - b.date);
+          };
+          })
+        );
+        this.subscriptions.push(sub2);
       } else {
         environment.logged_in = false;
         this.router.navigate(['login']);
       }
     });
     this.subscriptions.push(auth_sub);
-
-    // loads in application totals for the year
-    let sub1 = db.list('applications').snapshotChanges().subscribe(
-      (snapshot: any) => snapshot.map(snap => {
-        const type = snap.payload.val().type as string;
-        this.apps_this_year[type][0] += 1;
-        const status = snap.payload.val().status as string;
-        if (status == "Issued" || status == "Taken") {
-          this.apps_this_year[type][1] += 1;
-        }
-       })
-    );
-    this.subscriptions.push(sub1);
-
-    //https://github.com/angular/angularfire/issues/380
-    //db.object('someLocation').take(1).subscribe();
-
-    // loads in goals/notes
-    let sub2 = db.list('notes').snapshotChanges().subscribe(
-      (snapshot: any) => snapshot.map(snap => {
-        let displayed = false;
-        this.notes.forEach(note => {
-          if (snap.payload.key == note.id) {
-            displayed = true;
-          }
-        });
-        if (!displayed) {
-          let note_object = { 
-            id: snap.payload.key,
-            text: snap.payload.val()['text'],
-            date: snap.payload.val()['date']
-          };
-          this.notes.push(note_object);
-          this.notes.sort((a, b) => a.date - b.date);
-       };
-      })
-    );
-    this.subscriptions.push(sub2);
   }
 
   ngOnInit(): void {
@@ -115,12 +114,26 @@ export class MainViewComponent implements OnInit {
     this.addNoteForm.setValue({'note': ''});
   }
 
-  deleteNote(id: number) {
+  deleteNote() {
+    let id = this.selected_note_id
     this.db.list('notes/'+id).remove();
     for (let i = 0; i < this.notes.length; i++) {
       if (id == this.notes[i].id) {
         this.notes.splice(i);
         break;
+      }
+    }
+  }
+
+  displayConfirmDelete(id: number) {
+    document.getElementById('modalDeleteMessage').innerHTML = "Press confirm to remove note \"" + this.getNoteMessage(id) + "\".";
+    this.selected_note_id = id
+  }
+
+  getNoteMessage(id: number) {
+    for (let i = 0; i < this.notes.length; i++) {
+      if (id == this.notes[i].id) {
+        return this.notes[i].text
       }
     }
   }

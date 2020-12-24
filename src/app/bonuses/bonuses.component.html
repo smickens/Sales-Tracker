@@ -60,6 +60,7 @@
                 </div>
               </form>
 
+              <!-- TODO: check why chart sometimes doesn't show up on initial load -->
               <div class="container" style="display: flex; justify-content: center;">
                 <div class="row" style="width: 80%;">
                   <!-- 
@@ -81,7 +82,9 @@
                 </div>
               </div>
               
-
+              <!-- ? maybe modify font sizes/styling to get content to present better -->
+              <!-- TODO: double check if values are correct -->
+              <!-- TODO: needs to only grab values of app's that are taken and in some cases add bonus to the taken month -->
               <div *ngFor="let producer of producers">
                 <h4>{{ producer.name }}</h4>
                 <table class="table table-hover">

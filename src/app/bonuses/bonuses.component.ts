@@ -86,7 +86,7 @@ export class BonusesComponent implements OnInit {
     let auth_sub = db_auth.authState.subscribe(user => {
       if (user) {
         environment.logged_in = true;
-        this.loadBonusData()
+        this.loadBonusData();
       } else {
         environment.logged_in = false;
         this.router.navigate(['login']);
@@ -167,7 +167,7 @@ export class BonusesComponent implements OnInit {
         let app_went_through = false;
         /*
           Life - Issue/Bonus Month “January”
-            # might change issue_month to issue_date 	# and have it include 08-2019
+            ? might change issue_month to issue_date 	# and have it include 08-2019
           Auto - Status “Issued”
           Bank - Status “Issued”
           Fire - Status “Issued”
@@ -177,7 +177,7 @@ export class BonusesComponent implements OnInit {
           app_went_through = true;
         }
 
-        // NEED SOME KIND OF DROPDOWN FOR YEAR
+        // TODO: NEED SOME KIND OF DROPDOWN FOR YEAR
         // app_went_through == true && 
         if (app_year == year) {
           const producer_name = app["producer_name"];

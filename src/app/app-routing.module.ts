@@ -13,6 +13,7 @@ import { AddFireComponent } from './add-fire/add-fire.component';
 import { AddHealthComponent } from './add-health/add-health.component';
 
 import { AppsListComponent } from './apps-list/apps-list.component';
+import { TimesheetComponent } from './timesheet/timesheet.component';
 
 const routes: Routes = [
   // main pages
@@ -20,6 +21,7 @@ const routes: Routes = [
   { path: 'bonuses', component: BonusesComponent },
   { path: 'settings', component: SettingsComponent },
   { path: 'login', component: LoginComponent },
+  { path: 'timesheet', component: TimesheetComponent },
 
   // add app forms
   { path: 'add-life', component: AddLifeComponent },

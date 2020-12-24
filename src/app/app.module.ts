@@ -11,7 +11,6 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
 
 import { AppComponent } from './app.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
-import { TeamComponent } from './team/team.component';
 import { SidebarComponent } from './sidebar/sidebar.component';
 import { MainViewComponent } from './main-view/main-view.component';
 import { SettingsComponent } from './settings/settings.component';
@@ -23,12 +22,12 @@ import { AddFireComponent } from './add-fire/add-fire.component';
 import { AddHealthComponent } from './add-health/add-health.component';
 import { BonusesComponent } from './bonuses/bonuses.component';
 import { LoginComponent } from './login/login.component';
+import { TimesheetComponent } from './timesheet/timesheet.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     DashboardComponent,
-    TeamComponent,
     SidebarComponent,
     MainViewComponent,
     SettingsComponent,
@@ -39,7 +38,8 @@ import { LoginComponent } from './login/login.component';
     AddFireComponent,
     AddHealthComponent,
     BonusesComponent,
-    LoginComponent
+    LoginComponent,
+    TimesheetComponent
   ],
   imports: [
     BrowserModule,

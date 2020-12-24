@@ -20,7 +20,7 @@ export class AppsListComponent implements OnInit {
   headers: string[] = ["#", "Date", "Producer", "Client"];
   apps = [];
 
-  producers: Producer[];
+  producers: Producer[] = [];
 
   life_headers: string[] = ["Premium", "Mode", "Annual Premium", "Policy Type", "Product", "Client Type", "Bonus", "Taken", "Paid Bonus", "Issue / Bonus Month", "Life Pivot Bonus"];
   auto_headers: string[] = ["Auto Type", "Tiers", "Bonus", "Submitted Premium", "Status", "Issued Premium", "Marketing Source"];
@@ -35,65 +35,61 @@ export class AppsListComponent implements OnInit {
   health_apps: HealthApp[] = [];
 
   subscriptions: Subscription[] = [];
+  year: number = 0;
 
   constructor(private db: AngularFireDatabase, public  db_auth:  AngularFireAuth, private route: ActivatedRoute, private location: Location, private router: Router) {
     let auth_sub = db_auth.authState.subscribe(user => {
       if (user) {
         environment.logged_in = true;
+
+        // loads producers
+        let producer_sub = db.list('producers').snapshotChanges().subscribe(
+          (snapshot: any) => snapshot.map(snap => {
+            let producer: Producer = {
+              name: snap.payload.val().name,
+              id: snap.key
+            }
+            this.producers.push(producer);
+        }));
+        this.subscriptions.push(producer_sub);
+
+        // loads applications
+        let sub2 = db.list('applications').snapshotChanges().subscribe(
+          (snapshot: any) => snapshot.map(snap => {
+            const app = snap.payload.val();
+            console.log(app);
+            if (app["type"] == "life") {
+              this.life_apps.push(app as LifeApp);
+            } else if (app["type"] == "auto") {
+              this.auto_apps.push(app as AutoApp);
+            } else if (app["type"] == "bank") {
+              this.bank_apps.push(app as BankApp);
+            } else if (app["type"] == "fire") {
+              this.fire_apps.push(app as FireApp);
+            } else if (app["type"] == "health") {
+              this.health_apps.push(app as HealthApp);
+            }
+            const app_id = snap.key;
+            app.id = app_id;
+    
+            this.getHeaders();
+            this.getApps();
+           })
+        );
+        this.subscriptions.push(sub2);
       } else {
         environment.logged_in = false;
         this.router.navigate(['login']);
       }
     });
     this.subscriptions.push(auth_sub);
-    
-    let sub1 = db.list('/producers').valueChanges().subscribe(
-      (producers) => { 
-        this.producers = producers as Producer[];
-      }
-    //     {
-    //   next: (producers) => { this.producers = producers as Producer[]; },
-    //   error: (error) => { console.log(error); },
-    //   complete: () => { console.log("done"); }
-    // }
-    );
-    this.subscriptions.push(sub1);
-    let sub2 = db.list('applications').snapshotChanges().subscribe(
-      (snapshot: any) => snapshot.map(snap => {
-        const app = snap.payload.val();
-        //console.log(app);
-        if (app["type"] == "life") {
-          this.life_apps.push(app as LifeApp);
-        } else if (app["type"] == "auto") {
-          this.auto_apps.push(app as AutoApp);
-        } else if (app["type"] == "bank") {
-          this.bank_apps.push(app as BankApp);
-        } else if (app["type"] == "fire") {
-          this.fire_apps.push(app as FireApp);
-        } else if (app["type"] == "health") {
-          this.health_apps.push(app as HealthApp);
-        }
-        const app_id = snap.key;
-        //console.log(app_id);
-        app.id = app_id;
-
-        this.getHeaders();
-        this.getApps();
-        //console.log(snap.key);
-       }),
-       (error) => console.log(error),
-       () => console.log("done")
-      //  () => {
-      //    console.log("done");
-      //    this.getHeaders();
-      //    this.getApps();
-      //  }
-    );
-    this.subscriptions.push(sub2);
 
   }
 
   ngOnInit(): void {
+    let date: Date = new Date(); 
+    this.year = date.getFullYear();
+
     this.app_type = this.router.url.substring(1);
     this.getHeaders();
     this.getApps();
@@ -151,6 +147,9 @@ export class AppsListComponent implements OnInit {
     for (const app of apps_to_copy) {
       this.apps.push(app);
     }
+
+    // by default it sorts the apps by date
+    this.apps.sort((a, b) => a.date.localeCompare(b.date));
     //console.log(this.apps);
   }
 
@@ -178,25 +177,19 @@ export class AppsListComponent implements OnInit {
   }
 
   orderList(filter: string) {
-    this.apps = [];
-    this.db.list('applications').snapshotChanges().subscribe(
-      (snapshot: any) => snapshot.map(snap => {
-        const app = snap.payload.val();
-        //console.log(app);
-        if (app["type"] == this.app_type) {
-          this.apps.push(app);
-          if (filter == "date") {
-            this.apps.sort((a, b) => a.date - b.date);
-          } else if (filter == "client_name") {
-            this.apps.sort((a, b) => a.client_name - b.client_name);
-          }
-        }
-        //console.log(this.apps);
-        const app_id = snap.key;
-        //console.log(app_id);
-        app.id = app_id;
-       })
-    );
+    if (filter == "date") {
+      this.apps.sort((a, b) => a.date.localeCompare(b.date));
+    } else if (filter == "client_name") {
+      this.apps.sort((a, b) => a.client_name.localeCompare(b.client_name));
+    }
+  }
+
+  getProducerName(id: string) {
+    for (const producer of this.producers) {
+      if (producer.id == id) {
+        return producer.name;
+      }
+    }
   }
 
 }

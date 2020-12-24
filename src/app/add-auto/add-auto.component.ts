@@ -19,7 +19,6 @@ import { Subscription } from 'rxjs';
 })
 export class AddAutoComponent implements OnInit {
 
-  form_title: string = "";
   button_text: string = "";
   app_id: string = ""; // if page is in edit mode, then app_id is set to app's id in database
 
@@ -41,52 +40,49 @@ export class AddAutoComponent implements OnInit {
     let auth_sub = db_auth.authState.subscribe(user => {
       if (user) {
         environment.logged_in = true;
+
+        let sub1 = db.list('/producers').valueChanges().subscribe(producers => {
+          this.producers = producers as Producer[];
+        });
+        this.subscriptions.push(sub1);
+    
+        let sub2 = db.list('constants/auto').snapshotChanges().subscribe(
+          (snapshot: any) => snapshot.map(snap => {
+          this.constants[snap.payload.key] = snap.payload.val().split("_");
+        }));
+        this.subscriptions.push(sub2);
       } else {
         environment.logged_in = false;
         this.router.navigate(['login']);
       }
     });
     this.subscriptions.push(auth_sub);
-    
-    let sub1 = db.list('/producers').valueChanges().subscribe(producers => {
-      this.producers = producers as Producer[];
-    });
-    this.subscriptions.push(sub1);
-
-    let sub2 = db.list('constants/auto').snapshotChanges().subscribe(
-      (snapshot: any) => snapshot.map(snap => {
-      this.constants[snap.payload.key] = snap.payload.val().split("_");
-    }));
-    this.subscriptions.push(sub2);
-    // i think this connection stays open even when leaving page, so look into how you do a once check
   }
 
   ngOnInit(): void {
     this.app_id = this.route.snapshot.paramMap.get('id');
-    console.log(this.today.toISOString().substr(0, 10));
+    //console.log(this.today.toISOString().substr(0, 10));
 
     if (this.app_id == null) {
-      console.log("add form");
-      this.form_title = "Add Life App";
+      //console.log("add form");
       this.button_text = "SUBMIT";
       this.addAutoAppForm = this.fb.group({
         date: [this.today.toISOString().substr(0, 10)],
-        producer_name: ['Select Producer'],
+        producer_id: ['Select Producer'],
         client_name: [''],
         auto_type: ['RN'],
-        tiers: ['Tier 1'], // only used if RN
+        tiers: ['Tier 1'],
         bonus: [0],
         submitted_premium: [0],
-        status: ['Submitted'], // initially should be 'submitted'
+        status: ['Submitted'],
         issued_premium: [0], 
         marketing_source: [''],
-        co_producer_name: ['Select Co-Producer'],
+        co_producer_id: ['Select Co-Producer'],
         co_producer_bonus: [0]
       });
       this.app_loaded = true;
     } else {
       console.log("edit form");
-      this.form_title = "Edit Life App";
       this.button_text = "UPDATE";
       this.db.list('applications/' + this.app_id).snapshotChanges().subscribe(
         (snapshot: any) => snapshot.map(snap => {
@@ -106,13 +102,15 @@ export class AddAutoComponent implements OnInit {
     return this.addAutoAppForm.get(field).value;
   }
   
+  // TODO: add in validation checks
+  // * #1 - tiers is only used if auto type is RN
   addApp() {
     console.log(this.addAutoAppForm.valid);
     let app: AutoApp = {
       type: "auto",
       date: this.get("date"),
       client_name: this.get("client_name"),
-      producer_name: this.get("producer_name"),
+      producer_id: this.get("producer_id"),
       auto_type: this.get("auto_type"),
       tiers: this.get("tiers"),
       bonus: this.get("bonus"),
@@ -120,17 +118,17 @@ export class AddAutoComponent implements OnInit {
       status: this.get("status"),
       issued_premium: this.get("issued_premium"),
       marketing_source: this.get("marketing_source"),
-      co_producer_name: this.get("co_producer_name"),
+      co_producer_id: this.get("co_producer_id"),
       co_producer_bonus: this.get("co_producer_bonus")
     }
-    if (app.producer_name.includes("Select")) {
+    if (app.producer_id.includes("Select")) {
       // validation error, no producer is selected
     }
     if (app.client_name.includes("Select")) {
       // validation error, no client name inputed
     }
-    if (app.co_producer_name.includes("Select")) {
-      app.co_producer_name = "";
+    if (app.co_producer_id.includes("Select")) {
+      app.co_producer_id = "";
     }
     console.log(app);
 

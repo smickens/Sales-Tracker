@@ -42,24 +42,23 @@ export class AddHealthComponent implements OnInit {
     let auth_sub = db_auth.authState.subscribe(user => {
       if (user) {
         environment.logged_in = true;
+
+        let sub1 = db.list('/producers').valueChanges().subscribe(producers => {
+          this.producers = producers as Producer[];
+        });
+        this.subscriptions.push(sub1);
+    
+        let sub2 = db.list('constants/life').snapshotChanges().subscribe(
+          (snapshot: any) => snapshot.map(snap => {
+          this.constants[snap.payload.key] = snap.payload.val().split("_");
+        }));
+        this.subscriptions.push(sub2);
       } else {
         environment.logged_in = false;
         this.router.navigate(['login']);
       }
     });
     this.subscriptions.push(auth_sub);
-    
-    let sub1 = db.list('/producers').valueChanges().subscribe(producers => {
-      this.producers = producers as Producer[];
-    });
-    this.subscriptions.push(sub1);
-
-    let sub2 = db.list('constants/life').snapshotChanges().subscribe(
-      (snapshot: any) => snapshot.map(snap => {
-      this.constants[snap.payload.key] = snap.payload.val().split("_");
-    }));
-    this.subscriptions.push(sub2);
-    // i think this connection stays open even when leaving page, so look into how you do a once check
   }
 
   ngOnInit(): void {
@@ -70,7 +69,7 @@ export class AddHealthComponent implements OnInit {
       this.button_text = "SUBMIT";
       this.addHealthAppForm = this.fb.group({
         date: [this.today.toISOString().substr(0, 10)],
-        producer_name: ['Select Producer'],
+        producer_id: ['Select Producer'],
         client_name: [''],
         premium: [],
         mode: ['Select Mode'],
@@ -79,7 +78,7 @@ export class AddHealthComponent implements OnInit {
         product: ['Select Product'],
         bonus: [],
         marketing_source: [],
-        co_producer_name: ['Select Co-Producer'],
+        co_producer_id: ['Select Co-Producer'],
         co_producer_bonus: ['Select Pivot Bonus']
       });
       this.app_loaded = true;
@@ -109,7 +108,7 @@ export class AddHealthComponent implements OnInit {
       type: "health",
       date: this.get("date"),
       client_name: this.get("client_name"),
-      producer_name: this.get("producer_name"),
+      producer_id: this.get("producer_id"),
       premium: this.get("premium"),
       mode: this.get("mode"),
       status: this.get("status"),
@@ -117,7 +116,7 @@ export class AddHealthComponent implements OnInit {
       product: this.get("product"),
       bonus: this.get("bonus"),
       marketing_source: this.get("marketing_source"),
-      co_producer_name: this.get("co_producer_name"),
+      co_producer_id: this.get("co_producer_id"),
       co_producer_bonus: this.get("co_producer_bonus")
     }
     console.log(app);

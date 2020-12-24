@@ -44,40 +44,51 @@ export class AddLifeComponent implements OnInit {
     let auth_sub = db_auth.authState.subscribe(user => {
       if (user) {
         environment.logged_in = true;
+
+        let sub1 = db.list('producers').valueChanges().subscribe(producers => {
+          this.producers = producers as Producer[];
+        });
+        this.subscriptions.push(sub1);
+    
+        let sub2 = db.list('constants/life').snapshotChanges().subscribe(
+          (snapshot: any) => snapshot.map(snap => {
+          this.constants[snap.payload.key] = snap.payload.val().split("_");
+          //console.log(this.constants);
+        }));
+        this.subscriptions.push(sub2);
+
+        this.app_id = this.route.snapshot.paramMap.get('id');
+        console.log(this.app_id);
+
+        if (this.app_id != null) {
+          //console.log("edit form");
+          this.form_title = "Edit Life App";
+          this.button_text = "UPDATE";
+          this.db.list('applications/' + this.app_id).snapshotChanges().subscribe(
+            (snapshot: any) => snapshot.map(snap => {
+            this.addLifeAppForm.addControl(snap.payload.key, this.fb.control(snap.payload.val()));
+            this.app_loaded = true;
+          }));
+        }
       } else {
         environment.logged_in = false;
         this.router.navigate(['login']);
       }
     });
     this.subscriptions.push(auth_sub);
-    
-    let sub1 = db.list('producers').valueChanges().subscribe(producers => {
-      this.producers = producers as Producer[];
-    });
-    this.subscriptions.push(sub1);
-
-    let sub2 = db.list('constants/life').snapshotChanges().subscribe(
-      (snapshot: any) => snapshot.map(snap => {
-      this.constants[snap.payload.key] = snap.payload.val().split("_");
-      //console.log(this.constants);
-    }));
-    this.subscriptions.push(sub2);
-    // i think this connection stays open even when leaving page, so look into how you do a once check
-
-    // might unsubscribe in ngOnDestroy
   }
 
   ngOnInit(): void {
     this.app_id = this.route.snapshot.paramMap.get('id');
-    console.log(this.app_id);
+    //console.log(this.app_id);
 
     if (this.app_id == null) {
-      console.log("add form");
+      //console.log("add form");
       this.form_title = "Add Life App";
       this.button_text = "SUBMIT";
       this.addLifeAppForm = this.fb.group({
         date: [this.today.toISOString().substr(0, 10)],
-        producer_name: ['Select Producer'],
+        producer_id: ['Select Producer'],
         client_name: [''],
         premium: [],
         mode: ['Select Mode'],
@@ -90,20 +101,21 @@ export class AddLifeComponent implements OnInit {
         status: ['Select Status'],
         paid_bonus: [],
         issue_month: ['Select Issue Month'],
-        co_producer_name: ['Select Co-Producer'],
+        co_producer_id: ['Select Co-Producer'],
         co_producer_bonus: ['Select Pivot Bonus']
       });
       this.app_loaded = true;
-    } else {
-      console.log("edit form");
-      this.form_title = "Edit Life App";
-      this.button_text = "UPDATE";
-      this.db.list('applications/' + this.app_id).snapshotChanges().subscribe(
-        (snapshot: any) => snapshot.map(snap => {
-        this.addLifeAppForm.addControl(snap.payload.key, this.fb.control(snap.payload.val()));
-        this.app_loaded = true;
-      }));
-    }
+    } 
+    // else {
+    //   //console.log("edit form");
+    //   this.form_title = "Edit Life App";
+    //   this.button_text = "UPDATE";
+    //   this.db.list('applications/' + this.app_id).snapshotChanges().subscribe(
+    //     (snapshot: any) => snapshot.map(snap => {
+    //     this.addLifeAppForm.addControl(snap.payload.key, this.fb.control(snap.payload.val()));
+    //     this.app_loaded = true;
+    //   }));
+    // }
   }
 
   ngOnDestroy(): void {
@@ -121,7 +133,7 @@ export class AddLifeComponent implements OnInit {
       type: "life",
       date: this.get("date"),
       client_name: this.get("client_name"),
-      producer_name: this.get("producer_name"),
+      producer_id: this.get("producer_id"),
       premium: this.get("premium"),
       mode: this.get("mode"),
       annual_premium: this.get("annual_premium"),
@@ -133,7 +145,7 @@ export class AddLifeComponent implements OnInit {
       status: this.get("status"),
       paid_bonus: this.get("paid_bonus"),
       issue_month: this.get("issue_month"),
-      co_producer_name: this.get("co_producer_name"),
+      co_producer_id: this.get("co_producer_id"),
       co_producer_bonus: this.get("co_producer_bonus")
     }
     console.log(app);

@@ -46,13 +46,14 @@ export class SettingsComponent implements OnInit {
     this.subscription = db_auth.authState.subscribe(user => {
       if (user) {
         environment.logged_in = true;
+        this.setActive('producers');
       } else {
         environment.logged_in = false;
         this.router.navigate(['login']);
       }
     });
 
-    this.setActive('producers');
+    //this.setActive('producers');
   }
 
   ngOnInit(): void {
@@ -108,30 +109,42 @@ export class SettingsComponent implements OnInit {
     return form.get(field).value;
   }
 
+  delete() {
+    let delete_type = (document.getElementById('type') as HTMLInputElement).value;
+    let delete_data = (document.getElementById('data') as HTMLInputElement).value.split(",");
+    console.log(delete_data);
+    console.log(delete_type)
+    if (delete_type == "constant") {
+      this.deleteConstant(Number(delete_data[0]), Number(delete_data[1]))
+    } else if (delete_type == "producer") {
+      this.deleteProducer(Number(delete_data[0]), Number(delete_data[1]));
+    }
+  }
+
   addProducer() {
     let name = this.get(this.addProducerForm, "new_producer");
     if (name.trim() != "") {
+      let id = this.randomProducerID();
       let producer: Producer = {
         name: this.get(this.addProducerForm, "new_producer"),
-        life: 0,
-        auto: 0,
-        bank: 0,
-        fire: 0,
-        health: 0,
-        total_apps: 0
+        id: id
       }
-
-      let id = this.randomString(4);
-      
-      // add check that id isn't already in use
-      
-
       this.db.list('producers').update(id, producer);
 
       // clears input field
       this.addProducerForm.setValue({new_producer: ''});
       this.addConstantForm.setValue({new_constant: '', header: ''});
     }
+
+    (document.getElementById("new_producer") as HTMLInputElement).value = "";
+  }
+
+  confirmProducerDelete(id: number, constant_index: number) {
+    document.getElementById('modalDeleteMessage').innerHTML = "Press confirm to remove producer \"" + this.constants[0][constant_index][1] + "\".";
+    let delete_type = document.getElementById('type') as HTMLInputElement;
+    delete_type.value = "producer";
+    let delete_data = document.getElementById('data') as HTMLInputElement;
+    delete_data.value = id + ", " + constant_index;
   }
 
   deleteProducer(id: number, constant_index: number) {
@@ -152,24 +165,49 @@ export class SettingsComponent implements OnInit {
     let constant = {};
     constant[header.split(" ").join("_")] = this.constants[header_index].join("_");
     this.db.list('constants/' + app_type + '/').update('/', constant);
+
+    (document.getElementById("new_constant") as HTMLInputElement).value = "";
   }
 
-  deleteConstant(header_index: number, constant_index: number) {
+  confirmConstDelete(header_index: number, constant_index: number) {
+    document.getElementById('modalDeleteMessage').innerHTML = "Press confirm to remove " + this.active_page + "'s " + this.headers[header_index] + " constant - \"" + this.constants[header_index][constant_index] + "\".";
+    let delete_type = document.getElementById('type') as HTMLInputElement;
+    delete_type.value = "constant";
+    let delete_data = document.getElementById('data') as HTMLInputElement;
+    delete_data.value = header_index + ", " + constant_index;
+  }
+
+  deleteConstant(header_index: number, constant_index: number) { 
+    console.log("delete constant ");
     // brings up modal, confirming deletion of producer or constant
     let app_type = this.active_page;
     let header = this.headers[header_index];
-
+    console.log(header);
     // removes constant from array
     this.constants[header_index].splice(constant_index, 1);
+    console.log(this.constants[header_index]);
 
     // updates database with removed
     let constant = {};
     constant[header] = this.constants[header_index].join("_");
-    if (this.active_page == "producers") {
-      this.db.list('producers/' + app_type + '/').update('/', constant);
-    } else {
-      this.db.list('constants/' + app_type + '/').update('/', constant);
+    this.db.list('constants/' + app_type + '/').update('/', constant);
+  }
+
+  randomProducerID() {
+    let random_id = "";
+    let id_taken = true; 
+    while (id_taken) {
+      random_id = this.randomString(4);
+      let ref = this.db.database.ref("producers");
+      id_taken = false; 
+      ref.orderByKey().on("child_added", function(snapshot) {
+        console.log(snapshot.key);
+        if (snapshot.key == random_id) {
+          id_taken = true;
+        }
+      });
     }
+    return random_id;
   }
 
   randomString(length: number) {

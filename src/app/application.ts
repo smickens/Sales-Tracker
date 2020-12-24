@@ -4,8 +4,8 @@ export interface Application {
     type: string;
     date: string;
     client_name: string;
-    producer_name: string;
-    co_producer_name?: string;
+    producer_id: string;
+    co_producer_id?: string;
     co_producer_bonus?: number;
 }
 

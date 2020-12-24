@@ -6,6 +6,7 @@
                 <app-dashboard></app-dashboard>
             </div>
         </div>
+        <!-- TODO: check if it is pulling correct submitted/taken totals -->
         <div class="row" style="height: 50%; flex: 1; overflow: auto;">
             <div class="col spacing"  style="padding-right: 15px;">
                 <div class="block">
@@ -32,12 +33,31 @@
                 </div>
             </div>
         </div>
+        <div class="modal fade" id="confirmDeleteModal" tabindex="-1" role="dialog" aria-labelledby="confirmDeleteModalTitle" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="confirmDeleteModalTitle">Are you sure?</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body" id="modalDeleteMessage">
+                        Press confirm to remove note "______". 
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-danger" data-dismiss="modal">Cancel</button>
+                        <button id="deleteBtn" type="button" class="btn btn-secondary" (click)="deleteNote()" data-toggle="modal" data-target="#confirmDeleteModal">Confirm</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     <div class="col-4 spacing" style="padding-left: 0px;">
         <div class="block">
             <h4 class="header">Goals / Notes</h4>
             <ul>
-                <li class="note" *ngFor="let note of notes" (click)="deleteNote(note.id)">{{ note.text }}
+                <li class="note" *ngFor="let note of notes" (click)="displayConfirmDelete(note.id)" data-toggle="modal" data-target="#confirmDeleteModal">{{ note.text }}
                     <span class="hide">x</span>
                 </li>
             </ul>

@@ -42,15 +42,16 @@
                     </thead>
                     <tbody>
                         <td *ngFor="let options of constants; index as header_index;">
-                            <ng-container *ngIf="options.length > 1">
+                            <ng-container *ngIf="options.length >= 1">
                                 <ng-container *ngIf="active_page == 'producers'">
-                                    <li *ngFor="let producer of options; index as constant_index;" (click)="deleteProducer(producer[0], constant_index)" style="padding-bottom: 5px; display: flex;">
+                                    <li *ngFor="let producer of options; index as constant_index;" (click)="confirmProducerDelete(producer[0], constant_index)" data-toggle="modal" data-target="#confirmDeleteModal" style="padding-bottom: 5px; display: flex;">
                                         <span class="option">{{ producer[1] }}</span>
                                         <span class="hide" style="padding-left: 10px;">x</span>
                                     </li>
                                 </ng-container>
                                 <ng-container *ngIf="active_page != 'producers'">
-                                    <li *ngFor="let constant of options; index as constant_index;" (click)="deleteConstant(header_index, constant_index)" style="padding-bottom: 5px; display: flex;">
+                                    <!-- (click)="deleteConstant(header_index, constant_index)" -->
+                                    <li *ngFor="let constant of options; index as constant_index;" (click)="confirmConstDelete(header_index, constant_index)" data-toggle="modal" data-target="#confirmDeleteModal" style="padding-bottom: 5px; display: flex;">
                                         <span class="option">{{ constant }}</span>
                                         <span class="hide" style="padding-left: 10px;">x</span>
                                     </li>
@@ -80,9 +81,31 @@
                 </form>
             </div>
         </div> 
-        <div cdkDropList class="example-list" (cdkDropListDropped)="drop($event)">
-            <div class="example-box" *ngFor="let movie of movies" cdkDrag>{{movie}}</div>
+        <div class="modal fade" id="confirmDeleteModal" tabindex="-1" role="dialog" aria-labelledby="confirmDeleteModalTitle" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="confirmDeleteModalTitle">Are you sure?</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body" id="modalDeleteMessage">
+                        Press confirm to remove "______". 
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-danger" data-dismiss="modal">Cancel</button>
+                        <input type="hidden" id="type" name="type" value="">
+                        <input type="hidden" id="data" name="data" value="">
+                        <button id="deleteBtn" type="button" class="btn btn-secondary" (click)="delete()" data-toggle="modal" data-target="#confirmDeleteModal">Confirm</button>
+                    </div>
+                </div>
+            </div>
         </div>
+        <!-- ? make settings be drag and drop to allow for reordering -->
+        <!-- <div cdkDropList class="example-list" (cdkDropListDropped)="drop($event)">
+            <div class="example-box" *ngFor="let movie of movies" cdkDrag>{{movie}}</div>
+        </div> -->
     </div> 
 </div>
 

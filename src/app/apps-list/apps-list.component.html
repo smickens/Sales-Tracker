@@ -3,15 +3,16 @@
         <div class="block">
             <div style="display: flex; justify-content: space-between;">
               <div style="display: flex; align-items: center;">
-                <h4 class="header" style="margin-bottom: 0px; padding-right: 15px;">{{ this.app_type | titlecase }} Apps 2020 - </h4>
-                <select class="custom-select" style="width: 250px;" id=producer (change)="updateList($event.target.value)">
+                <h4 class="header" style="margin-bottom: 0px; padding-right: 15px;">{{ this.app_type | titlecase }} Apps {{ year }} - </h4>
+                <select class="custom-select" style="width: 250px;" id="producer" (change)="updateList($event.target.value)">
                     <option selected>All Producers</option>
                     <option *ngFor="let producer of producers" value="{{producer.name}}">{{ producer.name }}</option>
                 </select>
               </div>
               <div style="display: flex; align-items: center;">
                 <p style="margin: 0px; padding-right: 10px;">Sort:</p>
-                <select class="custom-select" style="width: 125px;" id="producer" (change)="orderList($event.target.value)">
+                <!-- TODO: get the sort functionality to work -->
+                <select class="custom-select" style="width: 175px;" id="producer" (change)="orderList($event.target.value)">
                   <option selected value="date">By Date</option>
                   <option value="client_name">By Client Name</option>
                   <!-- <option selected>...</option> -->
@@ -31,8 +32,8 @@
                       <tr *ngFor="let app of apps; index as i;" (click)="editApp(app.id)" >
                         <th scope="row">{{ i+1 }}</th>
                         <td>{{ app.date | date: 'shortDate' }}</td>
+                        <td>{{ getProducerName(app.producer_id) }}</td>
                         <td>{{ app.client_name | titlecase }}</td>
-                        <td>{{ app.producer_name | titlecase }}</td>
 
                         <ng-container *ngIf="app.type === 'life'">
                           <td>${{ app.premium }}</td>
@@ -70,7 +71,25 @@
                           <td>{{ app.marketing_source }}</td>
                         </ng-container>
 
-                        <td>{{ app.co_producer_name | titlecase }}</td>
+                        <ng-container *ngIf="app.type === 'fire'">
+                          <td>${{ app.product }}</td>
+                          <td>{{ app.submitted_premium }}</td>
+                          <td>{{ app.status }}</td>
+                          <td>${{ app.issued_premium }}</td>
+                          <td>{{ app.marketing_source }}</td>
+                        </ng-container>
+
+                        <ng-container *ngIf="app.type === 'health'">
+                          <td>${{ app.premium }}</td>
+                          <td>{{ app.mode }}</td>
+                          <td>{{ app.status }}</td>
+                          <td>${{ app.annual_premium }}</td>
+                          <td>{{ app.product }}</td>
+                          <td>${{ app.bonus }}</td>
+                          <td>{{ app.marketing_source }}</td>
+                        </ng-container>
+
+                        <td>{{ getProducerName(app.co_producer_id) | titlecase }}</td>
                         <td>{{ app.co_producer_bonus }}</td>
                         
                       </tr>

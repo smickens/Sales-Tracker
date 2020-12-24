@@ -1,0 +1,172 @@
+<div class="row" style="height: 100%;">
+    <div style="padding: 30px; width: 100%;">
+        <div class="block">
+            <div class="mb-3" style="display: flex; justify-content: space-between;">
+              <div style="display: flex; align-items: center;">
+                <button class="btn btn-sm btn-secondary noPrintPdf" type="button" id="backBtn" style="display: none; margin-right: 15px;" (click)="exitTimesheet()">Go Back</button>
+                
+                <h4 class="header noPrintPdf" id="title" style="margin-bottom: 0px; padding-right: 15px;">Timesheet - </h4>
+
+                <div style="display: flex; align-items: center;" id="date_section">
+                  <form class="noPrintPdf" [formGroup]="monthForm">
+                    <select class="custom-select" style="width: 150px; margin-right: 20px;" id="month" formControlName="month" (change)="updateSheet($event.target.value)">
+                      <ng-container *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
+                        <option value="{{i}}">{{ months[i-1] }}</option>
+                      </ng-container>
+                    </select>
+                  </form>
+                  <div class="form-check form-check-inline noPrintPdf">
+                    <input class="form-check-input" type="radio" name="part_of_month" id="first_half" value="1" (change)="updateDates()" checked>
+                    <label class="form-check-label" for="first_half">1st Half</label>
+                  </div>
+                  <div class="form-check form-check-inline noPrintPdf">
+                      <input class="form-check-input" type="radio" name="part_of_month" id="second_half" value="2" (change)="updateDates()">
+                      <label class="form-check-label" for="second_half">2nd Half</label>
+                  </div>
+                </div>
+                
+                <!-- <select class="custom-select" style="width: 250px;" id="producer">
+                    <option value="none" selected>Select Producer</option>
+                    <option *ngFor="let producer of producers" value="{{producer.id}}">{{ producer.name }}</option>
+                </select> -->
+              </div>
+
+              <div style="display: flex; align-items: center;">
+                <!-- TODO: add anniversary date: 12/06/19 -->
+                <!-- ? seems to have issue with decimal, instead of 17.5 showed 17 -->
+                <!-- TODO: change to hours used -->
+                <p id="hours_left" style="margin: auto; display: none;">Sick/Vacation Hours Used: {{ sick_vacation_hours_used }}</p>
+              </div>
+
+              <!-- ?: may need a year option for when it is new years -->
+              <!-- TODO: test new years time -->
+            </div>
+
+            <ul class="noPrintPdf" id="producer_section">
+              <li *ngFor="let producer of producers">
+                {{ producer.name }}
+                <!-- (click)="editTimesheet(producer.id, producer.name)" -->
+                <button *ngIf="!saved_timesheets.has(producer.id)" class="btn btn-link btn-sm" (click)="displayPinAuth(producer.id)" data-toggle="modal" data-target="#popupModal" type="button">Submit</button>
+                <button *ngIf="saved_timesheets.has(producer.id)" class="btn btn-link btn-sm" style="color: #6c757d;" (click)="displayPinAuth(producer.id)" data-toggle="modal" data-target="#popupModal" type="button">Edit</button>
+              </li>
+              <button class="btn btn-sm btn-secondary" style="margin-top: 10px;" (click)="downloadTimesheets()">Download</button>
+            </ul>
+
+            <div id="timesheet_section" style="display: none;">
+              <table class="table table-hover" id="timesheet_table">
+                  <thead>
+                      <tr>
+                          <th></th>
+                          <th>In</th>
+                          <th>Out</th>
+                          <th>In</th>
+                          <th>Out</th>
+                          <th>Sick/Vacation</th>
+                      </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let date of dates">
+                      <th>{{ date }}</th>
+                      <td><input type="time" value="08:30:00" (change)="updateTimes()"></td>
+                      <td><input type="time" value="12:00:00" (change)="updateTimes()"></td>
+                      <td><input type="time" value="12:30:00" (change)="updateTimes()"></td>
+                      <td><input type="time" value="17:00:00" (change)="updateTimes()"></td>
+                      <td><input type="number" value="0" (change)="updateTimes()" style="width: 50px;" min="0"></td>
+                      <td>
+                        <input class="form-check-input" type="checkbox" name="no_work_option" id="holiday_rBtn" (change)="toggleRow(date, 'holiday_rBtn')">
+                        <label class="form-check-label" for="holiday_rBtn">Holiday</label>
+                      </td>
+                      <td>
+                        <input class="form-check-input" type="checkbox" name="no_work_option" id="off_rBtn" (change)="toggleRow(date, 'off_rBtn')">
+                        <label class="form-check-label" for="off_rBtn">Off</label>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                
+                <div class="row" style="font-size: 18px; text-align: center;">
+                    <p class="col">Total Hours - {{ total_hours }}</p>
+                    <p class="col">Sick / Vacation Time - {{ sick_vacation_hours }}</p>
+                    <p class="col-auto">Prior Month Bonus - {{ prior_month_bonus[producer.id] }}</p>
+                </div>
+                
+                <div style="display: flex; justify-content: center;">
+                    <input class="submit_btn noPrintPdf" type="submit" [value]="submit_btn_text" (click)="onSubmit()" data-toggle="modal" data-target="#popupModal">
+                </div>
+              </div>
+
+              <div *ngFor="let timesheet of saved_timesheets | keyvalue" class="printPdf" id="completed_timesheets_section" style="display: none;">
+                <!-- producer id -->
+                <h4 class="hidden_title">{{ getProducerName(timesheet.key) }}</h4>
+                <table class="table table-hover" id="timesheet_table">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>In</th>
+                            <th>Out</th>
+                            <th>In</th>
+                            <th>Out</th>
+                            <th>Sick/Vacation</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let date of this.dates">
+                        <th>{{ date }}</th>
+                        <ng-container *ngIf="!timesheet.value['dates'][date]['holiday'] && !timesheet.value['dates'][date]['off']">
+                          <td>{{ to12HourTime(timesheet.value['dates'][date]['in_1']) }}</td>
+                          <td>{{ to12HourTime(timesheet.value['dates'][date]['out_1']) }}</td>
+                          <td>{{ to12HourTime(timesheet.value['dates'][date]['in_2']) }}</td>
+                          <td>{{ to12HourTime(timesheet.value['dates'][date]['out_2']) }}</td>
+                          <td>{{ timesheet.value['dates'][date]['sick_vacation_hours'] }}</td>
+                        </ng-container>
+                        <ng-container *ngIf="timesheet.value['dates'][date]['holiday'] || timesheet.value['dates'][date]['off']">
+                          <td></td>
+                          <td></td>
+                          <td></td>
+                          <td></td>
+                          <td></td>
+                        </ng-container>
+                        <td *ngIf="timesheet.value['dates'][date]['holiday']">Holiday</td>
+                        <td *ngIf="timesheet.value['dates'][date]['off']">Off</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  
+                  <div class="row" style="font-size: 18px; text-align: center;">
+                      <p class="col">Total Hours - {{ timesheet.value['hours_worked'] }}</p>
+                      <p class="col">Sick / Vacation Time - {{ timesheet.value['sick_vacation_hours'] }}</p>
+                      <!-- TODO: pull last month's production and corporate bonus -->
+                      <!-- ? on 2nd half of Dec. pull nov. bonus -->
+                      <!-- * production portion is on application nodes -->
+                      <!-- * coporate portion is on producer nodes under corporate_bonuses, i think -->
+                      <p class="col-auto">Prior Month Bonus - {{ prior_month_bonus[timesheet.key] }}</p>
+                  </div>
+                  
+                  <div style="display: flex; justify-content: center; page-break-after: always;">
+                      <input class="submit_btn noPrintPdf" type="submit" [value]="submit_btn_text" (click)="onSubmit()" data-toggle="modal" data-target="#popupModal">
+                  </div>
+                </div>
+        </div>
+
+        <div class="modal fade" id="popupModal" tabindex="-1" role="dialog" aria-labelledby="popupModalTitle" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered" role="document">
+              <div class="modal-content">
+                  <div class="modal-header">
+                      <h5 class="modal-title">{{ popup_title }}</h5>
+                      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                          <span aria-hidden="true">&times;</span>
+                      </button>
+                  </div>
+                  <div class="modal-body">
+                    {{ popup_message }}
+                    <div id="auth_section" style="display: none;">
+                      <input id="producer_pin" type="number" placeholder="Enter Pin">
+                      <input class="submit_btn" type="submit" value="Submit" (click)="checkPin()">
+                    </div>
+                  </div>
+              </div>
+          </div>
+        </div>
+
+    </div>
+</div>

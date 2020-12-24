@@ -11,14 +11,8 @@
 
 export interface Producer {
     name: string;
-
-    // honestly, might not need anything more than the name
-    life: number;
-    auto: number;
-    bank: number;
-    fire: number;
-    health: number;
-    total_apps: number;
-
-    showing?: boolean;
+    id: string;
+    hired_date?: string;
+    pin?: number;
+    //showing?: boolean;
 }

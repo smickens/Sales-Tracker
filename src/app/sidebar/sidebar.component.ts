@@ -10,6 +10,7 @@ import { AngularFireAuth } from '@angular/fire/auth';
 })
 export class SidebarComponent implements OnInit {
 
+  // env is used in html to only display sidebar if user is logged in
   env = environment;
 
   constructor(public  db_auth:  AngularFireAuth) { }

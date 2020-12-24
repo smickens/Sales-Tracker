@@ -40,24 +40,23 @@ export class AddFireComponent implements OnInit {
     let auth_sub = db_auth.authState.subscribe(user => {
       if (user) {
         environment.logged_in = true;
+
+        let sub1 = db.list('/producers').valueChanges().subscribe(producers => {
+          this.producers = producers as Producer[];
+        });
+        this.subscriptions.push(sub1);
+    
+        let sub2 = db.list('constants/fire').snapshotChanges().subscribe(
+          (snapshot: any) => snapshot.map(snap => {
+          this.constants[snap.payload.key] = snap.payload.val().split("_");
+        }));
+        this.subscriptions.push(sub2);
       } else {
         environment.logged_in = false;
         this.router.navigate(['login']);
       }
     });
     this.subscriptions.push(auth_sub);
-    
-    let sub1 = db.list('/producers').valueChanges().subscribe(producers => {
-      this.producers = producers as Producer[];
-    });
-    this.subscriptions.push(sub1);
-
-    let sub2 = db.list('constants/fire').snapshotChanges().subscribe(
-      (snapshot: any) => snapshot.map(snap => {
-      this.constants[snap.payload.key] = snap.payload.val().split("_");
-    }));
-    this.subscriptions.push(sub2);
-    // i think this connection stays open even when leaving page, so look into how you do a once check
   }
 
   ngOnInit(): void {
@@ -68,14 +67,14 @@ export class AddFireComponent implements OnInit {
       this.button_text = "SUBMIT";
       this.addFireAppForm = this.fb.group({
         date: [this.today.toISOString().substr(0, 10)],
-        producer_name: ['Select Producer'],
+        producer_id: ['Select Producer'],
         client_name: [],
         product: ['Select Product'],
         submitted_premium: [],
         status: ['Select Status'],
         issued_premium: [],
         marketing_source: [],
-        co_producer_name: ['Select Co-Producer'],
+        co_producer_id: ['Select Co-Producer'],
         co_producer_bonus: ['Select Pivot Bonus']
       });
       this.app_loaded = true;
@@ -105,13 +104,13 @@ export class AddFireComponent implements OnInit {
       type: "fire",
       date: this.get("date"),
       client_name: this.get("client_name"),
-      producer_name: this.get("producer_name"),
+      producer_id: this.get("producer_id"),
       product: this.get("product"),
       submitted_premium: this.get("submitted_premium"),
       status: this.get("status"),
       issued_premium: this.get("issued_premium"),
       marketing_source: this.get("marketing_source"),
-      co_producer_name: this.get("co_producer_name"),
+      co_producer_id: this.get("co_producer_id"),
       co_producer_bonus: this.get("co_producer_bonus")
     }
     console.log(app);
