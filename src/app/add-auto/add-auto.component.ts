@@ -82,6 +82,7 @@ export class AddAutoComponent implements OnInit {
     this.app_id = this.route.snapshot.paramMap.get('id');
     //console.log(this.today.toISOString().substr(0, 10));
 
+    // TODO: don't let number fields be negative
     if (this.app_id == null) {
       //console.log("add form");
       this.form_title = "Add Auto App";
@@ -89,16 +90,16 @@ export class AddAutoComponent implements OnInit {
       this.addAutoAppForm = this.fb.group({
         date: [this.today.toISOString().substr(0, 10)],
         producer_id: ['Select Producer'],
-        client_name: [''],
+        client_name: [''], // TODO: remove enter client name thing below input
         auto_type: ['RN'],
-        tiers: ['Tier 1'],
+        tiers: ['Tier 1'], // * only needed if RN otherwise be 0
         bonus: [0],
-        submitted_premium: [0],
+        submitted_premium: [0], // * typed in
         status: ['Submitted'],
-        issued_premium: [0], 
-        marketing_source: [''],
-        co_producer_id: ['Select Co-Producer'],
-        co_producer_bonus: [0]
+        issued_premium: [0],  // * when issued is selected set to submitted premium value and allow for modifications
+        marketing_source: [''], // TODO: change to dropdown (default: "Current Client", "Internet Lead", "SF.com Lead", "Referral", "State to State", "Prior SF", "etc.")
+        co_producer_id: ['Select Co-Producer'], // TODO: if there is a co-producer split the app total 0.5 and 0.5
+        co_producer_bonus: [0] // TODO: remove (instead they will get credit towards app totals and get closer)
       });
       this.app_loaded = true;
     } 

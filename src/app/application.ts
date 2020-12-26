@@ -20,6 +20,7 @@ export interface LifeApp extends Application {
     bound?: boolean;
     status?: string;
     paid_bonus?: number;
+    life_pivot_bonuses: string;
     issue_month?: string;
 }
 

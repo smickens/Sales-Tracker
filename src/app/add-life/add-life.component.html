@@ -100,7 +100,15 @@
         
                 <div class="form-row mb-2">
                     <div class="col form-group">
-                        <label for="status">TAKEN</label>
+                        <label for="life_pivot_bonuses">LIFE PIVOT BONUS</label>
+                        <select class="custom-select" formControlName="life_pivot_bonuses" id="life_pivot_bonuses">
+                            <option selected>Select Pivot</option>
+                            <option *ngFor="let option of constants['life_pivot_bonuses']" value="{{option}}"> {{ option }} </option>
+                        </select>
+                    </div>
+
+                    <div class="col form-group">
+                        <label for="status">STATUS</label>
                         <select class="custom-select" formControlName="status" id="status">
                             <option selected>Select Status</option>
                             <option *ngFor="let option of constants['status_options']" value="{{option}}"> {{ option }} </option>

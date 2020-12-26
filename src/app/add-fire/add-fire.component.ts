@@ -86,13 +86,13 @@ export class AddFireComponent implements OnInit {
         date: [this.today.toISOString().substr(0, 10)],
         producer_id: ['Select Producer'],
         client_name: [],
-        product: ['Select Product'],
+        product: ['Select Product'], // TODO: change manu.. to MANF Home, check w/ mom for more later
         submitted_premium: [],
-        status: ['Select Status'],
-        issued_premium: [],
-        marketing_source: [],
-        co_producer_id: ['Select Co-Producer'],
-        co_producer_bonus: ['Select Pivot Bonus']
+        status: ['Select Status'], // TODO: cancelled -> cancelled, add withdrawn option
+        issued_premium: [], // TODO: same as auto, highlight red thing too
+        marketing_source: [], // TODO: same as auto
+        co_producer_id: ['Select Co-Producer'], // TODO: split app count 0.5 and 0.5
+        co_producer_bonus: ['Select Pivot Bonus'] // TODO: remove
       });
       this.app_loaded = true;
     } 

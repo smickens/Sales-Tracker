@@ -94,21 +94,23 @@ export class AddLifeComponent implements OnInit {
       this.button_text = "SUBMIT";
       this.addLifeAppForm = this.fb.group({
         date: [this.today.toISOString().substr(0, 10)],
-        producer_id: ['Select Producer'],
+        producer_id: ['Select Producer'], // TODO: check that only main producer get app count
         client_name: [''],
         premium: [],
-        mode: ['Select Mode'],
-        annual_premium: [],
-        policy_type: ['Select Policy Type'],
-        product: ['Select Product'],
-        client_type: ['Select Client Type'],
-        bonus: [],
-        bound: [false],
-        status: ['Select Status'],
-        paid_bonus: [],
+        mode: ['Monthly'], // TODO: if monthly take premium times 12 to get annual_premium, if annual take entire value
+        annual_premium: [], // * could be read only
+        policy_type: ['Term'], // TODO: add Annuity
+        product: ['20 Yr Term'], // TODO: remove mort life things and change increase to change of plan and add "20 Yr ROP", "30 Yr ROP", "Final Expense", "Jackson National"
+        client_type: ['New'], // TODO: remove JUV and change CONV to "Term Conversion"
+        bonus: [], // TODO: should be calculated off of life pivot bonus (full, 80, 50, 90) min is 25 always
+        bound: [false], // remove all together
+        status: ['Select Status'], // TODO: remove pending
+        paid_bonus: [], // TODO: change bonus to pull paid bonus as the amount of bonus actually paid to main producer
+        life_pivot_bonuses: ['Select Pivot'], // TODO: remove $25
         issue_month: ['Select Issue Month'],
         co_producer_id: ['Select Co-Producer'],
-        co_producer_bonus: ['Select Pivot Bonus']
+        co_producer_bonus: ['Select Pivot Bonus'] // TODO: set from (annual_premium - bonus), min is 25 always
+        // TODO: add marketing sources (same dropdown as auto and rest)
       });
       this.app_loaded = true;
     } 
@@ -134,6 +136,11 @@ export class AddLifeComponent implements OnInit {
     return this.addLifeAppForm.get(field).value;
   }
   
+  // TODO: add validation checks on all add forms
+  // * pay attention to values that are optional 
+  // *    like bonus which when blank should get saved as 0
+  // *    and for ones like co-producer select co-producer should change to ""
+  // TODO: remove bound
   onSubmit() {
     let app: LifeApp = {
       type: "life",
@@ -150,6 +157,7 @@ export class AddLifeComponent implements OnInit {
       bound: this.get("bound"),
       status: this.get("status"),
       paid_bonus: this.get("paid_bonus"),
+      life_pivot_bonuses: this.get("life_pivot_bonuses"),
       issue_month: this.get("issue_month"),
       co_producer_id: this.get("co_producer_id"),
       co_producer_bonus: this.get("co_producer_bonus")

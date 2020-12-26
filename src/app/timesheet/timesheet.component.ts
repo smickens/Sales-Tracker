@@ -32,6 +32,11 @@ export class TimesheetComponent implements OnInit {
 
   // TODO: test if year dropdown is needed
 
+  // TODO: on holiday still get paid hours (always 8 hours)
+  // TODO: on off no pay
+
+  // TODO: down the road change used to available, store total sick/vacation they get a year on producer node
+
   monthForm: FormGroup = this.fb.group({ });
 
   subscriptions: Subscription[] = [];
@@ -68,6 +73,7 @@ export class TimesheetComponent implements OnInit {
         let last_month = today.getMonth();
         let year = today.getFullYear();
 
+        // TODO: only put prior month bonus on 2nd half of month
         // gets corporate bonuses
         let index = 0;
         let corporate_bonus_sub = this.db.list('producers').snapshotChanges().subscribe(

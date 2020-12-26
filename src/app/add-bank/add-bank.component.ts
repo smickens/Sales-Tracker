@@ -88,17 +88,17 @@ export class AddBankComponent implements OnInit {
         date: [this.today.toISOString().substr(0, 10)],
         producer_id: ['Select Producer'],
         client_name: [''],
-        deposit: [],
-        premium: [],
-        mode: ['Select Mode'],
-        status: ['Select Status'],
-        annual_premium: [],
-        product_type: ['Select Product Type'],
-        product: ['Select Product'],
-        bonus: [],
-        marketing_source: [],
-        co_producer_id: ['Select Co-Producer'],
-        co_producer_bonus: ['Select Pivot Bonus']
+        deposit: [], // TODO: remove
+        premium: [], // TODO: remove
+        mode: ['Select Mode'], // TODO: remove
+        status: ['Select Status'], 
+        annual_premium: [], // TODO: remove
+        product_type: ['Select Product Type'], // TODO: move after client, change dropdown to have ("Quicken Mortage Refi", "Quicken Mortage", "US Bank Deposit", "US Bank CD", "US Bank Vehicle Loan", "US Bank IRA")
+        product: ['Select Product'], // TODO: remove
+        bonus: [], // keep manual
+        marketing_source: [], // same dropdown as auto
+        co_producer_id: ['Select Co-Producer'], // can get bonus and get 0.5 of app count
+        co_producer_bonus: ['Select Pivot Bonus'] // keep manual
       });
       this.app_loaded = true;
     } 

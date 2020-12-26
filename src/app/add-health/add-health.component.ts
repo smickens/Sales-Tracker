@@ -89,14 +89,14 @@ export class AddHealthComponent implements OnInit {
         producer_id: ['Select Producer'],
         client_name: [''],
         premium: [],
-        mode: ['Select Mode'],
-        status: ['Select Status'],
-        annual_premium: [],
-        product: ['Select Product'],
-        bonus: [],
-        marketing_source: [],
-        co_producer_id: ['Select Co-Producer'],
-        co_producer_bonus: ['Select Pivot Bonus']
+        mode: ['Select Mode'], // TODO: change to Monthly, Quarterly, Semi-Annual, Annual
+        status: ['Select Status'], // TODO: remove pending
+        annual_premium: [], // get based off of mode monthly = times 12, quarterly = times 4
+        product: ['Select Product'], // TODO: change to Disability Income, Blue Cross, SF Medicare Supplement, Humana
+        bonus: [], // keep manual
+        marketing_source: [], // TODO: same dropdown as auto
+        co_producer_id: ['Select Co-Producer'], // get bonus and 0.5 app count
+        co_producer_bonus: ['Select Pivot Bonus'] // keep manual
       });
       this.app_loaded = true;
     } 

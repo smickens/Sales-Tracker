@@ -146,7 +146,7 @@ export class BonusesComponent implements OnInit {
             for (let month in corporate_bonus) {
               console.log(month + ": " + corporate_bonus[month]);
               this.corporate_bonuses[producer["id"]][parseInt(month)-1] += corporate_bonus[month];
-              console.log("Corp-ID: " + producer["id"] + "   Bonus: " + corporate_bonus[month]);
+              //console.log("Corp-ID: " + producer["id"] + "   Bonus: " + corporate_bonus[month]);
               //this.barChartData[1].data[parseInt(month)-1] += corporate_bonus[month];
               this.barChartData[index*2].data[parseInt(month)-1] += corporate_bonus[month];
             }
@@ -154,71 +154,73 @@ export class BonusesComponent implements OnInit {
         }
         index += 1;
         //console.log(this.corporate_bonuses);
+
+        // gets production bonuses
+        let sub2 = this.db.list('applications').snapshotChanges().subscribe(
+          (snapshot: any) => snapshot.map(snap => {
+            const app = snap.payload.val();
+
+            const app_type = app["type"] as string;
+            const app_date = app["date"] as string;
+            const app_month = parseInt(app_date.substring(5, 7));
+            const app_year = parseInt(app_date.substring(0, 4));
+
+            let app_went_through = false;
+            /*
+              Life - Issue/Bonus Month “January”
+                ? might change issue_month to issue_date 	# and have it include 08-2019
+              Auto - Status “Issued”
+              Bank - Status “Issued”
+              Fire - Status “Issued”
+              Health - Status “Taken”
+            */
+            if (app["issue_month"] == "" || app["status"] == "Taken" || app["status"] == "Issued") {
+              app_went_through = true;
+            }
+
+            // TODO: NEED SOME KIND OF DROPDOWN FOR YEAR
+            // app_went_through == true && 
+            if (app_year == year) {
+              const producer_id = app["producer_id"];
+              // production bonus
+              const bonus = app["bonus"];
+              this.production_bonuses[producer_id][app_month-1] += bonus;
+              //console.log("Name: " + producer_id + "    Month: " + app_month + "   Bonus: " + bonus);
+              let i = producer_indexes.indexOf(producer_id);
+              this.barChartData[(i*2)+1].data[app_month-1] += bonus;
+
+              // co-production bonus
+              const co_producer_bonus = app["co_producer_bonus"];
+              if (co_producer_bonus > 0 && co_producer_bonus != null) {
+                const co_producer_id = app["co_producer_id"];
+                this.production_bonuses[co_producer_id][app_month-1] += co_producer_bonus;
+                //this.barChartData[0].data[app_month-1] += co_producer_bonus;
+                // for (let i = 0; i < this.barChartData.length; i++) {
+                //   if (this.barChartData[i]["label"] == this.getProducerName(producer_id)) {
+                //     this.barChartData[i].data[app_month-1] += co_producer_bonus;
+                //   }
+                // }
+                let i = producer_indexes.indexOf(co_producer_id);
+                //console.log("Co- ID: " + co_producer_id + "   Bonus: " + co_producer_bonus + "  " + i);
+                this.barChartData[(i*2)+1].data[app_month-1] += co_producer_bonus;
+                // for (let i = 0; i < this.barChartData.length; i++) {
+                //   if (this.barChartData[i]["label"] == this.getProducerName(producer_id)) {
+                //     this.barChartData[(i*2)+1].data[app_month-1] += co_producer_bonus;
+                //     break;
+                //   }
+                // }
+              }
+            }
+            console.log(this.production_bonuses);
+            //console.log(this.barChartData);
+            this.bonuses_loaded = true;
+          })
+        );
+        this.subscriptions.push(sub2);
      })
+
     );
     this.subscriptions.push(sub1);
-
-    // gets production bonuses
-    let sub2 = this.db.list('applications').snapshotChanges().subscribe(
-      (snapshot: any) => snapshot.map(snap => {
-        const app = snap.payload.val();
-
-        const app_type = app["type"] as string;
-        const app_date = app["date"] as string;
-        const app_month = parseInt(app_date.substring(5, 7));
-        const app_year = parseInt(app_date.substring(0, 4));
-
-        let app_went_through = false;
-        /*
-          Life - Issue/Bonus Month “January”
-            ? might change issue_month to issue_date 	# and have it include 08-2019
-          Auto - Status “Issued”
-          Bank - Status “Issued”
-          Fire - Status “Issued”
-          Health - Status “Taken”
-        */
-        if (app["issue_month"] == "" || app["status"] == "Taken" || app["status"] == "Issued") {
-          app_went_through = true;
-        }
-
-        // TODO: NEED SOME KIND OF DROPDOWN FOR YEAR
-        // app_went_through == true && 
-        if (app_year == year) {
-          const producer_id = app["producer_id"];
-          // production bonus
-          const bonus = app["bonus"];
-          this.production_bonuses[producer_id][app_month-1] += bonus;
-          console.log("Name: " + producer_id + "    Month: " + app_month + "   Bonus: " + bonus);
-          let i = producer_indexes.indexOf(producer_id);
-          this.barChartData[(i*2)+1].data[app_month-1] += bonus;
-
-          // co-production bonus
-          const co_producer_bonus = app["co_producer_bonus"];
-          if (co_producer_bonus > 0 && co_producer_bonus != null) {
-            const co_producer_id = app["co_producer_id"];
-            this.production_bonuses[co_producer_id][app_month-1] += co_producer_bonus;
-            //this.barChartData[0].data[app_month-1] += co_producer_bonus;
-            // for (let i = 0; i < this.barChartData.length; i++) {
-            //   if (this.barChartData[i]["label"] == this.getProducerName(producer_id)) {
-            //     this.barChartData[i].data[app_month-1] += co_producer_bonus;
-            //   }
-            // }
-            let i = producer_indexes.indexOf(co_producer_id);
-            console.log("Co- ID: " + co_producer_id + "   Bonus: " + co_producer_bonus + "  " + i);
-            this.barChartData[(i*2)+1].data[app_month-1] += co_producer_bonus;
-            // for (let i = 0; i < this.barChartData.length; i++) {
-            //   if (this.barChartData[i]["label"] == this.getProducerName(producer_id)) {
-            //     this.barChartData[(i*2)+1].data[app_month-1] += co_producer_bonus;
-            //     break;
-            //   }
-            // }
-          }
-        }
-        //console.log(this.barChartData);
-        this.bonuses_loaded = true;
-       })
-    );
-    this.subscriptions.push(sub2);
   }
 
   updateList(filter: string) {

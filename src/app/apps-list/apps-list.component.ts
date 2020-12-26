@@ -37,6 +37,8 @@ export class AppsListComponent implements OnInit {
   subscriptions: Subscription[] = [];
   year: number = 0;
 
+  // TODO: for auto apps if submitted premiums is different from issued, highlight issued in red
+
   constructor(private db: AngularFireDatabase, public  db_auth:  AngularFireAuth, private route: ActivatedRoute, private location: Location, private router: Router) {
     let auth_sub = db_auth.authState.subscribe(user => {
       if (user) {
@@ -176,6 +178,7 @@ export class AppsListComponent implements OnInit {
     );
   }
 
+  // TODO: add sort by producer
   orderList(filter: string) {
     if (filter == "date") {
       this.apps.sort((a, b) => a.date.localeCompare(b.date));
