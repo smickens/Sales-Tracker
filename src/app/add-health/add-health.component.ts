@@ -23,7 +23,7 @@ export class AddHealthComponent implements OnInit {
   button_text: string = "";
   app_id: string = ""; // if page is in edit mode, then app_id is set to app's id in database
 
-  producers: Producer[];
+  producers: Producer[] = [];
   constants = {};
 
   // modes: string[] = ["Ann", "Semi", "Q", "Monthly"];
@@ -43,16 +43,33 @@ export class AddHealthComponent implements OnInit {
       if (user) {
         environment.logged_in = true;
 
-        let sub1 = db.list('/producers').valueChanges().subscribe(producers => {
-          this.producers = producers as Producer[];
-        });
-        this.subscriptions.push(sub1);
+        // loads producers
+        let producer_sub = db.list('producers').snapshotChanges().subscribe(
+          (snapshot: any) => snapshot.map(snap => {
+            let producer: Producer = {
+              name: snap.payload.val().name,
+              id: snap.key
+            }
+            this.producers.push(producer);
+        }));
+        this.subscriptions.push(producer_sub);
     
         let sub2 = db.list('constants/life').snapshotChanges().subscribe(
           (snapshot: any) => snapshot.map(snap => {
           this.constants[snap.payload.key] = snap.payload.val().split("_");
         }));
         this.subscriptions.push(sub2);
+
+        if (this.app_id != null) {
+          this.form_title = "Edit Health App";
+          this.button_text = "UPDATE";
+          this.db.list('applications/' + this.app_id).snapshotChanges().subscribe(
+            (snapshot: any) => snapshot.map(snap => {
+            this.addHealthAppForm.addControl(snap.payload.key, this.fb.control(snap.payload.val()));
+            this.app_loaded = true;
+          }));
+        }
+
       } else {
         environment.logged_in = false;
         this.router.navigate(['login']);
@@ -82,15 +99,16 @@ export class AddHealthComponent implements OnInit {
         co_producer_bonus: ['Select Pivot Bonus']
       });
       this.app_loaded = true;
-    } else {
-      this.form_title = "Edit Life App";
-      this.button_text = "UPDATE";
-      this.db.list('applications/' + this.app_id).snapshotChanges().subscribe(
-        (snapshot: any) => snapshot.map(snap => {
-        this.addHealthAppForm.addControl(snap.payload.key, this.fb.control(snap.payload.val()));
-        this.app_loaded = true;
-      }));
-    }
+    } 
+    // else {
+    //   this.form_title = "Edit Life App";
+    //   this.button_text = "UPDATE";
+    //   this.db.list('applications/' + this.app_id).snapshotChanges().subscribe(
+    //     (snapshot: any) => snapshot.map(snap => {
+    //     this.addHealthAppForm.addControl(snap.payload.key, this.fb.control(snap.payload.val()));
+    //     this.app_loaded = true;
+    //   }));
+    // }
   }
 
   ngOnDestroy(): void {

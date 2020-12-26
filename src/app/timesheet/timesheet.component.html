@@ -34,8 +34,7 @@
               <div style="display: flex; align-items: center;">
                 <!-- TODO: add anniversary date: 12/06/19 -->
                 <!-- ? seems to have issue with decimal, instead of 17.5 showed 17 -->
-                <!-- TODO: change to hours used -->
-                <p id="hours_left" style="margin: auto; display: none;">Sick/Vacation Hours Used: {{ sick_vacation_hours_used }}</p>
+                <p id="hours_left" style="margin: auto; display: none;">Sick/Vacation Used: {{ sick_vacation_hours_used }} hours</p>
               </div>
 
               <!-- ?: may need a year option for when it is new years -->
@@ -43,13 +42,13 @@
             </div>
 
             <ul class="noPrintPdf" id="producer_section">
-              <li *ngFor="let producer of producers">
+              <li class="noPrintPdf" *ngFor="let producer of producers">
                 {{ producer.name }}
                 <!-- (click)="editTimesheet(producer.id, producer.name)" -->
                 <button *ngIf="!saved_timesheets.has(producer.id)" class="btn btn-link btn-sm" (click)="displayPinAuth(producer.id)" data-toggle="modal" data-target="#popupModal" type="button">Submit</button>
                 <button *ngIf="saved_timesheets.has(producer.id)" class="btn btn-link btn-sm" style="color: #6c757d;" (click)="displayPinAuth(producer.id)" data-toggle="modal" data-target="#popupModal" type="button">Edit</button>
               </li>
-              <button class="btn btn-sm btn-secondary" style="margin-top: 10px;" (click)="downloadTimesheets()">Download</button>
+              <button class="btn btn-sm btn-secondary noPrintPdf" style="margin-top: 10px;" (click)="downloadTimesheets()">Download</button>
             </ul>
 
             <div id="timesheet_section" style="display: none;">
@@ -87,7 +86,7 @@
                 <div class="row" style="font-size: 18px; text-align: center;">
                     <p class="col">Total Hours - {{ total_hours }}</p>
                     <p class="col">Sick / Vacation Time - {{ sick_vacation_hours }}</p>
-                    <p class="col-auto">Prior Month Bonus - {{ prior_month_bonus[producer.id] }}</p>
+                    <p class="col">Prior Month Bonus - {{ prior_month_bonuses[selected_producer_id] }}</p>
                 </div>
                 
                 <div style="display: flex; justify-content: center;">
@@ -139,7 +138,7 @@
                       <!-- ? on 2nd half of Dec. pull nov. bonus -->
                       <!-- * production portion is on application nodes -->
                       <!-- * coporate portion is on producer nodes under corporate_bonuses, i think -->
-                      <p class="col-auto">Prior Month Bonus - {{ prior_month_bonus[timesheet.key] }}</p>
+                      <p class="col">Prior Month Bonus - {{ prior_month_bonuses[timesheet.key] }}</p>
                   </div>
                   
                   <div style="display: flex; justify-content: center; page-break-after: always;">
@@ -160,8 +159,8 @@
                   <div class="modal-body">
                     {{ popup_message }}
                     <div id="auth_section" style="display: none;">
-                      <input id="producer_pin" type="number" placeholder="Enter Pin">
-                      <input class="submit_btn" type="submit" value="Submit" (click)="checkPin()">
+                      <input id="producer_pin" type="number" placeholder="Pin">
+                      <input class="submit_btn" type="submit" value="Submit" (click)="checkPin()" style="padding: 6px 20px; margin-left: 15px;" data-dismiss="modal">
                     </div>
                   </div>
               </div>

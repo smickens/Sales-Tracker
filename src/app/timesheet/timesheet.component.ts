@@ -47,7 +47,6 @@ export class TimesheetComponent implements OnInit {
             let producer: Producer = {
               name: snap.payload.val().name,
               id: snap.key,
-              hired_date: snap.payload.val().hired_date,
               pin: snap.payload.val().pin
             }
             this.producers.push(producer);
@@ -64,32 +63,25 @@ export class TimesheetComponent implements OnInit {
           this.updateSheet(date.getMonth() + 1);
         }
 
-        // TODO: get timesheet year
+        // TODO: get timesheet year (new years check)
         let today = new Date();
         let last_month = today.getMonth();
         let year = today.getFullYear();
-
-        // * corporate_bonuses
-        // *    2020
-        // *      7: 20
 
         // gets corporate bonuses
         let index = 0;
         let corporate_bonus_sub = this.db.list('producers').snapshotChanges().subscribe(
           (snapshot: any) => snapshot.map(snap => {
+            this.prior_month_bonuses[snap.key] = 0;
             // gets corporate bonuses
             if ("corporate_bonuses" in snap.payload.val()) {
               if (year in snap.payload.val()["corporate_bonuses"]) {
                 const corporate_bonus = snap.payload.val()["corporate_bonuses"][year];
-                //console.log(corporate_bonus);
+                console.log(corporate_bonus);
                 for (let month in corporate_bonus) {
                   if (Number(month) == last_month) {
                     console.log(month + ": " + corporate_bonus[month]);
-                    if (snap.key in this.prior_month_bonuses) {
-                      this.prior_month_bonuses[snap.key] += corporate_bonus[month];
-                    } else {
-                      this.prior_month_bonuses[snap.key] = corporate_bonus[month];
-                    }
+                    this.prior_month_bonuses[snap.key] += corporate_bonus[month];
                   }
                 }
               }
@@ -126,25 +118,18 @@ export class TimesheetComponent implements OnInit {
             if (app_year == year && app_month == last_month) {
               const producer_id = app["producer_id"];
               // production bonus
-              if (producer_id in this.prior_month_bonuses) {
-                this.prior_month_bonuses[producer_id] += app["bonus"];
-              } else {
-                this.prior_month_bonuses[producer_id] = app["bonus"];
-              }
+              this.prior_month_bonuses[producer_id] += app["bonus"];
               console.log("ID: " + producer_id + "    Month: " + app_month + "   Bonus: " + app["bonus"]);
 
               // co-production bonus
               const co_producer_bonus = app["co_producer_bonus"];
               if (co_producer_bonus > 0 && co_producer_bonus != null) {
                 const co_producer_id = app["co_producer_id"];
-                if (co_producer_id in this.prior_month_bonuses) {
-                  this.prior_month_bonuses[co_producer_id] += co_producer_bonus;
-                } else {
-                  this.prior_month_bonuses[co_producer_id] = co_producer_bonus;
-                }
+                this.prior_month_bonuses[co_producer_id] += co_producer_bonus;
                 console.log("Co ID: " + co_producer_id + "   Bonus: " + co_producer_bonus);
               }
             }
+            console.log(this.prior_month_bonuses);
           })
         );
         this.subscriptions.push(production_bonus_sub);
@@ -188,51 +173,39 @@ export class TimesheetComponent implements OnInit {
     this.popup_title = "Enter Pin";
     this.popup_message = "";
     this.selected_producer_id = producer_id;
+    (document.getElementById("producer_pin") as HTMLInputElement).value = "";
     document.getElementById("auth_section").style.display = 'block';
   }
 
   checkPin() {
-    // * might add optional pin property onto producer object like we did with id
-    // ? or click on person to bring up modal with input box for pin
-    let pin = Number(document.getElementById("producer_pin").nodeValue);
-    let validPin = false;
+    let pin = Number((document.getElementById("producer_pin") as HTMLInputElement).value);
     for (const producer of this.producers) {
       if (producer.id == this.selected_producer_id) {
         if (producer.pin == pin) {
           // displays timesheet
           this.editTimesheet(this.selected_producer_id, this.getProducerName(this.selected_producer_id));
           document.getElementById("auth_section").style.display = 'none';
-          validPin = true;
           break;
         }
       }
-    }
-    if (!validPin) {
-      // display invalid pin error
-      this.popup_message = "Invalid Pin";
     }
   }
 
   editTimesheet(producer_id: string, name: string) {
     //console.log("edit timesheet " + producer_id);
     this.selected_producer_id = producer_id;
-    
-    // display how many sick/vacation hours producer has left for the year
-    // TODO: have it look at sick/vacation hours used in the current year
-    // * on filling out timesheet, display sick/vacation hours used (don't live update)
-    // * also, have it print out on timesheet new total or total used
-    // ? try, to have it go off employee start date
-    // ? otherwise, have it go off calendar year
-    let hired_date = "";
-    for (const producer of this.producers) {
-      if (producer.id == producer_id) {
-        hired_date = producer.hired_date;
-        break;
-      }
-    }
-    console.log("Hired - " + hired_date);
+
+    // let hired_date = "";
+    // for (const producer of this.producers) {
+    //   if (producer.id == producer_id) {
+    //     hired_date = producer.hired_date;
+    //     break;
+    //   }
+    // }
+    // console.log("Hired - " + hired_date);
     // 11/12/2001
 
+    // display how many sick/vacation hours producer has left for the year
     let current_month = Number((document.getElementById("month") as HTMLInputElement).value)-1;
     let today = new Date();
     let current_year = today.getFullYear();
@@ -240,19 +213,19 @@ export class TimesheetComponent implements OnInit {
     let hours_sub = this.db.list('timesheets').snapshotChanges().subscribe(
       (snapshot: any) => snapshot.map(snap => {
         let timesheet_name = snap.key as string;
-        // TODO: check if date is within current year from hired date
-        // * December_2020_1 or November_2020_2
-        if (snap.payload.val()[producer_id] == producer_id) {
-          let withinYear = false;
-          let name_of_month = timesheet_name.substring(0, timesheet_name.length - 7);
-          if (this.months.indexOf(name_of_month) >= current_month && timesheet_name.includes((current_year as unknown) as string)) {
-            // if month is after hired month and year matches current year
-            withinYear = true;
-          } else if (this.months.indexOf(name_of_month) < current_month && timesheet_name.includes(((current_year + 1) as unknown) as string)) {
-            // if month is before hired month and year matches current year
-            withinYear = true;
-          }
-          if (withinYear) {
+        // TODO: check if date within current year is working
+        // December_2020_1 or November_2020_2
+        if (snap.payload.val()[producer_id]) {
+          // let withinYear = false;
+          // let name_of_month = timesheet_name.substring(0, timesheet_name.length - 7);
+          // if (this.months.indexOf(name_of_month) >= current_month && timesheet_name.includes((current_year as unknown) as string)) {
+          //   // if month is after hired month and year matches current year
+          //   withinYear = true;
+          // } else if (this.months.indexOf(name_of_month) < current_month && timesheet_name.includes(((current_year + 1) as unknown) as string)) {
+          //   // if month is before hired month and year matches current year
+          //   withinYear = true;
+          // }
+          if (timesheet_name.includes((current_year as unknown) as string)) {
             this.sick_vacation_hours_used +=((snap.payload.val()[producer_id]["sick_vacation_hours"]) as number);
           }
         }
@@ -529,7 +502,9 @@ export class TimesheetComponent implements OnInit {
     let timesheet_titles = document.getElementsByClassName("hidden_title");
     for (let i = 0; i < timesheet_titles.length; i++) {
       const title = timesheet_titles[i];
-      title.innerHTML += "\'s Timesheet - " + month + " 2020";
+      if (!title.innerHTML.includes("Timesheet")) {
+        title.innerHTML += "\'s Timesheet - " + month + " 2020";
+      }
     }
     window.print();
   }

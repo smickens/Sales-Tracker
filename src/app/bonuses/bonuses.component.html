@@ -3,7 +3,7 @@
         <div class="block">
             <div style="display: flex; justify-content: space-between;">
               <div style="display: flex; align-items: center;">
-                <h4 class="header" style="margin-bottom: 0px; padding-right: 15px;"> Bonuses 2020 - </h4>
+                <h4 class="header" style="margin-bottom: 0px; padding-right: 15px;"> Bonuses - </h4>
                 <select class="custom-select" style="width: 250px;" id="producer" (change)="updateList($event.target.value)">
                     <option selected>All Producers</option>
                     <option *ngFor="let producer of all_producers" value="{{producer.name}}">{{ producer.name }}</option>
@@ -11,23 +11,20 @@
               </div>
               <div style="display: flex; align-items: center;">
                 <p style="margin: 0px; padding-right: 10px;">Year: </p>
-                <select class="custom-select" style="width: 150px;" id="year" (change)="filterByYear($event.target.value)">
-                  <option selected value="year">Current Year</option>
-                  <!-- <option *ngFor="let year of years" value="{{producer.name}}">{{ producer.name }}</option> -->
-                </select>
+                <input type="number" id="year" (change)="filterByYear($event.target.value)" placeholder="Enter Year" [value]="selected_year" style="width: 120px;" autocomplete="off">
               </div>
             </div>
             <a style="text-decoration: none; display: block; color: #007bff;" (click)="add_bonus = !add_bonus">Add New Bonus</a>
             
             <div style="overflow-x: auto; overflow-y: auto; margin-top: 15px;">
               
-              <form [formGroup]="addBonusForm" *ngIf="add_bonus">
+              <!-- <form [formGroup]="addBonusForm" *ngIf="add_bonus">
                 <div class="row" style="display: flex; align-items: flex-end;">
                   <div class="col-auto form-group">
-                    <label for="producer_name">PRODUCER</label>
-                    <select class="custom-select" formControlName="producer_name" id="producer_name">
+                    <label for="producer_id">PRODUCER</label>
+                    <select class="custom-select" formControlName="producer_id" id="producer_id">
                         <option selected>Select Producer</option>
-                        <option *ngFor="let producer of producers" value="{{producer.name}}"> {{ producer.name }} </option>
+                        <option *ngFor="let producer of producers" value="{{producer.id}}"> {{ producer.name }} </option>
                     </select>
                   </div>
 
@@ -58,9 +55,8 @@
                     <input class="submit_btn" type="submit" value="ADD" (click)="addBonus()">
                   </div>
                 </div>
-              </form>
+              </form> -->
 
-              <!-- TODO: check why chart sometimes doesn't show up on initial load -->
               <div class="container" style="display: flex; justify-content: center;">
                 <div class="row" style="width: 80%;">
                   <!-- 
@@ -98,19 +94,21 @@
                     <tr>
                       <th scope="row">Production Bonus</th>
                       <ng-container *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
-                        <td>{{ production_bonuses[producer.name][i-1] }}</td>
+                        <td>{{ production_bonuses[producer.id][i-1] }}</td>
                       </ng-container>
                     </tr>
                     <tr>
                       <th scope="row">Corporate Bonus</th>
                       <ng-container *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
-                        <td>{{ corporate_bonuses[producer.name][i-1] }}</td>
+                        <td>
+                          <input type="number" style="width: 50px;" [value]="corporate_bonuses[producer.id][i-1]" (click)="editBonus($event)" (blur)="updateBonus($event)" readonly>
+                        </td>
                       </ng-container>
                     </tr>
                     <tr>
                       <th scope="row">Total Bonus</th>
                       <ng-container *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
-                        <td>{{ production_bonuses[producer.name][i-1] + corporate_bonuses[producer.name][i-1] }}</td>
+                        <td>{{ production_bonuses[producer.id][i-1] + corporate_bonuses[producer.id][i-1] }}</td>
                       </ng-container>
                     </tr>
                   </tbody>

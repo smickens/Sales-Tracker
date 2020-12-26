@@ -23,7 +23,7 @@ export class AddLifeComponent implements OnInit {
   button_text: string = "";
   app_id: string = ""; // if page is in edit mode, then app_id is set to app's id in database
 
-  producers: Producer[];
+  producers: Producer[] = [];
   constants = {};
 
   // modes: string[] = ["Annual", "Monthly"];
@@ -45,10 +45,16 @@ export class AddLifeComponent implements OnInit {
       if (user) {
         environment.logged_in = true;
 
-        let sub1 = db.list('producers').valueChanges().subscribe(producers => {
-          this.producers = producers as Producer[];
-        });
-        this.subscriptions.push(sub1);
+        // loads producers
+        let producer_sub = db.list('producers').snapshotChanges().subscribe(
+          (snapshot: any) => snapshot.map(snap => {
+            let producer: Producer = {
+              name: snap.payload.val().name,
+              id: snap.key
+            }
+            this.producers.push(producer);
+        }));
+        this.subscriptions.push(producer_sub);
     
         let sub2 = db.list('constants/life').snapshotChanges().subscribe(
           (snapshot: any) => snapshot.map(snap => {

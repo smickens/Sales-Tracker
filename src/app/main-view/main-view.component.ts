@@ -39,12 +39,22 @@ export class MainViewComponent implements OnInit {
       if (user) {
         environment.logged_in = true;
 
+        /*
+          Life - Issue/Bonus Month “January”
+            ? might change issue_month to issue_date 	# and have it include 08-2019
+          Auto - Status “Issued”
+          Bank - Status “Issued”
+          Fire - Status “Issued”
+          Health - Status “Taken”
+        */
+
         // loads in application totals for the year
         let sub1 = db.list('applications').snapshotChanges().subscribe(
           (snapshot: any) => snapshot.map(snap => {
             const type = snap.payload.val().type as string;
             this.apps_this_year[type][0] += 1;
             const status = snap.payload.val().status as string;
+            // TODO: if app type is life need to know if issue month/date is set
             if (status == "Issued" || status == "Taken") {
               this.apps_this_year[type][1] += 1;
             }

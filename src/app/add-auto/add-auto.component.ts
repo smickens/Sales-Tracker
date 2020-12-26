@@ -19,10 +19,11 @@ import { Subscription } from 'rxjs';
 })
 export class AddAutoComponent implements OnInit {
 
+  form_title: string = "";
   button_text: string = "";
   app_id: string = ""; // if page is in edit mode, then app_id is set to app's id in database
 
-  producers: Producer[];
+  producers: Producer[] = [];
   constants = {};
 
   // auto_types: string[] = ["R/N", "Added", "State to State", "Prior SF", "Reinstated"];
@@ -41,16 +42,34 @@ export class AddAutoComponent implements OnInit {
       if (user) {
         environment.logged_in = true;
 
-        let sub1 = db.list('/producers').valueChanges().subscribe(producers => {
-          this.producers = producers as Producer[];
-        });
-        this.subscriptions.push(sub1);
+        // loads producers
+        let producer_sub = db.list('producers').snapshotChanges().subscribe(
+          (snapshot: any) => snapshot.map(snap => {
+            let producer: Producer = {
+              name: snap.payload.val().name,
+              id: snap.key
+            }
+            this.producers.push(producer);
+        }));
+        this.subscriptions.push(producer_sub);
     
         let sub2 = db.list('constants/auto').snapshotChanges().subscribe(
           (snapshot: any) => snapshot.map(snap => {
           this.constants[snap.payload.key] = snap.payload.val().split("_");
         }));
         this.subscriptions.push(sub2);
+
+        if (this.app_id != null) {
+          //console.log("edit form");
+          this.form_title = "Edit Auto App";
+          this.button_text = "UPDATE";
+          this.db.list('applications/' + this.app_id).snapshotChanges().subscribe(
+            (snapshot: any) => snapshot.map(snap => {
+            this.addAutoAppForm.addControl(snap.payload.key, this.fb.control(snap.payload.val()));
+            this.app_loaded = true;
+          }));
+        }
+
       } else {
         environment.logged_in = false;
         this.router.navigate(['login']);
@@ -65,6 +84,7 @@ export class AddAutoComponent implements OnInit {
 
     if (this.app_id == null) {
       //console.log("add form");
+      this.form_title = "Add Auto App";
       this.button_text = "SUBMIT";
       this.addAutoAppForm = this.fb.group({
         date: [this.today.toISOString().substr(0, 10)],
@@ -81,15 +101,17 @@ export class AddAutoComponent implements OnInit {
         co_producer_bonus: [0]
       });
       this.app_loaded = true;
-    } else {
-      console.log("edit form");
-      this.button_text = "UPDATE";
-      this.db.list('applications/' + this.app_id).snapshotChanges().subscribe(
-        (snapshot: any) => snapshot.map(snap => {
-        this.addAutoAppForm.addControl(snap.payload.key, this.fb.control(snap.payload.val()));
-        this.app_loaded = true;
-      }));
-    }
+    } 
+    // else {
+    //   this.form_title = "Edit Auto App";
+    //   console.log("edit form");
+    //   this.button_text = "UPDATE";
+    //   this.db.list('applications/' + this.app_id).snapshotChanges().subscribe(
+    //     (snapshot: any) => snapshot.map(snap => {
+    //     this.addAutoAppForm.addControl(snap.payload.key, this.fb.control(snap.payload.val()));
+    //     this.app_loaded = true;
+    //   }));
+    // }
   }
 
   ngOnDestroy(): void {
