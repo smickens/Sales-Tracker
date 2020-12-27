@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder } from '@angular/forms';
+import { FormBuilder, FormGroup } from '@angular/forms';
 
 import { Producer } from "../producer";
 import { AngularFireDatabase } from '@angular/fire/database';
@@ -27,7 +27,7 @@ export class AddFireComponent implements OnInit {
   constants = {};
 
   private today = new Date();
-  addFireAppForm = this.fb.group({ });
+  addFireAppForm: FormGroup = this.fb.group({ });
 
   app_loaded = false;
 
@@ -106,7 +106,7 @@ export class AddFireComponent implements OnInit {
     return this.addFireAppForm.get(field).value;
   }
   
-  addApp() {
+  onSubmit() {
     let app: FireApp = {
       type: "fire",
       date: this.get("date"),

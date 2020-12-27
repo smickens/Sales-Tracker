@@ -20,7 +20,8 @@
                     </div>
                     <div class="col form-group">
                         <label for="client_name">CLIENT</label>
-                        <input type="text" name="client_name" class="form-control" formControlName="client_name" id="client_name" autocomplete="off" required>
+                        <!-- name="client_name" required -->
+                        <input type="text" class="form-control" formControlName="client_name" id="client_name" autocomplete="off">
                     </div>
                 </div>
         
@@ -101,7 +102,7 @@
                 </div>
         
                 <div style="display: flex; justify-content: center;">
-                    <input class="submit_btn" type="submit" value="{{ button_text }}" (click)="addApp()">
+                    <input class="submit_btn" type="submit" value="{{ button_text }}" (click)="onSubmit()">
                 </div>
             </form>
 

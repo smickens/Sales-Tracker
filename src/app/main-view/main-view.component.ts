@@ -19,11 +19,22 @@ export class MainViewComponent implements OnInit {
 
   // # of apps submitted, # of apps taken
   apps_this_year = {
-    life: [0, 0],
-    auto: [0, 0],
-    bank: [0, 0],
-    fire: [0, 0],
-    health: [0, 0]
+    "life": [0, 0],
+    "auto": [0, 0],
+    "bank": [0, 0],
+    "fire": [0, 0],
+    "health": [0, 0],
+    "mutual-funds": [0, 0]
+  };
+
+  app_types = ["life", "auto", "bank", "fire", "health", "mutual-funds"]
+  app_totals = {
+    "life": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    "auto": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    "bank": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    "fire": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    "health": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    "mutual-funds": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
   };
 
   producers: Producer[] = [];
@@ -76,6 +87,10 @@ export class MainViewComponent implements OnInit {
             if (status == "Issued" || status == "Taken") {
               this.apps_this_year[type][1] += 1;
             }
+
+            // TODO: check with mom if for life its app ocunt should get counted for date or issude month
+            const month = (snap.payload.val().date as string).substring(5, 7);
+            this.app_totals[type][Number(month)-1] += 1;
           })
         );
         this.subscriptions.push(sub1);

@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Producer } from "../producer";
-import { LifeApp, AutoApp, BankApp, FireApp, HealthApp } from '../application';
+import { LifeApp, AutoApp, BankApp, FireApp, HealthApp, MutualFundApp } from '../application';
 import { AngularFireDatabase } from '@angular/fire/database';
 
 import { ActivatedRoute } from "@angular/router";  //  holds information about the route to this instance of the HeroDetailComponent
@@ -22,17 +22,19 @@ export class AppsListComponent implements OnInit {
 
   producers: Producer[] = [];
 
-  life_headers: string[] = ["Premium", "Mode", "Annual Premium", "Policy Type", "Product", "Client Type", "Bonus", "Taken", "Paid Bonus", "Issue / Bonus Month", "Life Pivot Bonus"];
+  life_headers: string[] = ["Premium", "Mode", "Annual Premium", "Policy Type", "Product", "Client Type", "Bonus", "Status", "Paid Bonus", "Issue / Bonus Month", "Life Pivot Bonus"];
   auto_headers: string[] = ["Auto Type", "Tiers", "Bonus", "Submitted Premium", "Status", "Issued Premium", "Marketing Source"];
   bank_headers: string[] = ["Product Type", "Bonus", "Status", "Marketing Source"];
   fire_headers: string[] = ["Product", "Submitted Premium", "Status", "Issued Premium", "Marketing Source"];
   health_headers: string[] = ["Premium", "Mode", "Status", "Annual Premium", "Product", "Bonus", "Marketing Source"];
+  mutual_funds_headers: string[] = ["Product Type", "Amount", "Marketing Source"];
 
   life_apps: LifeApp[] = [];
   auto_apps: AutoApp[] = [];
   bank_apps: BankApp[] = [];
   fire_apps: FireApp[] = [];
   health_apps: HealthApp[] = [];
+  mutual_funds_apps: MutualFundApp[] = [];
 
   subscriptions: Subscription[] = [];
   year: number = 0;
@@ -68,6 +70,8 @@ export class AppsListComponent implements OnInit {
               this.fire_apps.push(app as FireApp);
             } else if (app["type"] == "health") {
               this.health_apps.push(app as HealthApp);
+            } else if (app["type"] == "mutual-funds") {
+              this.mutual_funds_apps.push(app as MutualFundApp);
             }
             const app_id = snap.key;
             app.id = app_id;
@@ -122,12 +126,18 @@ export class AppsListComponent implements OnInit {
       headers_to_copy = this.fire_headers;
     } else if (this.app_type === "health") {
       headers_to_copy = this.health_headers;
+    } else if (this.app_type === "mutual-funds") {
+      headers_to_copy = this.mutual_funds_headers;
     }
     for (const header of headers_to_copy) {
       this.headers.push(header);
     }
-    this.headers.push("Co-Producer Name");
-    this.headers.push("Co-Producer Bonus");
+    if (this.app_type != "mutual-funds") {
+      this.headers.push("Co-Producer Name");
+    }
+    if (this.app_type != 'auto' && this.app_type != "fire" && this.app_type != "mutual-funds") {
+      this.headers.push("Co-Producer Bonus");
+    }
   }
 
   getApps() {
@@ -143,6 +153,8 @@ export class AppsListComponent implements OnInit {
       apps_to_copy = this.fire_apps;
     } else if (this.app_type === "health") {
       apps_to_copy = this.health_apps;
+    } else if (this.app_type === "mutual-funds") {
+      apps_to_copy = this.mutual_funds_apps;
     }
     for (const app of apps_to_copy) {
       this.apps.push(app);

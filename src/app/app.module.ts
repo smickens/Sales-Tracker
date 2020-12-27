@@ -23,6 +23,7 @@ import { AddHealthComponent } from './add-health/add-health.component';
 import { BonusesComponent } from './bonuses/bonuses.component';
 import { LoginComponent } from './login/login.component';
 import { TimesheetComponent } from './timesheet/timesheet.component';
+import { AddMutualFundComponent } from './add-mutual-fund/add-mutual-fund.component';
 
 @NgModule({
   declarations: [
@@ -39,7 +40,8 @@ import { TimesheetComponent } from './timesheet/timesheet.component';
     AddHealthComponent,
     BonusesComponent,
     LoginComponent,
-    TimesheetComponent
+    TimesheetComponent,
+    AddMutualFundComponent
   ],
   imports: [
     BrowserModule,

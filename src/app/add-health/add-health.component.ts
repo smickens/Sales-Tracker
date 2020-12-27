@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder } from '@angular/forms';
+import { FormBuilder, FormGroup } from '@angular/forms';
 
 import { Producer } from "../producer";
 import { AngularFireDatabase } from '@angular/fire/database';
@@ -27,7 +27,7 @@ export class AddHealthComponent implements OnInit {
   constants = {};
 
   private today = new Date();
-  addHealthAppForm = this.fb.group({ });
+  addHealthAppForm: FormGroup = this.fb.group({ });
 
   app_loaded = false;
 
@@ -120,7 +120,7 @@ export class AddHealthComponent implements OnInit {
     return this.addHealthAppForm.get(field).value;
   }
   
-  addApp() {
+  onSubmit() {
     let app: HealthApp = {
       type: "health",
       date: this.get("date"),
@@ -136,6 +136,10 @@ export class AddHealthComponent implements OnInit {
       co_producer_id: this.get("co_producer_id"),
       co_producer_bonus: this.get("co_producer_bonus")
     }
+
+    // TODO: - had to add in co_producer_bonus value to bank app to keep from erroring (same issue as auto)
+    // * may need co bonus to default to 0
+
     console.log(app);
 
     if (this.app_id == null) {

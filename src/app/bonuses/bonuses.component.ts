@@ -211,7 +211,7 @@ export class BonusesComponent implements OnInit {
                 // }
               }
             }
-            console.log(this.production_bonuses);
+            //console.log(this.production_bonuses);
             //console.log(this.barChartData);
             this.bonuses_loaded = true;
           })

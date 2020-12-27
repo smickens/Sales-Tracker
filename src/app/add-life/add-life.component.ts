@@ -98,7 +98,7 @@ export class AddLifeComponent implements OnInit {
         bonus: [], // TODO: should be calculated off of life pivot bonus (full, 80, 50, 90) min is 25 always
         status: ['Select Status'],
         paid_bonus: [], // TODO: change bonus to pull paid bonus as the amount of bonus actually paid to main producer
-        life_pivot_bonuses: ['Select Pivot'],
+        life_pivot_bonus: ['Select Pivot'],
         issue_month: ['Select Issue Month'],
         marketing_source: ['Current Client'],
         co_producer_id: ['Select Co-Producer'],
@@ -137,7 +137,7 @@ export class AddLifeComponent implements OnInit {
       bonus: this.get("bonus"),
       status: this.get("status"),
       paid_bonus: this.get("paid_bonus"),
-      life_pivot_bonuses: this.get("life_pivot_bonuses"),
+      life_pivot_bonus: this.get("life_pivot_bonus"),
       issue_month: this.get("issue_month"),
       marketing_source: this.get("marketing_source"),
       co_producer_id: this.get("co_producer_id"),

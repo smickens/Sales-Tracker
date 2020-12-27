@@ -86,7 +86,7 @@
                 <div class="row" style="font-size: 18px; text-align: center;">
                     <p class="col">Total Hours - {{ total_hours }}</p>
                     <p class="col">Sick / Vacation Time - {{ sick_vacation_hours }}</p>
-                    <p class="col">Prior Month Bonus - {{ prior_month_bonuses[selected_producer_id] }}</p>
+                    <p class="col" *ngIf="isSecondHalf()">Prior Month Bonus - {{ prior_month_bonuses[selected_producer_id] }}</p>
                 </div>
                 
                 <div style="display: flex; justify-content: center;">
@@ -132,13 +132,9 @@
                   </table>
                   
                   <div class="row" style="font-size: 18px; text-align: center;">
-                      <p class="col">Total Hours - {{ timesheet.value['hours_worked'] }}</p>
-                      <p class="col">Sick / Vacation Time - {{ timesheet.value['sick_vacation_hours'] }}</p>
-                      <!-- TODO: pull last month's production and corporate bonus -->
-                      <!-- ? on 2nd half of Dec. pull nov. bonus -->
-                      <!-- * production portion is on application nodes -->
-                      <!-- * coporate portion is on producer nodes under corporate_bonuses, i think -->
-                      <p class="col">Prior Month Bonus - {{ prior_month_bonuses[timesheet.key] }}</p>
+                    <p class="col">Total Hours - {{ timesheet.value['hours_worked'] }}</p>
+                    <p class="col">Sick / Vacation Time - {{ timesheet.value['sick_vacation_hours'] }}</p>
+                    <p class="col" *ngIf="isSecondHalf()">Prior Month Bonus - {{ prior_month_bonuses[timesheet.key] }}</p>
                   </div>
                   
                   <div style="display: flex; justify-content: center; page-break-after: always;">

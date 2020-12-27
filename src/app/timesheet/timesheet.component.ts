@@ -312,6 +312,7 @@ export class TimesheetComponent implements OnInit {
     let number_of_days = new Date(date.getFullYear(), date.getMonth()+1, 0).getDate();
     //console.log(number_of_days);
     let path = this.months[Number(month)-1];
+    // TODO: get timesheet year
     path += "_2020"; // year
     if ((document.getElementById("first_half") as HTMLInputElement).checked) {
       for (let i = 1; i <= 14; i++) {
@@ -321,7 +322,7 @@ export class TimesheetComponent implements OnInit {
           this.dates.push(date.toDateString().substring(0, date.toDateString().length-5));
         }
       }
-      path += "_1/" + this.selected_producer_id;
+      path += "_1/";
     } else {
       for (let i = 15; i <= number_of_days; i++) {
         date.setDate(i);  
@@ -329,7 +330,7 @@ export class TimesheetComponent implements OnInit {
           this.dates.push(date.toDateString().substring(0, date.toDateString().length-5));
         }
       }
-      path += "_2/" + this.selected_producer_id;
+      path += "_2/";
     }
     this.total_hours = this.dates.length * 8;
     this.sick_vacation_hours = 0;
@@ -363,7 +364,7 @@ export class TimesheetComponent implements OnInit {
           this.dates.push(date.toDateString().substring(0, date.toDateString().length-5));
         }
       }
-      path += "_1/" + this.selected_producer_id;
+      path += "_1/";
     } else {
       for (let i = 15; i <= number_of_days; i++) {
         date.setDate(i);  
@@ -371,7 +372,7 @@ export class TimesheetComponent implements OnInit {
           this.dates.push(date.toDateString().substring(0, date.toDateString().length-5));
         }
       }
-      path += "_2/" + this.selected_producer_id;
+      path += "_2/";
     }
     this.total_hours = this.dates.length * 8;
     this.sick_vacation_hours = 0;
@@ -516,6 +517,13 @@ export class TimesheetComponent implements OnInit {
       }
     }
     window.print();
+  }
+
+  isSecondHalf() {
+    if ((document.getElementById("first_half") as HTMLInputElement).checked) {
+      return false;
+    }
+    return true;
   }
 
   to12HourTime(time) {

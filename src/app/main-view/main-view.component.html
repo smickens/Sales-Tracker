@@ -1,23 +1,48 @@
 <div class="row" style="height: 100%;">
-    <div class="col-8" style="display: flex; flex-flow: column;">
+    <div class="col" style="display: flex; flex-flow: column;">
         <div class="row spacing" style="padding-bottom: 0px;">
-            <div class="block" style="width: 100%; height: 100%;">
-                <h4 class="header">Dashboard 2020</h4>
-                <app-dashboard></app-dashboard>
+            <div class="col-8" style="padding-left: 0px;">
+                <div class="block" style="width: 100%; height: 100%;">
+                    <h4 class="header">Dashboard 2020</h4>
+                    <app-dashboard></app-dashboard>
+                </div>
+            </div>
+            <div class="col-4" style="padding-right: 0px;">
+                <div class="block">
+                    <h4 class="header">Goals / Notes</h4>
+                    <ul>
+                        <li class="note" *ngFor="let note of notes" (click)="displayConfirmDelete(note.id)" data-toggle="modal" data-target="#confirmDeleteModal">{{ note.text }}
+                            <span class="hide">x</span>
+                        </li>
+                    </ul>
+                    <form [formGroup]="addNoteForm">
+                        <div class="col form-group">
+                            <input type="text" class="form-control" formControlName="note" id="note" placeholder="Enter new note" autocomplete="off">
+                            <input class="submit_btn" type="submit" value="" (click)="addNote()">
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
-        <!-- TODO: change to look like black table in current sales tracker -->
+
         <div class="row spacing" style="height: 50%; flex: 1; overflow: auto;">
             <div class="block" style="width: 100%; height: 100%;">
                 <h4 class="header">{{current_month}}'s Stats</h4>
-                <ul>
-                    <li *ngFor="let producer of producers">{{producer.name}}</li>
-                    <!-- <li>Life - <span id="life_submitted">{{ apps_this_year.life[0] }}</span></li>
-                    <li>Auto - <span id="auto_submitted">{{ apps_this_year.auto[0] }}</span></li>
-                    <li>Bank - <span id="bank_submitted">{{ apps_this_year.bank[0] }}</span></li>
-                    <li>Fire - <span id="fire_submitted">{{ apps_this_year.fire[0] }}</span></li>
-                    <li>Health - <span id="health_submitted">{{ apps_this_year.health[0] }}</span></li> -->
-                </ul>
+                <table class="table table-hover table-bordered">
+                    <thead>
+                      <tr>
+                        <th></th>
+                        <!-- TODO: get f in mutual funds to be capitlized and have no hyphen -->
+                        <th *ngFor="let month of months" scope="col">{{month}}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let type of app_types">
+                        <th scope="row">{{ type | titlecase }}</th>
+                        <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">{{ app_totals[type][i-1] }}</td>
+                      </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
         <div class="modal fade" id="confirmDeleteModal" tabindex="-1" role="dialog" aria-labelledby="confirmDeleteModalTitle" aria-hidden="true">
@@ -40,20 +65,7 @@
             </div>
         </div>
     </div>
-    <div class="col-4 spacing" style="padding-left: 0px;">
-        <div class="block">
-            <h4 class="header">Goals / Notes</h4>
-            <ul>
-                <li class="note" *ngFor="let note of notes" (click)="displayConfirmDelete(note.id)" data-toggle="modal" data-target="#confirmDeleteModal">{{ note.text }}
-                    <span class="hide">x</span>
-                </li>
-            </ul>
-            <form [formGroup]="addNoteForm">
-                <div class="col form-group">
-                    <input type="text" class="form-control" formControlName="note" id="note" placeholder="Enter new note" autocomplete="off">
-                    <input class="submit_btn" type="submit" value="" (click)="addNote()">
-                </div>
-            </form>
-        </div>
-    </div>
+    <!-- <div class="col-4 spacing" style="padding-left: 0px;">
+        
+    </div> -->
 </div>

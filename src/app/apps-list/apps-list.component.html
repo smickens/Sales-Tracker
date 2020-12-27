@@ -18,7 +18,7 @@
                 </select>
               </div>
             </div>
-            <a routerLink="/add-{{ this.app_type }}" style="text-decoration: none; display: block; cursor: pointer;">Add New App</a>
+            <a routerLink="/add-{{ this.app_type }}" style="text-decoration: none; display: block; cursor: pointer;">Add {{ app_type | titlecase }} App</a>
             
             <div style="overflow-x: auto; overflow-y: auto;">
                 <table class="table table-hover">
@@ -28,7 +28,8 @@
                       </tr>
                     </thead>
                     <tbody>
-                      <tr *ngFor="let app of apps; index as i;" (click)="editApp(app.id)" >
+                      <!-- (click)="editApp(app.id)" -->
+                      <tr *ngFor="let app of apps; index as i;" routerLink="/{{ this.app_type }}/{{app.id}}">
                         <th scope="row">{{ i+1 }}</th>
                         <td>{{ app.date | date: 'shortDate' }}</td>
                         <td>{{ getProducerName(app.producer_id) }}</td>
@@ -59,19 +60,14 @@
                         </ng-container>
 
                         <ng-container *ngIf="app.type === 'bank'">
-                          <td>${{ app.deposit }}</td>
-                          <td>${{ app.premium }}</td>
-                          <td>{{ app.mode }}</td>
-                          <td>{{ app.status }}</td>
-                          <td>${{ app.annual_premium }}</td>
                           <td>{{ app.product_type }}</td>
-                          <td>{{ app.product }}</td>
                           <td>${{ app.bonus }}</td>
+                          <td>{{ app.status }}</td>
                           <td>{{ app.marketing_source }}</td>
                         </ng-container>
 
                         <ng-container *ngIf="app.type === 'fire'">
-                          <td>${{ app.product }}</td>
+                          <td>{{ app.product }}</td>
                           <td>${{ app.submitted_premium }}</td>
                           <td>{{ app.status }}</td>
                           <td [ngStyle]="{'color': app.submitted_premium == app.issued_premium ? 'black' : 'red'}">${{ app.issued_premium }}</td>
@@ -88,8 +84,14 @@
                           <td>{{ app.marketing_source }}</td>
                         </ng-container>
 
-                        <td>{{ getProducerName(app.co_producer_id) | titlecase }}</td>
-                        <td>{{ app.co_producer_bonus }}</td>
+                        <ng-container *ngIf="app.type === 'mutual-funds'">
+                          <td>${{ app.product_type }}</td>
+                          <td>{{ app.amount }}</td>
+                          <td>{{ app.marketing_source }}</td>
+                        </ng-container>
+
+                        <td *ngIf="app.type != 'mutual-funds'">{{ getProducerName(app.co_producer_id) }}</td>
+                        <td *ngIf="app.type != 'auto' && app.type != 'fire' && app.type != 'mutual-funds'">{{ app.co_producer_bonus }}</td>
                         
                       </tr>
                     </tbody>

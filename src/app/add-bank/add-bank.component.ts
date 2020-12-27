@@ -107,32 +107,35 @@ export class AddBankComponent implements OnInit {
     return this.addBankAppForm.get(field).value;
   }
   
-  addApp() {
-    // let app: BankApp = {
-    //   type: "bank",
-    //   date: this.get("date"),
-    //   client_name: this.get("client_name"),
-    //   producer_id: this.get("producer_id"),
-    //   status: this.get("status"),
-    //   product_type: this.get("product_type"),
-    //   bonus: this.get("bonus"),
-    //   marketing_source: this.get("marketing_source"),
-    //   co_producer_id: this.get("co_producer_id"),
-    //   co_producer_bonus: this.get("co_producer_bonus")
-    // }
+  onSubmit() {
+    let app: BankApp = {
+      type: "bank",
+      date: this.get("date"),
+      client_name: this.get("client_name"),
+      producer_id: this.get("producer_id"),
+      status: this.get("status"),
+      product_type: this.get("product_type"),
+      bonus: this.get("bonus"),
+      marketing_source: this.get("marketing_source"),
+      co_producer_id: this.get("co_producer_id"),
+      co_producer_bonus: this.get("co_producer_bonus")
+    }
+    // TODO: - had to add in co_producer_bonus value to bank app to keep from erroring
+    // * may need co bonus to default to 0
+    
     // console.log(app);
 
-    // if (this.app_id == null) {
-    //   // adds new application
-    //   this.db.list('/applications').update(this.randomString(16), app).then(() => {
-    //     this.router.navigate(['bank']);
-    //   });
-    // } else {
-    //   // updates existing application
-    //   this.db.list('/applications').update(this.app_id, app).then(() => {
-    //     this.router.navigate(['bank']);
-    //   });
-    // }
+    if (this.app_id == null) {
+      // adds new application
+      this.db.list('/applications').update(this.randomString(16), app).then(() => {
+        this.router.navigate(['bank']);
+      });
+    } else {
+      // updates existing application
+      this.db.list('/applications').update(this.app_id, app).then(() => {
+        this.router.navigate(['bank']);
+      });
+    }
 
     // after add should bring up alert saying successfully added app
   }

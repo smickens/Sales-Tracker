@@ -31,6 +31,11 @@
                     <h4 class="header" [ngClass]="{'active': active_page == 'health'}">HEALTH</h4>
                 </div>
             </div>
+            <div class="col-auto spacing" style="padding-right: 0px;">
+                <div class="block" (click)="setActive('mutual-funds')">
+                    <h4 class="header" [ngClass]="{'active': active_page == 'mutual-funds'}">MUTUAL FUNDS</h4>
+                </div>
+            </div>
         </div>
         <div class="row spacing" style="padding-bottom: 0px;">
             <div class="col-auto">

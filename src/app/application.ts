@@ -20,7 +20,7 @@ export interface LifeApp extends Application {
     bound?: boolean;
     status?: string;
     paid_bonus?: number;
-    life_pivot_bonuses: string;
+    life_pivot_bonus: string;
     issue_month?: string;
     marketing_source?: string;
 }
@@ -62,5 +62,11 @@ export interface HealthApp extends Application {
     annual_premium?: number;
     product?: string;
     bonus?: number;
+    marketing_source?: string;
+}
+
+export interface MutualFundApp extends Application {
+    product_type?: string;
+    amount?: string;
     marketing_source?: string;
 }

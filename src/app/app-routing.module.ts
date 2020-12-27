@@ -14,6 +14,7 @@ import { AddHealthComponent } from './add-health/add-health.component';
 
 import { AppsListComponent } from './apps-list/apps-list.component';
 import { TimesheetComponent } from './timesheet/timesheet.component';
+import { AddMutualFundComponent } from './add-mutual-fund/add-mutual-fund.component';
 
 const routes: Routes = [
   // main pages
@@ -29,6 +30,7 @@ const routes: Routes = [
   { path: 'add-bank', component: AddBankComponent },
   { path: 'add-fire', component: AddFireComponent },
   { path: 'add-health', component: AddHealthComponent },
+  { path: 'add-mutual-funds', component: AddMutualFundComponent },
 
   // edit app forms
   { path: 'life/:id', component: AddLifeComponent },
@@ -36,6 +38,7 @@ const routes: Routes = [
   { path: 'bank/:id', component: AddBankComponent },
   { path: 'fire/:id', component: AddFireComponent },
   { path: 'health/:id', component: AddHealthComponent },
+  { path: 'mutual-funds/:id', component: AddMutualFundComponent },
 
   // app list pages
   { path: 'life', component: AppsListComponent },
@@ -43,6 +46,7 @@ const routes: Routes = [
   { path: 'bank', component: AppsListComponent },
   { path: 'fire', component: AppsListComponent },
   { path: 'health', component: AppsListComponent },
+  { path: 'mutual-funds', component: AppsListComponent },
 
   // redirects anything that doesn't match any of above to home page
   { path: '**', redirectTo: 'home', pathMatch: 'full' }
