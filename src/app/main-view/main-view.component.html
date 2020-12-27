@@ -6,33 +6,18 @@
                 <app-dashboard></app-dashboard>
             </div>
         </div>
-        <!-- TODO: check if it is pulling correct submitted/taken totals -->
-        <!-- TODO: remove taken -->
         <!-- TODO: change to look like black table in current sales tracker -->
-        <div class="row" style="height: 50%; flex: 1; overflow: auto;">
-            <div class="col spacing"  style="padding-right: 15px;">
-                <div class="block">
-                    <h4 class="header">June Submitted</h4>
-                    <ul>
-                        <li>Life - <span id="life_submitted">{{ apps_this_year.life[0] }}</span></li>
-                        <li>Auto - <span id="auto_submitted">{{ apps_this_year.auto[0] }}</span></li>
-                        <li>Bank - <span id="bank_submitted">{{ apps_this_year.bank[0] }}</span></li>
-                        <li>Fire - <span id="fire_submitted">{{ apps_this_year.fire[0] }}</span></li>
-                        <li>Health - <span id="health_submitted">{{ apps_this_year.health[0] }}</span></li>
-                    </ul>
-                </div>
-            </div>
-            <div class="col spacing" style="padding-left: 15px;">
-                <div class="block">
-                    <h4 class="header">June Taken</h4>
-                    <ul>
-                        <li>Life - <span id="life_taken">{{ apps_this_year.life[1] }}</span></li>
-                        <li>Auto - <span id="auto_taken">{{ apps_this_year.auto[1] }}</span></li>
-                        <li>Bank - <span id="bank_taken">{{ apps_this_year.bank[1] }}</span></li>
-                        <li>Fire - <span id="fire_taken">{{ apps_this_year.fire[1] }}</span></li>
-                        <li>Health - <span id="health_taken">{{ apps_this_year.health[1] }}</span></li>
-                    </ul>
-                </div>
+        <div class="row spacing" style="height: 50%; flex: 1; overflow: auto;">
+            <div class="block" style="width: 100%; height: 100%;">
+                <h4 class="header">{{current_month}}'s Stats</h4>
+                <ul>
+                    <li *ngFor="let producer of producers">{{producer.name}}</li>
+                    <!-- <li>Life - <span id="life_submitted">{{ apps_this_year.life[0] }}</span></li>
+                    <li>Auto - <span id="auto_submitted">{{ apps_this_year.auto[0] }}</span></li>
+                    <li>Bank - <span id="bank_submitted">{{ apps_this_year.bank[0] }}</span></li>
+                    <li>Fire - <span id="fire_submitted">{{ apps_this_year.fire[0] }}</span></li>
+                    <li>Health - <span id="health_submitted">{{ apps_this_year.health[0] }}</span></li> -->
+                </ul>
             </div>
         </div>
         <div class="modal fade" id="confirmDeleteModal" tabindex="-1" role="dialog" aria-labelledby="confirmDeleteModalTitle" aria-hidden="true">

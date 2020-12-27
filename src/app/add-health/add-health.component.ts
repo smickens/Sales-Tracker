@@ -26,11 +26,6 @@ export class AddHealthComponent implements OnInit {
   producers: Producer[] = [];
   constants = {};
 
-  // modes: string[] = ["Ann", "Semi", "Q", "Monthly"];
-  // status_options: string[] = ["Issued", "Withdrawn", "Declined"];
-  // product_types: string[] = ["Financial Cards", "Deposits", "Retirement"];
-  // products: string[] = ["Vehicle Loan", "Personal Secured Loan", "HELOC", "Home Equity Loan", "Mortgage Loan", "   ------", "Credit Cards", "Checking/Savings/MM", "   ------", "CD - Standard", "CD - Special", "Coverdell ESA CD", "Roth", "Traditional IRA", "Trust / Estate"];
-
   private today = new Date();
   addHealthAppForm = this.fb.group({ });
 
@@ -54,7 +49,7 @@ export class AddHealthComponent implements OnInit {
         }));
         this.subscriptions.push(producer_sub);
     
-        let sub2 = db.list('constants/life').snapshotChanges().subscribe(
+        let sub2 = db.list('constants/health').snapshotChanges().subscribe(
           (snapshot: any) => snapshot.map(snap => {
           this.constants[snap.payload.key] = snap.payload.val().split("_");
         }));
@@ -82,39 +77,43 @@ export class AddHealthComponent implements OnInit {
     this.app_id = this.route.snapshot.paramMap.get('id');
 
     if (this.app_id == null) {
-      this.form_title = "Add Life App";
+      this.form_title = "Add Health App";
       this.button_text = "SUBMIT";
       this.addHealthAppForm = this.fb.group({
         date: [this.today.toISOString().substr(0, 10)],
         producer_id: ['Select Producer'],
         client_name: [''],
         premium: [],
-        mode: ['Select Mode'], // TODO: change to Monthly, Quarterly, Semi-Annual, Annual
-        status: ['Select Status'], // TODO: remove pending
-        annual_premium: [], // get based off of mode monthly = times 12, quarterly = times 4
-        product: ['Select Product'], // TODO: change to Disability Income, Blue Cross, SF Medicare Supplement, Humana
+        mode: ['Monthly'],
+        status: ['Select Status'],
+        annual_premium: [],
+        product: ['Disability Income'],
         bonus: [], // keep manual
-        marketing_source: [], // TODO: same dropdown as auto
-        co_producer_id: ['Select Co-Producer'], // get bonus and 0.5 app count
-        co_producer_bonus: ['Select Pivot Bonus'] // keep manual
+        marketing_source: ['Current Client'],
+        co_producer_id: ['Select Co-Producer'],
+        co_producer_bonus: [] // keep manual
       });
       this.app_loaded = true;
-    } 
-    // else {
-    //   this.form_title = "Edit Life App";
-    //   this.button_text = "UPDATE";
-    //   this.db.list('applications/' + this.app_id).snapshotChanges().subscribe(
-    //     (snapshot: any) => snapshot.map(snap => {
-    //     this.addHealthAppForm.addControl(snap.payload.key, this.fb.control(snap.payload.val()));
-    //     this.app_loaded = true;
-    //   }));
-    // }
+    }
   }
 
   ngOnDestroy(): void {
     this.subscriptions.forEach(sub => {
       sub.unsubscribe();
     });
+  }
+
+  updateAnnualPremium() {
+    let factor = 1; // defaults to annual
+    let mode = this.get("mode");
+    if (mode == "Monthly") {
+      factor = 12;
+    } else if (mode == "Quarterly") {
+      factor = 4;
+    } else if (mode == "Semi-Annual") {
+      factor = 2;
+    }
+    this.addHealthAppForm.get('annual_premium').setValue(factor * this.get('premium'));
   }
 
   get(field: string) {

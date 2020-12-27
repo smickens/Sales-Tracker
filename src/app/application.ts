@@ -22,6 +22,7 @@ export interface LifeApp extends Application {
     paid_bonus?: number;
     life_pivot_bonuses: string;
     issue_month?: string;
+    marketing_source?: string;
 }
 
 export interface AutoApp extends Application {

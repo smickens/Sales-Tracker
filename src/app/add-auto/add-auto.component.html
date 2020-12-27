@@ -5,7 +5,7 @@
                 <h4 style="font-weight: 600; color: #63B7AF;">{{ form_title }}</h4>
             </div>
             
-            <form [formGroup]="addAutoAppForm">
+            <form *ngIf="app_loaded" [formGroup]="addAutoAppForm">
                 <div class="form-row mb-2">
                     <div class="col form-group">
                         <label for="date">DATE</label>
@@ -21,9 +21,6 @@
                     <div class="col form-group">
                         <label for="client_name">CLIENT</label>
                         <input type="text" name="client_name" class="form-control" formControlName="client_name" id="client_name" autocomplete="off" required>
-                        <span *ngIf="(addAutoAppForm.get('client_name').dirty || addAutoAppForm.get('client_name').touched) && addAutoAppForm.get('client_name').invalid">    
-                            Enter client name
-                        </span>
                     </div>
                 </div>
         
@@ -50,47 +47,50 @@
                             <div class="input-group-prepend">
                                 <span class="input-group-text">$</span>
                             </div>
-                            <input type="number" class="form-control" formControlName="bonus" id="bonus" autocomplete="off" style="max-width: 120px;">
-                        </div>
-                    </div>
-        
-                    <div class="col-auto form-group">
-                        <label for="submitted_premium">SUBMITTED PREMIUM</label>
-                        <div class="input-group">
-                            <div class="input-group-prepend">
-                                <span class="input-group-text">$</span>
-                            </div>
-                            <input type="number" class="form-control" formControlName="submitted_premium" id="submitted_premium" autocomplete="off" style="max-width: 120px;">
+                            <input type="number" min="0" class="form-control" formControlName="bonus" id="bonus" autocomplete="off" style="max-width: 120px;">
                         </div>
                     </div>
                 </div>
         
                 <div class="form-row mb-2">    
                     <div class="col-auto form-group">
+                        <label for="submitted_premium">SUBMITTED PREMIUM</label>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">$</span>
+                            </div>
+                            <input type="number" min="0" class="form-control" formControlName="submitted_premium" id="submitted_premium" autocomplete="off" style="max-width: 120px;">
+                        </div>
+                    </div>
+
+                    <div class="col-auto form-group">
                         <label for="issued_premium">ISSUED PREMIUM</label>
                         <div class="input-group">
                             <div class="input-group-prepend">
                                 <span class="input-group-text">$</span>
                             </div>
-                            <input type="number" class="form-control" formControlName="issued_premium" id="issued_premium" autocomplete="off" style="max-width: 120px;">
+                            <input type="number" min="0" class="form-control" formControlName="issued_premium" id="issued_premium" autocomplete="off" style="max-width: 120px;">
                         </div>
                     </div>
 
                     <div class="col form-group">
                         <label for="status">STATUS</label>
-                        <select class="custom-select" formControlName="status" id="status">
+                        <select class="custom-select" formControlName="status" id="status" (change)="isIssued($event.target.value)">
                             <option selected>Select Status</option>
                             <option *ngFor="let option of constants['status_options']" value="{{option}}"> {{ option }} </option>
                         </select>
                     </div>
-
-                    <div class="col form-group">
-                        <label for="marketing_source">MARKETING SOURCE</label>
-                        <input type="text" class="form-control" formControlName="marketing_source" id="marketing_source" autocomplete="off" placeholder="Enter Marketing Source">  
-                    </div>
                 </div>
 
                 <div class="form-row mb-2">
+                    <div class="col form-group">
+                        <label for="marketing_source">MARKETING SOURCE</label>
+                        <select class="custom-select" formControlName="marketing_source" id="marketing_source">
+                            <option selected>Select Marketing Source</option>
+                            <option *ngFor="let option of constants['marketing_source']" value="{{option}}"> {{ option }} </option>
+                        </select>
+                    </div>
+
                     <div class="col form-group">
                         <label for="co_producer_id">CO-PRODUCER</label>
                         <select class="custom-select" formControlName="co_producer_id" id="co_producer_id">
@@ -98,20 +98,10 @@
                             <option *ngFor="let producer of producers" value="{{producer.id}}"> {{ producer.name }} </option>
                         </select>
                     </div>
-
-                    <div class="col form-group">
-                        <label for="co_producer_bonus">CO-PRODUCER BONUS</label>
-                        <div class="input-group">
-                            <div class="input-group-prepend">
-                                <span class="input-group-text">$</span>
-                            </div>
-                            <input type="number" class="form-control" formControlName="co_producer_bonus" id="co_producer_bonus" autocomplete="off">
-                        </div>
-                    </div>
                 </div>
         
                 <div style="display: flex; justify-content: center;">
-                    <input class="submit_btn" type="submit" value="SUBMIT" (click)="addApp()">
+                    <input class="submit_btn" type="submit" value="{{ button_text }}" (click)="addApp()">
                 </div>
             </form>
 

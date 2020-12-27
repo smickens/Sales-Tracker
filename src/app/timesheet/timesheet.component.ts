@@ -14,6 +14,9 @@ import { Producer } from '../producer';
 })
 export class TimesheetComponent implements OnInit {
 
+  // TODO: test if year dropdown is needed
+  // TODO: down the road change used to available, store total sick/vacation they get a year on producer node
+
   producers: Producer[] = [];
   saved_timesheets = new Map();
   months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -29,13 +32,6 @@ export class TimesheetComponent implements OnInit {
 
   popup_message = "";
   popup_title = "";
-
-  // TODO: test if year dropdown is needed
-
-  // TODO: on holiday still get paid hours (always 8 hours)
-  // TODO: on off no pay
-
-  // TODO: down the road change used to available, store total sick/vacation they get a year on producer node
 
   monthForm: FormGroup = this.fb.group({ });
 
@@ -63,82 +59,14 @@ export class TimesheetComponent implements OnInit {
         if (date.getDate() <= 14) {
           (document.getElementById("second_half") as HTMLInputElement).checked = true;
           this.updateSheet(date.getMonth());
+
+          // * CHECK: only put prior month bonus on 2nd half of month
+          // when the timesheet is for the second half of the month, it displays the prior month bonus on the timesheet
+          this.getPriorMonthBonus();
         } else {
           (document.getElementById("first_half") as HTMLInputElement).checked = true;
           this.updateSheet(date.getMonth() + 1);
         }
-
-        // TODO: get timesheet year (new years check)
-        let today = new Date();
-        let last_month = today.getMonth();
-        let year = today.getFullYear();
-
-        // TODO: only put prior month bonus on 2nd half of month
-        // gets corporate bonuses
-        let index = 0;
-        let corporate_bonus_sub = this.db.list('producers').snapshotChanges().subscribe(
-          (snapshot: any) => snapshot.map(snap => {
-            this.prior_month_bonuses[snap.key] = 0;
-            // gets corporate bonuses
-            if ("corporate_bonuses" in snap.payload.val()) {
-              if (year in snap.payload.val()["corporate_bonuses"]) {
-                const corporate_bonus = snap.payload.val()["corporate_bonuses"][year];
-                console.log(corporate_bonus);
-                for (let month in corporate_bonus) {
-                  if (Number(month) == last_month) {
-                    console.log(month + ": " + corporate_bonus[month]);
-                    this.prior_month_bonuses[snap.key] += corporate_bonus[month];
-                  }
-                }
-              }
-            }
-            index += 1;
-            //console.log(this.corporate_bonuses);
-        })
-        );
-        this.subscriptions.push(corporate_bonus_sub);
-
-        // gets production bonuses
-        let production_bonus_sub = this.db.list('applications').snapshotChanges().subscribe(
-          (snapshot: any) => snapshot.map(snap => {
-            const app = snap.payload.val();
-            const app_date = app["date"] as string;
-            const app_month = parseInt(app_date.substring(5, 7));
-            const app_year = parseInt(app_date.substring(0, 4));
-
-            let app_went_through = false;
-            /*
-              Life - Issue/Bonus Month “January”
-                ? might change issue_month to issue_date 	# and have it include 08-2019
-              Auto - Status “Issued”
-              Bank - Status “Issued”
-              Fire - Status “Issued”
-              Health - Status “Taken”
-            */
-           // TODO: have it check if it is correct issue month/date
-            if (app["issue_month"] == "" || app["status"] == "Taken" || app["status"] == "Issued") {
-              app_went_through = true;
-            }
-
-            // * add if app_went_through == true && 
-            if (app_year == year && app_month == last_month) {
-              const producer_id = app["producer_id"];
-              // production bonus
-              this.prior_month_bonuses[producer_id] += app["bonus"];
-              console.log("ID: " + producer_id + "    Month: " + app_month + "   Bonus: " + app["bonus"]);
-
-              // co-production bonus
-              const co_producer_bonus = app["co_producer_bonus"];
-              if (co_producer_bonus > 0 && co_producer_bonus != null) {
-                const co_producer_id = app["co_producer_id"];
-                this.prior_month_bonuses[co_producer_id] += co_producer_bonus;
-                console.log("Co ID: " + co_producer_id + "   Bonus: " + co_producer_bonus);
-              }
-            }
-            console.log(this.prior_month_bonuses);
-          })
-        );
-        this.subscriptions.push(production_bonus_sub);
 
       } else {
         environment.logged_in = false;
@@ -173,6 +101,79 @@ export class TimesheetComponent implements OnInit {
     this.subscriptions.forEach(sub => {
       sub.unsubscribe();
     });
+  }
+
+  getPriorMonthBonus() {
+    // TODO: get timesheet year (new years check)
+    let today = new Date();
+    let last_month = today.getMonth();
+    let year = today.getFullYear();
+
+    // gets corporate bonuses
+    let index = 0;
+    let corporate_bonus_sub = this.db.list('producers').snapshotChanges().subscribe(
+      (snapshot: any) => snapshot.map(snap => {
+        this.prior_month_bonuses[snap.key] = 0;
+        // gets corporate bonuses
+        if ("corporate_bonuses" in snap.payload.val()) {
+          if (year in snap.payload.val()["corporate_bonuses"]) {
+            const corporate_bonus = snap.payload.val()["corporate_bonuses"][year];
+            console.log(corporate_bonus);
+            for (let month in corporate_bonus) {
+              if (Number(month) == last_month) {
+                console.log(month + ": " + corporate_bonus[month]);
+                this.prior_month_bonuses[snap.key] += corporate_bonus[month];
+              }
+            }
+          }
+        }
+        index += 1;
+        //console.log(this.corporate_bonuses);
+    })
+    );
+    this.subscriptions.push(corporate_bonus_sub);
+
+    // gets production bonuses
+    let production_bonus_sub = this.db.list('applications').snapshotChanges().subscribe(
+      (snapshot: any) => snapshot.map(snap => {
+        const app = snap.payload.val();
+        const app_date = app["date"] as string;
+        const app_month = parseInt(app_date.substring(5, 7));
+        const app_year = parseInt(app_date.substring(0, 4));
+
+        let app_went_through = false;
+        /*
+          Life - Issue/Bonus Month “January”
+            ? might change issue_month to issue_date 	# and have it include 08-2019
+          Auto - Status “Issued”
+          Bank - Status “Issued”
+          Fire - Status “Issued”
+          Health - Status “Taken”
+        */
+       // TODO: have it check if it is correct issue month/date
+        if (app["issue_month"] == "" || app["status"] == "Taken" || app["status"] == "Issued") {
+          app_went_through = true;
+        }
+
+        // * add if app_went_through == true && 
+        if (app_year == year && app_month == last_month) {
+          const producer_id = app["producer_id"];
+          // production bonus
+          this.prior_month_bonuses[producer_id] += app["bonus"];
+          console.log("ID: " + producer_id + "    Month: " + app_month + "   Bonus: " + app["bonus"]);
+
+          // co-production bonus
+          const co_producer_bonus = app["co_producer_bonus"];
+          if (co_producer_bonus > 0 && co_producer_bonus != null) {
+            const co_producer_id = app["co_producer_id"];
+            this.prior_month_bonuses[co_producer_id] += co_producer_bonus;
+            console.log("Co ID: " + co_producer_id + "   Bonus: " + co_producer_bonus);
+          }
+        }
+        console.log(this.prior_month_bonuses);
+      })
+    );
+    this.subscriptions.push(production_bonus_sub);
   }
 
   displayPinAuth(producer_id: string) {
@@ -470,6 +471,8 @@ export class TimesheetComponent implements OnInit {
         if (cells[6]["childNodes"][0].checked) {
           // holiday is checked
           this.timesheet["dates"][date] = { "holiday": true };
+          // TODO: on holiday still get paid hours (always 8 hours)
+          this.total_hours += 8;
         } else if (cells[7]["childNodes"][0].checked) {
           // off is checked
           this.timesheet["dates"][date] = { "off": true };

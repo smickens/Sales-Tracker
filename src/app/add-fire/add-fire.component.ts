@@ -26,9 +26,6 @@ export class AddFireComponent implements OnInit {
   producers: Producer[] = [];
   constants = {};
 
-  // products: string[] = ["Homeowners", "Renters", "PLUP", "PAP", "RDP", "Condo", "Manufac Home", "Boat", "Contractors", "Business", "Workmans Comp", "Bonds", "FLOOD", "CLUP"];
-  // status_options: string[] = ["Issued", "Declined", "Canceled"];
-
   private today = new Date();
   addFireAppForm = this.fb.group({ });
 
@@ -58,6 +55,9 @@ export class AddFireComponent implements OnInit {
         }));
         this.subscriptions.push(sub2);
 
+        this.app_id = this.route.snapshot.paramMap.get('id');
+        console.log(this.app_id);
+        
         if (this.app_id != null) {
           this.form_title = "Edit Fire App";
           this.button_text = "UPDATE";
@@ -78,33 +78,22 @@ export class AddFireComponent implements OnInit {
 
   ngOnInit(): void {
     this.app_id = this.route.snapshot.paramMap.get('id');
-
     if (this.app_id == null) {
-      this.form_title = "Add Life App";
+      this.form_title = "Add Fire App";
       this.button_text = "SUBMIT";
       this.addFireAppForm = this.fb.group({
         date: [this.today.toISOString().substr(0, 10)],
         producer_id: ['Select Producer'],
         client_name: [],
-        product: ['Select Product'], // TODO: change manu.. to MANF Home, check w/ mom for more later
+        product: ['Homeowners'], // * CHECK w/ mom for more options later
         submitted_premium: [],
-        status: ['Select Status'], // TODO: cancelled -> cancelled, add withdrawn option
-        issued_premium: [], // TODO: same as auto, highlight red thing too
-        marketing_source: [], // TODO: same as auto
-        co_producer_id: ['Select Co-Producer'], // TODO: split app count 0.5 and 0.5
-        co_producer_bonus: ['Select Pivot Bonus'] // TODO: remove
+        status: ['Select Status'],
+        issued_premium: [], 
+        marketing_source: ['Current Client'],
+        co_producer_id: ['Select Co-Producer']
       });
       this.app_loaded = true;
     } 
-    // else {
-    //   this.form_title = "Edit Life App";
-    //   this.button_text = "UPDATE";
-    //   this.db.list('applications/' + this.app_id).snapshotChanges().subscribe(
-    //     (snapshot: any) => snapshot.map(snap => {
-    //     this.addFireAppForm.addControl(snap.payload.key, this.fb.control(snap.payload.val()));
-    //     this.app_loaded = true;
-    //   }));
-    // }
   }
 
   ngOnDestroy(): void {
@@ -128,8 +117,7 @@ export class AddFireComponent implements OnInit {
       status: this.get("status"),
       issued_premium: this.get("issued_premium"),
       marketing_source: this.get("marketing_source"),
-      co_producer_id: this.get("co_producer_id"),
-      co_producer_bonus: this.get("co_producer_bonus")
+      co_producer_id: this.get("co_producer_id")
     }
     console.log(app);
 

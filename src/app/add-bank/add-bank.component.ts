@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder } from '@angular/forms';
+import { FormBuilder, FormGroup } from '@angular/forms';
 
 import { Producer } from "../producer";
 import { AngularFireDatabase } from '@angular/fire/database';
@@ -26,13 +26,8 @@ export class AddBankComponent implements OnInit {
   producers: Producer[] = [];
   constants = {};
 
-  // modes: string[] = ["Ann", "Semi", "Q", "Monthly"];
-  // status_options: string[] = ["Issued", "Withdrawn", "Declined"];
-  // product_types: string[] = ["Financial Cards", "Deposits", "Retirement"];
-  // products: string[] = ["Vehicle Loan", "Personal Secured Loan", "HELOC", "Home Equity Loan", "Mortgage Loan", "   ------", "Credit Cards", "Checking/Savings/MM", "   ------", "CD - Standard", "CD - Special", "Coverdell ESA CD", "Roth", "Traditional IRA", "Trust / Estate"];
-
   private today = new Date();
-  addBankAppForm = this.fb.group({ });
+  addBankAppForm: FormGroup = this.fb.group({ });
 
   app_loaded = false;
 
@@ -60,6 +55,8 @@ export class AddBankComponent implements OnInit {
         }));
         this.subscriptions.push(sub2);
 
+        this.app_id = this.route.snapshot.paramMap.get('id');
+        //console.log(this.app_id);
         if (this.app_id != null) {
           this.form_title = "Edit Bank App";
           this.button_text = "UPDATE";
@@ -80,37 +77,24 @@ export class AddBankComponent implements OnInit {
 
   ngOnInit(): void {
     this.app_id = this.route.snapshot.paramMap.get('id');
+    //console.log(this.app_id);
 
     if (this.app_id == null) {
-      this.form_title = "Add Life App";
+      this.form_title = "Add Bank App";
       this.button_text = "SUBMIT";
       this.addBankAppForm = this.fb.group({
         date: [this.today.toISOString().substr(0, 10)],
         producer_id: ['Select Producer'],
         client_name: [''],
-        deposit: [], // TODO: remove
-        premium: [], // TODO: remove
-        mode: ['Select Mode'], // TODO: remove
         status: ['Select Status'], 
-        annual_premium: [], // TODO: remove
-        product_type: ['Select Product Type'], // TODO: move after client, change dropdown to have ("Quicken Mortage Refi", "Quicken Mortage", "US Bank Deposit", "US Bank CD", "US Bank Vehicle Loan", "US Bank IRA")
-        product: ['Select Product'], // TODO: remove
+        product_type: ['Quicken Mortage Refi'],
         bonus: [], // keep manual
-        marketing_source: [], // same dropdown as auto
-        co_producer_id: ['Select Co-Producer'], // can get bonus and get 0.5 of app count
-        co_producer_bonus: ['Select Pivot Bonus'] // keep manual
+        marketing_source: ['Current Client'],
+        co_producer_id: ['Select Co-Producer'],
+        co_producer_bonus: [] // keep manual
       });
       this.app_loaded = true;
-    } 
-    // else {
-    //   this.form_title = "Edit Life App";
-    //   this.button_text = "UPDATE";
-    //   this.db.list('applications/' + this.app_id).snapshotChanges().subscribe(
-    //     (snapshot: any) => snapshot.map(snap => {
-    //     this.addBankAppForm.addControl(snap.payload.key, this.fb.control(snap.payload.val()));
-    //     this.app_loaded = true;
-    //   }));
-    // }
+    }
   }
 
   ngOnDestroy(): void {
@@ -124,36 +108,31 @@ export class AddBankComponent implements OnInit {
   }
   
   addApp() {
-    let app: BankApp = {
-      type: "bank",
-      date: this.get("date"),
-      client_name: this.get("client_name"),
-      producer_id: this.get("producer_id"),
-      deposit: this.get("deposit"),
-      premium: this.get("premium"),
-      mode: this.get("mode"),
-      status: this.get("status"),
-      annual_premium: this.get("annual_premium"),
-      product_type: this.get("product_type"),
-      product: this.get("product"),
-      bonus: this.get("bonus"),
-      marketing_source: this.get("marketing_source"),
-      co_producer_id: this.get("co_producer_id"),
-      co_producer_bonus: this.get("co_producer_bonus")
-    }
-    console.log(app);
+    // let app: BankApp = {
+    //   type: "bank",
+    //   date: this.get("date"),
+    //   client_name: this.get("client_name"),
+    //   producer_id: this.get("producer_id"),
+    //   status: this.get("status"),
+    //   product_type: this.get("product_type"),
+    //   bonus: this.get("bonus"),
+    //   marketing_source: this.get("marketing_source"),
+    //   co_producer_id: this.get("co_producer_id"),
+    //   co_producer_bonus: this.get("co_producer_bonus")
+    // }
+    // console.log(app);
 
-    if (this.app_id == null) {
-      // adds new application
-      this.db.list('/applications').update(this.randomString(16), app).then(() => {
-        this.router.navigate(['bank']);
-      });
-    } else {
-      // updates existing application
-      this.db.list('/applications').update(this.app_id, app).then(() => {
-        this.router.navigate(['bank']);
-      });
-    }
+    // if (this.app_id == null) {
+    //   // adds new application
+    //   this.db.list('/applications').update(this.randomString(16), app).then(() => {
+    //     this.router.navigate(['bank']);
+    //   });
+    // } else {
+    //   // updates existing application
+    //   this.db.list('/applications').update(this.app_id, app).then(() => {
+    //     this.router.navigate(['bank']);
+    //   });
+    // }
 
     // after add should bring up alert saying successfully added app
   }

@@ -2,10 +2,10 @@
     <div class="block_bg">
         <div class="block">
             <div class="form-row">
-                <h4 style="font-weight: 600; color: #63B7AF;">Add Health App</h4>
+                <h4 style="font-weight: 600; color: #63B7AF;">{{ form_title }}</h4>
             </div>
             
-            <form [formGroup]="addHealthAppForm">
+            <form *ngIf="app_loaded" [formGroup]="addHealthAppForm">
                 <div class="form-row mb-2">
                     <div class="col form-group">
                         <label for="date">DATE</label>
@@ -30,13 +30,13 @@
                             <div class="input-group-prepend">
                                 <span class="input-group-text">$</span>
                             </div>
-                            <input type="number" class="form-control" formControlName="premium" id="premium" autocomplete="off" style="max-width: 120px;">
+                            <input type="number" min="0" class="form-control" formControlName="premium" id="premium" autocomplete="off" (change)="updateAnnualPremium()" style="max-width: 120px;">
                         </div>
                     </div>
 
-                    <div class="col-auto form-group">
+                    <div class="col form-group">
                         <label for="mode">MODE</label>
-                        <select class="custom-select" formControlName="mode" id="mode">
+                        <select class="custom-select" formControlName="mode" id="mode" (change)="updateAnnualPremium()">
                             <option selected>Select Mode</option>
                             <option *ngFor="let option of constants['modes']" value="{{option}}"> {{ option }} </option>
                         </select>
@@ -48,7 +48,7 @@
                             <div class="input-group-prepend">
                                 <span class="input-group-text">$</span>
                             </div>
-                            <input type="number" class="form-control" formControlName="annual_premium" id="annual_premium" autocomplete="off" style="max-width: 120px;">
+                            <input type="number" min="0" class="form-control" formControlName="annual_premium" id="annual_premium" autocomplete="off" style="max-width: 120px;" readonly>
                         </div>
                     </div>
 
@@ -76,13 +76,16 @@
                             <div class="input-group-prepend">
                                 <span class="input-group-text">$</span>
                             </div>
-                            <input type="number" class="form-control" formControlName="bonus" id="bonus" autocomplete="off" style="max-width: 120px;">
+                            <input type="number" min="0" class="form-control" formControlName="bonus" id="bonus" autocomplete="off" style="max-width: 120px;">
                         </div>
                     </div>
                     
                     <div class="col form-group">
                         <label for="marketing_source">MARKETING SOURCE</label>
-                        <input type="text" class="form-control" formControlName="marketing_source" id="marketing_source" autocomplete="off">  
+                        <select class="custom-select" formControlName="marketing_source" id="marketing_source">
+                            <option selected>Select Marketing Source</option>
+                            <option *ngFor="let option of constants['marketing_source']" value="{{option}}"> {{ option }} </option>
+                        </select>
                     </div>
                 </div>
 
@@ -101,13 +104,13 @@
                             <div class="input-group-prepend">
                                 <span class="input-group-text">$</span>
                             </div>
-                            <input type="number" class="form-control" formControlName="co_producer_bonus" id="co_producer_bonus" autocomplete="off">
+                            <input type="number" min="0" class="form-control" formControlName="co_producer_bonus" id="co_producer_bonus" autocomplete="off">
                         </div>
                     </div>
                 </div>
         
                 <div style="display: flex; justify-content: center;">
-                    <input class="submit_btn" type="submit" value="SUBMIT" (click)="addApp()">
+                    <input class="submit_btn" type="submit" value="{{ button_text }}" (click)="addApp()">
                 </div>
             </form>
 

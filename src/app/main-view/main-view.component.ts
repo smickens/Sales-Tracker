@@ -15,6 +15,8 @@ import { Subscription } from 'rxjs';
 })
 export class MainViewComponent implements OnInit {
 
+  // TODO: need for co-producer on certain app types (auto, fire, bank, and health) to get 0.5 of app count
+
   // # of apps submitted, # of apps taken
   apps_this_year = {
     life: [0, 0],
@@ -23,6 +25,11 @@ export class MainViewComponent implements OnInit {
     fire: [0, 0],
     health: [0, 0]
   };
+
+  producers: Producer[] = [];
+
+  current_month = "";
+  months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
   addNoteForm = this.fb.group({
     note: []
@@ -38,6 +45,17 @@ export class MainViewComponent implements OnInit {
     let auth_sub = db_auth.authState.subscribe(user => {
       if (user) {
         environment.logged_in = true;
+
+        // loads producers
+        let producer_sub = db.list('producers').snapshotChanges().subscribe(
+          (snapshot: any) => snapshot.map(snap => {
+            let producer: Producer = {
+              name: snap.payload.val().name,
+              id: snap.key
+            }
+            this.producers.push(producer);
+        }));
+        this.subscriptions.push(producer_sub);
 
         /*
           Life - Issue/Bonus Month “January”
@@ -92,6 +110,8 @@ export class MainViewComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    let today = new Date();
+    this.current_month = this.months[today.getMonth()];
   }
 
   ngOnDestroy(): void {

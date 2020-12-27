@@ -26,13 +26,6 @@ export class AddLifeComponent implements OnInit {
   producers: Producer[] = [];
   constants = {};
 
-  // modes: string[] = ["Annual", "Monthly"];
-  // policy_types: string[] = ["Permanent", "Term"];
-  // products: string[] = ["WL", "UL", "..."];
-  // client_types: string[] = ["New", "Add", "COP", "CONV", "JUV"];
-  // status_options: string[] = ["U/W", "Taken", "Not Taken", "Rejected", "Withdrawn", "Pending"];
-  // life_pivot_bonuses: string[] = ["Full", "80%", "20%", "..."];
-
   private today = new Date();
   addLifeAppForm: FormGroup = this.fb.group({ });
 
@@ -99,31 +92,20 @@ export class AddLifeComponent implements OnInit {
         premium: [],
         mode: ['Monthly'], // TODO: if monthly take premium times 12 to get annual_premium, if annual take entire value
         annual_premium: [], // * could be read only
-        policy_type: ['Term'], // TODO: add Annuity
-        product: ['20 Yr Term'], // TODO: remove mort life things and change increase to change of plan and add "20 Yr ROP", "30 Yr ROP", "Final Expense", "Jackson National"
-        client_type: ['New'], // TODO: remove JUV and change CONV to "Term Conversion"
+        policy_type: ['Term'],
+        product: ['20 Yr Term'],
+        client_type: ['New'],
         bonus: [], // TODO: should be calculated off of life pivot bonus (full, 80, 50, 90) min is 25 always
-        bound: [false], // remove all together
-        status: ['Select Status'], // TODO: remove pending
+        status: ['Select Status'],
         paid_bonus: [], // TODO: change bonus to pull paid bonus as the amount of bonus actually paid to main producer
-        life_pivot_bonuses: ['Select Pivot'], // TODO: remove $25
+        life_pivot_bonuses: ['Select Pivot'],
         issue_month: ['Select Issue Month'],
+        marketing_source: ['Current Client'],
         co_producer_id: ['Select Co-Producer'],
         co_producer_bonus: ['Select Pivot Bonus'] // TODO: set from (annual_premium - bonus), min is 25 always
-        // TODO: add marketing sources (same dropdown as auto and rest)
       });
       this.app_loaded = true;
-    } 
-    // else {
-    //   //console.log("edit form");
-    //   this.form_title = "Edit Life App";
-    //   this.button_text = "UPDATE";
-    //   this.db.list('applications/' + this.app_id).snapshotChanges().subscribe(
-    //     (snapshot: any) => snapshot.map(snap => {
-    //     this.addLifeAppForm.addControl(snap.payload.key, this.fb.control(snap.payload.val()));
-    //     this.app_loaded = true;
-    //   }));
-    // }
+    }
   }
 
   ngOnDestroy(): void {
@@ -140,7 +122,6 @@ export class AddLifeComponent implements OnInit {
   // * pay attention to values that are optional 
   // *    like bonus which when blank should get saved as 0
   // *    and for ones like co-producer select co-producer should change to ""
-  // TODO: remove bound
   onSubmit() {
     let app: LifeApp = {
       type: "life",
@@ -154,11 +135,11 @@ export class AddLifeComponent implements OnInit {
       product: this.get("product"),
       client_type: this.get("client_type"),
       bonus: this.get("bonus"),
-      bound: this.get("bound"),
       status: this.get("status"),
       paid_bonus: this.get("paid_bonus"),
       life_pivot_bonuses: this.get("life_pivot_bonuses"),
       issue_month: this.get("issue_month"),
+      marketing_source: this.get("marketing_source"),
       co_producer_id: this.get("co_producer_id"),
       co_producer_bonus: this.get("co_producer_bonus")
     }

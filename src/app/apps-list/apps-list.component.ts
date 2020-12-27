@@ -24,7 +24,7 @@ export class AppsListComponent implements OnInit {
 
   life_headers: string[] = ["Premium", "Mode", "Annual Premium", "Policy Type", "Product", "Client Type", "Bonus", "Taken", "Paid Bonus", "Issue / Bonus Month", "Life Pivot Bonus"];
   auto_headers: string[] = ["Auto Type", "Tiers", "Bonus", "Submitted Premium", "Status", "Issued Premium", "Marketing Source"];
-  bank_headers: string[] = ["Deposit", "Premium", "Mode", "Status", "Annual Premium", "Product Type", "Product", "Bonus", "Marketing Source"];
+  bank_headers: string[] = ["Product Type", "Bonus", "Status", "Marketing Source"];
   fire_headers: string[] = ["Product", "Submitted Premium", "Status", "Issued Premium", "Marketing Source"];
   health_headers: string[] = ["Premium", "Mode", "Status", "Annual Premium", "Product", "Bonus", "Marketing Source"];
 
@@ -36,8 +36,6 @@ export class AppsListComponent implements OnInit {
 
   subscriptions: Subscription[] = [];
   year: number = 0;
-
-  // TODO: for auto apps if submitted premiums is different from issued, highlight issued in red
 
   constructor(private db: AngularFireDatabase, public  db_auth:  AngularFireAuth, private route: ActivatedRoute, private location: Location, private router: Router) {
     let auth_sub = db_auth.authState.subscribe(user => {
@@ -59,7 +57,7 @@ export class AppsListComponent implements OnInit {
         let sub2 = db.list('applications').snapshotChanges().subscribe(
           (snapshot: any) => snapshot.map(snap => {
             const app = snap.payload.val();
-            console.log(app);
+            //console.log(app);
             if (app["type"] == "life") {
               this.life_apps.push(app as LifeApp);
             } else if (app["type"] == "auto") {
@@ -178,12 +176,13 @@ export class AppsListComponent implements OnInit {
     );
   }
 
-  // TODO: add sort by producer
   orderList(filter: string) {
     if (filter == "date") {
       this.apps.sort((a, b) => a.date.localeCompare(b.date));
     } else if (filter == "client_name") {
       this.apps.sort((a, b) => a.client_name.localeCompare(b.client_name));
+    } else if (filter == "producer") {
+      this.apps.sort((a, b) => this.getProducerName(a.producer_id).localeCompare(this.getProducerName(b.producer_id)));
     }
   }
 

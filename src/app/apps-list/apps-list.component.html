@@ -11,16 +11,14 @@
               </div>
               <div style="display: flex; align-items: center;">
                 <p style="margin: 0px; padding-right: 10px;">Sort:</p>
-                <!-- TODO: get the sort functionality to work -->
                 <select class="custom-select" style="width: 175px;" id="producer" (change)="orderList($event.target.value)">
                   <option selected value="date">By Date</option>
                   <option value="client_name">By Client Name</option>
-                  <!-- <option selected>...</option> -->
+                  <option value="producer">By Producer</option>
                 </select>
               </div>
             </div>
-            <!-- TODO: have cursor change to click looking one on hover -->
-            <a routerLink="/add-{{ this.app_type }}" style="text-decoration: none; display: block;">Add New App</a>
+            <a routerLink="/add-{{ this.app_type }}" style="text-decoration: none; display: block; cursor: pointer;">Add New App</a>
             
             <div style="overflow-x: auto; overflow-y: auto;">
                 <table class="table table-hover">
@@ -56,7 +54,7 @@
                           <td>${{ app.bonus }}</td>
                           <td>${{ app.submitted_premium }}</td>
                           <td>{{ app.status }}</td>
-                          <td>${{ app.issued_premium }}</td>
+                          <td [ngStyle]="{'color': app.submitted_premium == app.issued_premium ? 'black' : 'red'}">${{ app.issued_premium }}</td>
                           <td>{{ app.marketing_source }}</td>
                         </ng-container>
 
@@ -74,9 +72,9 @@
 
                         <ng-container *ngIf="app.type === 'fire'">
                           <td>${{ app.product }}</td>
-                          <td>{{ app.submitted_premium }}</td>
+                          <td>${{ app.submitted_premium }}</td>
                           <td>{{ app.status }}</td>
-                          <td>${{ app.issued_premium }}</td>
+                          <td [ngStyle]="{'color': app.submitted_premium == app.issued_premium ? 'black' : 'red'}">${{ app.issued_premium }}</td>
                           <td>{{ app.marketing_source }}</td>
                         </ng-container>
 

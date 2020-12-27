@@ -19,16 +19,14 @@ import { Subscription } from 'rxjs';
 })
 export class AddAutoComponent implements OnInit {
 
+  // TODO: add in validation checks
+  
   form_title: string = "";
   button_text: string = "";
   app_id: string = ""; // if page is in edit mode, then app_id is set to app's id in database
 
   producers: Producer[] = [];
   constants = {};
-
-  // auto_types: string[] = ["R/N", "Added", "State to State", "Prior SF", "Reinstated"];
-  // tiers: string[] = ["Tier 1", "Tier 2", "Tier 3", "Tier 4", "Tier 5", "Tier 6"];
-  // status_options: string[] = ["Issued", "Declined", "Canceled"];
 
   private today = new Date();
   addAutoAppForm = this.fb.group({ });
@@ -82,7 +80,6 @@ export class AddAutoComponent implements OnInit {
     this.app_id = this.route.snapshot.paramMap.get('id');
     //console.log(this.today.toISOString().substr(0, 10));
 
-    // TODO: don't let number fields be negative
     if (this.app_id == null) {
       //console.log("add form");
       this.form_title = "Add Auto App";
@@ -90,29 +87,18 @@ export class AddAutoComponent implements OnInit {
       this.addAutoAppForm = this.fb.group({
         date: [this.today.toISOString().substr(0, 10)],
         producer_id: ['Select Producer'],
-        client_name: [''], // TODO: remove enter client name thing below input
+        client_name: [''],
         auto_type: ['RN'],
         tiers: ['Tier 1'], // * only needed if RN otherwise be 0
         bonus: [0],
-        submitted_premium: [0], // * typed in
+        submitted_premium: [0], // keep manual
         status: ['Submitted'],
-        issued_premium: [0],  // * when issued is selected set to submitted premium value and allow for modifications
-        marketing_source: [''], // TODO: change to dropdown (default: "Current Client", "Internet Lead", "SF.com Lead", "Referral", "State to State", "Prior SF", "etc.")
-        co_producer_id: ['Select Co-Producer'], // TODO: if there is a co-producer split the app total 0.5 and 0.5
-        co_producer_bonus: [0] // TODO: remove (instead they will get credit towards app totals and get closer)
+        issued_premium: [0], 
+        marketing_source: ['Current Client'], // * CHECK for more options with mom
+        co_producer_id: ['Select Co-Producer']
       });
       this.app_loaded = true;
-    } 
-    // else {
-    //   this.form_title = "Edit Auto App";
-    //   console.log("edit form");
-    //   this.button_text = "UPDATE";
-    //   this.db.list('applications/' + this.app_id).snapshotChanges().subscribe(
-    //     (snapshot: any) => snapshot.map(snap => {
-    //     this.addAutoAppForm.addControl(snap.payload.key, this.fb.control(snap.payload.val()));
-    //     this.app_loaded = true;
-    //   }));
-    // }
+    }
   }
 
   ngOnDestroy(): void {
@@ -121,11 +107,16 @@ export class AddAutoComponent implements OnInit {
     });
   }
 
+  isIssued(status: string) {
+    if (status == "Issued") {
+      this.addAutoAppForm.get('issued_premium').setValue(this.get('submitted_premium'));
+    }
+  }
+
   get(field: string) {
     return this.addAutoAppForm.get(field).value;
   }
   
-  // TODO: add in validation checks
   // * #1 - tiers is only used if auto type is RN
   addApp() {
     console.log(this.addAutoAppForm.valid);
@@ -141,8 +132,7 @@ export class AddAutoComponent implements OnInit {
       status: this.get("status"),
       issued_premium: this.get("issued_premium"),
       marketing_source: this.get("marketing_source"),
-      co_producer_id: this.get("co_producer_id"),
-      co_producer_bonus: this.get("co_producer_bonus")
+      co_producer_id: this.get("co_producer_id")
     }
     if (app.producer_id.includes("Select")) {
       // validation error, no producer is selected
@@ -155,17 +145,17 @@ export class AddAutoComponent implements OnInit {
     }
     console.log(app);
 
-    // if (this.app_id == null) {
-    //   // adds new application
-    //   this.db.list('/applications').update(this.randomString(16), app).then(() => {
-    //     this.router.navigate(['auto']);
-    //   });
-    // } else {
-    //   // updates existing application
-    //   this.db.list('/applications').update(this.app_id, app).then(() => {
-    //     this.router.navigate(['auto']);
-    //   });
-    // }
+    if (this.app_id == null) {
+      // adds new application
+      this.db.list('/applications').update(this.randomString(16), app).then(() => {
+        this.router.navigate(['auto']);
+      });
+    } else {
+      // updates existing application
+      this.db.list('/applications').update(this.app_id, app).then(() => {
+        this.router.navigate(['auto']);
+      });
+    }
     // after add should bring up alert saying successfully added app
   }
 
