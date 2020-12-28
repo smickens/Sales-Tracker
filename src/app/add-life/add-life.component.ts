@@ -57,7 +57,7 @@ export class AddLifeComponent implements OnInit {
         this.subscriptions.push(sub2);
 
         this.app_id = this.route.snapshot.paramMap.get('id');
-        console.log(this.app_id);
+        //console.log(this.app_id);
 
         if (this.app_id != null) {
           //console.log("edit form");
@@ -87,22 +87,22 @@ export class AddLifeComponent implements OnInit {
       this.button_text = "SUBMIT";
       this.addLifeAppForm = this.fb.group({
         date: [this.today.toISOString().substr(0, 10)],
-        producer_id: ['Select Producer'], // TODO: check that only main producer get app count
+        producer_id: [''], // * CHECK that only main producer get life app count
         client_name: [''],
-        premium: [],
-        mode: ['Monthly'], // TODO: if monthly take premium times 12 to get annual_premium, if annual take entire value
-        annual_premium: [], // * could be read only
+        premium: [0],
+        mode: ['Monthly'],
+        annual_premium: [0], 
         policy_type: ['Term'],
         product: ['20 Yr Term'],
         client_type: ['New'],
-        bonus: [], // TODO: should be calculated off of life pivot bonus (full, 80, 50, 90) min is 25 always
-        status: ['Select Status'],
-        paid_bonus: [], // TODO: change bonus to pull paid bonus as the amount of bonus actually paid to main producer
-        life_pivot_bonus: ['Select Pivot'],
-        issue_month: ['Select Issue Month'],
+        bonus: [0], // * CHECK can this just be removed, since it equals annual premium
+        status: [''],
+        paid_bonus: [0],
+        life_pivot_bonus: [''],
+        issue_month: [''],
         marketing_source: ['Current Client'],
-        co_producer_id: ['Select Co-Producer'],
-        co_producer_bonus: ['Select Pivot Bonus'] // TODO: set from (annual_premium - bonus), min is 25 always
+        co_producer_id: [''],
+        co_producer_bonus: [0]
       });
       this.app_loaded = true;
     }
@@ -114,8 +114,67 @@ export class AddLifeComponent implements OnInit {
     });
   }
 
+  updateAnnualPremium() {
+    let factor = 1; // defaults to annual
+    let mode = this.get("mode");
+    if (mode == "Monthly") {
+      factor = 12;
+    }
+    this.addLifeAppForm.get('bonus').setValue(factor * this.get('premium'));
+    this.addLifeAppForm.get('annual_premium').setValue(factor * this.get('premium'));
+    this.updateBonus();
+  }
+
+  updateBonus() {
+    if (this.get("life_pivot_bonus") == "Manual") {
+      // in manual mode paid bonus and co producer bonus are allowed to be manually edited
+      document.getElementById('paid_bonus').removeAttribute('readonly');
+      document.getElementById('co_producer_bonus').removeAttribute('readonly');
+    } else {
+      // if a life pivot percentage is set, then paid and co producer bonus are read only values determined by percentage
+      document.getElementById('paid_bonus').setAttribute('readonly', 'true');
+      document.getElementById('co_producer_bonus').setAttribute('readonly', 'true');
+
+      let percentage = Number(this.get("life_pivot_bonus").substring(0, this.get("life_pivot_bonus").length-1)) / 100;
+      //console.log("Percentage: " + percentage);
+
+      // min bonus is always 25
+      if (percentage * this.get('annual_premium') >= 25) {
+        let main_producer_bonus = percentage * this.get('annual_premium');
+        main_producer_bonus = Math.round(main_producer_bonus * 100) / 100;
+        this.addLifeAppForm.get('paid_bonus').setValue(main_producer_bonus);
+      } else {
+        this.addLifeAppForm.get('paid_bonus').setValue(25);
+      }
+      if (this.get('co_producer_id') != "") {
+        if ((1-percentage) * this.get('annual_premium') >= 25) {
+          let co_producer_bonus = (1-percentage) * this.get('annual_premium');
+          co_producer_bonus = Math.round(co_producer_bonus * 100) / 100;
+          this.addLifeAppForm.get('co_producer_bonus').setValue(co_producer_bonus);
+        } else {
+          this.addLifeAppForm.get('co_producer_bonus').setValue(25);
+        }
+      } else {
+        this.addLifeAppForm.get('co_producer_bonus').setValue(0);
+      }
+    }
+  }
+
   get(field: string) {
     return this.addLifeAppForm.get(field).value;
+  }
+
+  setValid(e) {
+    e.target.classList.remove("is-invalid");
+  }
+
+  checkIfValid(id: string, value: string) {
+    if (value == "") {
+      document.getElementById(id).classList.add("is-invalid");
+      return false;
+    }
+    document.getElementById(id).classList.remove("is-invalid");
+    return true;
   }
   
   // TODO: add validation checks on all add forms
@@ -123,6 +182,40 @@ export class AddLifeComponent implements OnInit {
   // *    like bonus which when blank should get saved as 0
   // *    and for ones like co-producer select co-producer should change to ""
   onSubmit() {
+    let isValid = true;
+    if (!this.checkIfValid("client_name", (this.get("client_name") as string).trim())) {
+      isValid = false;
+    }
+    if (!this.checkIfValid("producer_id", this.get("producer_id"))) {
+      isValid = false;
+    }
+    if (!this.checkIfValid("mode", this.get("mode"))) {
+      isValid = false;
+    }
+    if (!this.checkIfValid("policy_type", this.get("policy_type"))) {
+      isValid = false;
+    } 
+    if (!this.checkIfValid("product", this.get("product"))) {
+      isValid = false;
+    } 
+    if (!this.checkIfValid("client_type", this.get("client_type"))) {
+      isValid = false;
+    } 
+    if (!this.checkIfValid("life_pivot_bonus", this.get("life_pivot_bonus"))) {
+      isValid = false;
+    } 
+    if (!this.checkIfValid("issue_month", this.get("issue_month"))) {
+      isValid = false;
+    } 
+    if (!this.checkIfValid("status", this.get("status"))) {
+      isValid = false;
+    }
+
+    // if form is invalid, it breaks out of function and displays a popup with the missing values
+    if (!isValid) {
+      return;
+    }
+    
     let app: LifeApp = {
       type: "life",
       date: this.get("date"),
@@ -156,7 +249,6 @@ export class AddLifeComponent implements OnInit {
         this.router.navigate(['life']);
       });
     }
-    // after add should bring up alert saying successfully added app
   }
 
   randomString(length: number) {

@@ -144,8 +144,12 @@ export class AppsListComponent implements OnInit {
     this.apps = [];
     let apps_to_copy;
     if (this.app_type === "life") {
+      console.log("Life Apps");
+      console.log(this.life_apps);
       apps_to_copy = this.life_apps;
     } else if (this.app_type === "auto") {
+      console.log("Auto Apps");
+      console.log(this.auto_apps);
       apps_to_copy = this.auto_apps;
     } else if (this.app_type === "bank") {
       apps_to_copy = this.bank_apps;
@@ -156,6 +160,8 @@ export class AppsListComponent implements OnInit {
     } else if (this.app_type === "mutual-funds") {
       apps_to_copy = this.mutual_funds_apps;
     }
+    console.log("this.apps");
+    console.log(this.apps);
     for (const app of apps_to_copy) {
       this.apps.push(app);
     }

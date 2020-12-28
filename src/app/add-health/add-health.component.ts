@@ -81,17 +81,17 @@ export class AddHealthComponent implements OnInit {
       this.button_text = "SUBMIT";
       this.addHealthAppForm = this.fb.group({
         date: [this.today.toISOString().substr(0, 10)],
-        producer_id: ['Select Producer'],
+        producer_id: [''],
         client_name: [''],
-        premium: [],
+        premium: [0],
         mode: ['Monthly'],
-        status: ['Select Status'],
-        annual_premium: [],
+        status: [''],
+        annual_premium: [0],
         product: ['Disability Income'],
-        bonus: [], // keep manual
+        bonus: [0], // keep manual
         marketing_source: ['Current Client'],
-        co_producer_id: ['Select Co-Producer'],
-        co_producer_bonus: [] // keep manual
+        co_producer_id: [''],
+        co_producer_bonus: [0] // keep manual
       });
       this.app_loaded = true;
     }
@@ -119,14 +119,49 @@ export class AddHealthComponent implements OnInit {
   get(field: string) {
     return this.addHealthAppForm.get(field).value;
   }
+
+  setValid(e) {
+    e.target.classList.remove("is-invalid");
+  }
+
+  checkIfValid(id: string, value: string) {
+    if (value == "") {
+      document.getElementById(id).classList.add("is-invalid");
+      return false;
+    }
+    document.getElementById(id).classList.remove("is-invalid");
+    return true;
+  }
   
   onSubmit() {
+    let isValid = true;
+    if (!this.checkIfValid("client_name", (this.get("client_name") as string).trim())) {
+      isValid = false;
+    }
+    if (!this.checkIfValid("producer_id", this.get("producer_id"))) {
+      isValid = false;
+    }
+    if (!this.checkIfValid("mode", this.get("mode"))) {
+      isValid = false;
+    }
+    if (!this.checkIfValid("product", this.get("product"))) {
+      isValid = false;
+    } 
+    if (!this.checkIfValid("status", this.get("status"))) {
+      isValid = false;
+    }
+
+    // if form is invalid, it breaks out of function and displays a popup with the missing values
+    if (!isValid) {
+      return;
+    }
+    
     let app: HealthApp = {
       type: "health",
       date: this.get("date"),
       client_name: this.get("client_name"),
       producer_id: this.get("producer_id"),
-      premium: this.get("premium"),
+      premium: this.get("premium"), // TODO: may need check for premium, if it is 0
       mode: this.get("mode"),
       status: this.get("status"),
       annual_premium: this.get("annual_premium"),

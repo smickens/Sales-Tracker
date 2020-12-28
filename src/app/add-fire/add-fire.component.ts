@@ -83,14 +83,14 @@ export class AddFireComponent implements OnInit {
       this.button_text = "SUBMIT";
       this.addFireAppForm = this.fb.group({
         date: [this.today.toISOString().substr(0, 10)],
-        producer_id: ['Select Producer'],
-        client_name: [],
+        producer_id: [''],
+        client_name: [''],
         product: ['Homeowners'], // * CHECK w/ mom for more options later
-        submitted_premium: [],
-        status: ['Select Status'],
-        issued_premium: [], 
+        submitted_premium: [0],
+        status: [''],
+        issued_premium: [0], 
         marketing_source: ['Current Client'],
-        co_producer_id: ['Select Co-Producer']
+        co_producer_id: ['']
       });
       this.app_loaded = true;
     } 
@@ -105,8 +105,40 @@ export class AddFireComponent implements OnInit {
   get(field: string) {
     return this.addFireAppForm.get(field).value;
   }
+
+  setValid(e) {
+    e.target.classList.remove("is-invalid");
+  }
+
+  checkIfValid(id: string, value: string) {
+    if (value == "") {
+      document.getElementById(id).classList.add("is-invalid");
+      return false;
+    }
+    document.getElementById(id).classList.remove("is-invalid");
+    return true;
+  }
   
   onSubmit() {
+    let isValid = true;
+    if (!this.checkIfValid("client_name", (this.get("client_name") as string).trim())) {
+      isValid = false;
+    }
+    if (!this.checkIfValid("producer_id", this.get("producer_id"))) {
+      isValid = false;
+    }
+    if (!this.checkIfValid("product", this.get("product"))) {
+      isValid = false;
+    }
+    if (!this.checkIfValid("status", this.get("status"))) {
+      isValid = false;
+    }
+
+    // if form is invalid, it breaks out of function and displays a popup with the missing values
+    if (!isValid) {
+      return;
+    }
+    
     let app: FireApp = {
       type: "fire",
       date: this.get("date"),

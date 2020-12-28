@@ -79,18 +79,17 @@ export class AddMutualFundComponent implements OnInit {
     this.app_id = this.route.snapshot.paramMap.get('id');
     //console.log(this.app_id);
 
-    // TODO: since select ____ value are now "" need to set them to dropdown at index 0 on start
     // TODO: ask mom if status is needed
     if (this.app_id == null) {
       this.form_title = "Add Mutual Funds App";
       this.button_text = "SUBMIT";
       this.addMutualFundsForm = this.fb.group({
         date: [this.today.toISOString().substr(0, 10)],
-        producer_id: ['Select Producer'],
+        producer_id: [''],
         client_name: [''],
         product_type: ['Traditional IRA'],
         amount: ['1-Time Contribution'],
-        status: ['Select Status'], 
+        status: [''], 
         marketing_source: ['Current Client']
       });
       this.app_loaded = true;
@@ -106,8 +105,43 @@ export class AddMutualFundComponent implements OnInit {
   get(field: string) {
     return this.addMutualFundsForm.get(field).value;
   }
+
+  setValid(e) {
+    e.target.classList.remove("is-invalid");
+  }
+
+  checkIfValid(id: string, value: string) {
+    if (value == "") {
+      document.getElementById(id).classList.add("is-invalid");
+      return false;
+    }
+    document.getElementById(id).classList.remove("is-invalid");
+    return true;
+  }
   
   onSubmit() {
+    let isValid = true;
+    if (!this.checkIfValid("client_name", (this.get("client_name") as string).trim())) {
+      isValid = false;
+    }
+    if (!this.checkIfValid("producer_id", this.get("producer_id"))) {
+      isValid = false;
+    }
+    if (!this.checkIfValid("product_type", this.get("product_type"))) {
+      isValid = false;
+    }
+    if (!this.checkIfValid("amount", this.get("amount"))) {
+      isValid = false;
+    } 
+    if (!this.checkIfValid("status", this.get("status"))) {
+      isValid = false;
+    }
+
+    // if form is invalid, it breaks out of function and displays a popup with the missing values
+    if (!isValid) {
+      return;
+    }
+    
     // only allows agent to add mutual fund
     if (this.get("producer_id") == "napD") {
       let app: MutualFundApp = {

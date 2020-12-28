@@ -84,14 +84,14 @@ export class AddBankComponent implements OnInit {
       this.button_text = "SUBMIT";
       this.addBankAppForm = this.fb.group({
         date: [this.today.toISOString().substr(0, 10)],
-        producer_id: ['Select Producer'],
+        producer_id: [''],
         client_name: [''],
-        status: ['Select Status'], 
+        status: [''], 
         product_type: ['Quicken Mortage Refi'],
-        bonus: [], // keep manual
+        bonus: [0], // keep manual
         marketing_source: ['Current Client'],
-        co_producer_id: ['Select Co-Producer'],
-        co_producer_bonus: [] // keep manual
+        co_producer_id: [''],
+        co_producer_bonus: [0] // keep manual
       });
       this.app_loaded = true;
     }
@@ -106,8 +106,40 @@ export class AddBankComponent implements OnInit {
   get(field: string) {
     return this.addBankAppForm.get(field).value;
   }
+
+  setValid(e) {
+    e.target.classList.remove("is-invalid");
+  }
+
+  checkIfValid(id: string, value: string) {
+    if (value == "") {
+      document.getElementById(id).classList.add("is-invalid");
+      return false;
+    }
+    document.getElementById(id).classList.remove("is-invalid");
+    return true;
+  }
   
   onSubmit() {
+    let isValid = true;
+    if (!this.checkIfValid("client_name", (this.get("client_name") as string).trim())) {
+      isValid = false;
+    }
+    if (!this.checkIfValid("producer_id", this.get("producer_id"))) {
+      isValid = false;
+    }
+    if (!this.checkIfValid("product_type", this.get("product_type"))) {
+      isValid = false;
+    }
+    if (!this.checkIfValid("status", this.get("status"))) {
+      isValid = false;
+    }
+
+    // if form is invalid, it breaks out of function and displays a popup with the missing values
+    if (!isValid) {
+      return;
+    }
+
     let app: BankApp = {
       type: "bank",
       date: this.get("date"),
@@ -120,9 +152,6 @@ export class AddBankComponent implements OnInit {
       co_producer_id: this.get("co_producer_id"),
       co_producer_bonus: this.get("co_producer_bonus")
     }
-    // TODO: - had to add in co_producer_bonus value to bank app to keep from erroring
-    // * may need co bonus to default to 0
-    
     // console.log(app);
 
     if (this.app_id == null) {

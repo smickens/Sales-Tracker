@@ -13,31 +13,31 @@
                     </div>
                     <div class="col form-group">
                         <label for="producer_id">PRODUCER</label>
-                        <select class="custom-select" formControlName="producer_id" id="producer_id">
-                            <option selected>Select Producer</option>
+                        <select class="custom-select" formControlName="producer_id" id="producer_id" (focus)="setValid($event)">
+                            <option value="" selected>Select Producer</option>
                             <option *ngFor="let producer of producers" value="{{producer.id}}"> {{ producer.name }} </option>
                         </select>
                     </div>
                     <div class="col form-group">
                         <label for="client_name">CLIENT</label>
                         <!-- name="client_name" required -->
-                        <input type="text" class="form-control" formControlName="client_name" id="client_name" autocomplete="off">
+                        <input type="text" class="form-control" formControlName="client_name" id="client_name" (focus)="setValid($event)" autocomplete="off">
                     </div>
                 </div>
         
                 <div class="form-row mb-2">
                     <div class="col-auto form-group">
                         <label for="auto_type">AUTO TYPE</label>
-                        <select class="custom-select" formControlName="auto_type" id="auto_type">
-                            <option selected>Select Auto Type</option>
+                        <select class="custom-select" formControlName="auto_type" id="auto_type" (focus)="setValid($event)">
+                            <option value="" selected>Select Auto Type</option>
                             <option *ngFor="let option of constants['auto_types']" value="{{option}}"> {{ option }} </option>
                         </select>
                     </div>
         
                     <div class="col form-group">
                         <label for="tiers">TIERS</label>
-                        <select class="custom-select" formControlName="tiers" id="tiers">
-                            <option selected>Select Tier</option>
+                        <select class="custom-select" formControlName="tiers" id="tiers" (focus)="setValid($event)">
+                            <option value="" selected>Select Tier</option>
                             <option *ngFor="let option of constants['tiers']" value="{{option}}"> {{ option }} </option>
                         </select>
                     </div>
@@ -76,8 +76,8 @@
 
                     <div class="col form-group">
                         <label for="status">STATUS</label>
-                        <select class="custom-select" formControlName="status" id="status" (change)="isIssued($event.target.value)">
-                            <option selected>Select Status</option>
+                        <select class="custom-select" formControlName="status" id="status" (change)="isIssued($event.target.value)" (focus)="setValid($event)">
+                            <option value="" selected>Select Status</option>
                             <option *ngFor="let option of constants['status_options']" value="{{option}}"> {{ option }} </option>
                         </select>
                     </div>
@@ -87,7 +87,7 @@
                     <div class="col form-group">
                         <label for="marketing_source">MARKETING SOURCE</label>
                         <select class="custom-select" formControlName="marketing_source" id="marketing_source">
-                            <option selected>Select Marketing Source</option>
+                            <option value="" selected>Select Marketing Source</option>
                             <option *ngFor="let option of constants['marketing_source']" value="{{option}}"> {{ option }} </option>
                         </select>
                     </div>
@@ -95,7 +95,7 @@
                     <div class="col form-group">
                         <label for="co_producer_id">CO-PRODUCER</label>
                         <select class="custom-select" formControlName="co_producer_id" id="co_producer_id">
-                            <option selected>Select Co-Producer</option>
+                            <option value="" selected>Select Co-Producer</option>
                             <option *ngFor="let producer of producers" value="{{producer.id}}"> {{ producer.name }} </option>
                         </select>
                     </div>

@@ -87,6 +87,7 @@ export class BonusesComponent implements OnInit {
     let auth_sub = db_auth.authState.subscribe(user => {
       if (user) {
         environment.logged_in = true;
+        this.selected_year = this.today.getFullYear();
         this.loadBonusData();
       } else {
         environment.logged_in = false;
@@ -115,10 +116,6 @@ export class BonusesComponent implements OnInit {
   }
 
   loadBonusData() {
-    //  get current year
-    let year = this.today.getFullYear();
-    this.selected_year = year;
-
     // gets list of producers
     let index = 0;
     let producer_indexes = [];
@@ -140,8 +137,8 @@ export class BonusesComponent implements OnInit {
 
         // gets corporate bonuses
         if ("corporate_bonuses" in snap.payload.val()) {
-          if (year in snap.payload.val()["corporate_bonuses"]) {
-            const corporate_bonus = producer["corporate_bonuses"][year];
+          if (this.selected_year in snap.payload.val()["corporate_bonuses"]) {
+            const corporate_bonus = producer["corporate_bonuses"][this.selected_year];
             //console.log(corporate_bonus);
             for (let month in corporate_bonus) {
               console.log(month + ": " + corporate_bonus[month]);
@@ -180,7 +177,7 @@ export class BonusesComponent implements OnInit {
 
             // TODO: NEED SOME KIND OF DROPDOWN FOR YEAR
             // app_went_through == true && 
-            if (app_year == year) {
+            if (app_year == this.selected_year) {
               const producer_id = app["producer_id"];
               // production bonus
               const bonus = app["bonus"];
@@ -265,25 +262,21 @@ export class BonusesComponent implements OnInit {
     e.target.removeAttribute('readonly');
   }
 
-  updateBonus(e) {
+  updateBonus(e, producer_id: string) {
     e.target.setAttribute('readonly', true);
     // TODO: have it update coporate bonus value in db here
-    //this.db.list('producers/'+producer_id+'/corporate_bonuses/'+year).update('/', bonus);
+    // producer_id
+    console.log(producer_id);
+    // bonus
+    console.log(e.target);
+    console.log(e.target.value);
+    //this.db.list('producers/'+producer_id+'/corporate_bonuses/'+this.selected_year).update('/', bonus);
   }
 
   // ? I think switching the year thing to an input broke this a bit
   // TODO: fix change of year
-  filterByYear(filter: string) {
-    this.producers = [];
-    this.db.list('producers').snapshotChanges().subscribe(
-      (snapshot: any) => snapshot.map(snap => {
-        const producer = snap.payload.val();
-        console.log(producer);
-        if (producer["name"] == filter || filter == "All Producers") {
-          this.producers.push(producer);
-        }
-       })
-    );
+  filterByYear(year: number) {
+    this.selected_year = year;
   }
 
   chartClicked(): void {

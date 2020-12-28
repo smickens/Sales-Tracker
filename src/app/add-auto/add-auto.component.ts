@@ -18,8 +18,6 @@ import { Subscription } from 'rxjs';
   styleUrls: ['./add-auto.component.scss']
 })
 export class AddAutoComponent implements OnInit {
-
-  // TODO: add in validation checks
   
   form_title: string = "";
   button_text: string = "";
@@ -86,7 +84,7 @@ export class AddAutoComponent implements OnInit {
       this.button_text = "SUBMIT";
       this.addAutoAppForm = this.fb.group({
         date: [this.today.toISOString().substr(0, 10)],
-        producer_id: ['Select Producer'],
+        producer_id: [''],
         client_name: [''],
         auto_type: ['RN'],
         tiers: ['Tier 1'], // * only needed if RN otherwise be 0
@@ -95,7 +93,7 @@ export class AddAutoComponent implements OnInit {
         status: ['Submitted'],
         issued_premium: [0], 
         marketing_source: ['Current Client'], // * CHECK for more options with mom
-        co_producer_id: ['Select Co-Producer']
+        co_producer_id: ['']
       });
       this.app_loaded = true;
     }
@@ -116,10 +114,45 @@ export class AddAutoComponent implements OnInit {
   get(field: string) {
     return this.addAutoAppForm.get(field).value;
   }
+
+  setValid(e) {
+    e.target.classList.remove("is-invalid");
+  }
+
+  checkIfValid(id: string, value: string) {
+    if (value == "") {
+      document.getElementById(id).classList.add("is-invalid");
+      return false;
+    }
+    document.getElementById(id).classList.remove("is-invalid");
+    return true;
+  }
   
-  // * #1 - tiers is only used if auto type is RN
+  // TODO: tiers is only used if auto type is RN
   onSubmit() {
-    //console.log(this.addAutoAppForm.valid);
+    let isValid = true;
+    if (!this.checkIfValid("client_name", (this.get("client_name") as string).trim())) {
+      isValid = false;
+    }
+    if (!this.checkIfValid("producer_id", this.get("producer_id"))) {
+      isValid = false;
+    }
+    if (!this.checkIfValid("auto_type", this.get("auto_type"))) {
+      isValid = false;
+    }
+    if (!this.checkIfValid("tiers", this.get("tiers"))) {
+      isValid = false;
+    } 
+    if (!this.checkIfValid("status", this.get("status"))) {
+      isValid = false;
+    }
+
+    // if form is invalid, it breaks out of function and displays a popup with the missing values
+    if (!isValid) {
+      return;
+    }
+    
+    // otherwise it submits the form
     let app: AutoApp = {
       type: "auto",
       date: this.get("date"),
@@ -134,16 +167,7 @@ export class AddAutoComponent implements OnInit {
       marketing_source: this.get("marketing_source"),
       co_producer_id: this.get("co_producer_id")
     }
-    // if (app.producer_id.includes("Select")) {
-    //   // validation error, no producer is selected
-    // }
-    // if (app.client_name.includes("Select")) {
-    //   // validation error, no client name inputed
-    // }
-    // if (app.co_producer_id.includes("Select")) {
-    //   app.co_producer_id = "";
-    // }
-    console.log(app);
+    //console.log(app);
 
     if (this.app_id == null) {
       // adds new application
@@ -156,7 +180,6 @@ export class AddAutoComponent implements OnInit {
         this.router.navigate(['auto']);
       });
     }
-    // after add should bring up alert saying successfully added app
   }
 
   randomString(length: number) {
