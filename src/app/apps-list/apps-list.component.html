@@ -18,7 +18,7 @@
                 </select>
               </div>
             </div>
-            <a routerLink="/add-{{ this.app_type }}" style="text-decoration: none; display: block; cursor: pointer;">Add {{ app_type | titlecase }} App</a>
+            <a routerLink="/add-{{ this.app_type }}" style="text-decoration: none; display: block; cursor: pointer;">Add {{ app_type === "mutual-funds" ? "Mutual Funds" : app_type | titlecase }} App</a>
             
             <div style="overflow-x: auto; overflow-y: auto;">
                 <table class="table table-hover">
@@ -28,13 +28,14 @@
                       </tr>
                     </thead>
                     <tbody>
-                      <!-- (click)="editApp(app.id)" -->
-                      <tr *ngFor="let app of apps; index as i;" routerLink="/{{ this.app_type }}/{{app.id}}">
-                        <th scope="row">{{ i+1 }}</th>
+                      <!-- routerLink="/{{ this.app_type }}/{{app.id}}" -->
+                      <tr *ngFor="let app of apps; index as i;" (click)="!isHoveringDelete ? editApp(app.id) : confirmDelete(app)">
+                        <th class="rowIndex" scope="row" (click)="confirmDelete(app)" (mouseenter)="isHoveringDelete = true" (mouseleave)="isHoveringDelete = false" data-toggle="modal" data-target="#confirmDeleteModal"><span class="hide">x</span> <span class="show">{{ i+1 }}</span></th>
+                       
                         <td>{{ app.date | date: 'shortDate' }}</td>
                         <td>{{ getProducerName(app.producer_id) }}</td>
                         <td>{{ app.client_name | titlecase }}</td>
-
+                        
                         <ng-container *ngIf="app.type === 'life'">
                           <td>${{ app.premium }}</td>
                           <td>{{ app.mode }}</td>
@@ -85,7 +86,7 @@
                         </ng-container>
 
                         <ng-container *ngIf="app.type === 'mutual-funds'">
-                          <td>${{ app.product_type }}</td>
+                          <td>{{ app.product_type }}</td>
                           <td>{{ app.amount }}</td>
                           <td>{{ app.marketing_source }}</td>
                         </ng-container>
@@ -97,6 +98,27 @@
                     </tbody>
                 </table>
             </div>
+
+            <div class="modal fade" id="confirmDeleteModal" tabindex="-1" role="dialog" aria-labelledby="confirmDeleteModalTitle" aria-hidden="true">
+              <div class="modal-dialog modal-dialog-centered" role="document">
+                  <div class="modal-content">
+                      <div class="modal-header">
+                          <h5 class="modal-title" id="confirmDeleteModalTitle">Are you sure?</h5>
+                          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                              <span aria-hidden="true">&times;</span>
+                          </button>
+                      </div>
+                      <div class="modal-body" id="modalDeleteMessage">
+                          Press confirm to remove app "______". 
+                      </div>
+                      <div class="modal-footer">
+                          <button type="button" class="btn btn-outline-danger" data-dismiss="modal">Cancel</button>
+                          <button id="deleteBtn" type="button" class="btn btn-secondary" (click)="deleteApp()" data-toggle="modal" data-target="#confirmDeleteModal">Confirm</button>
+                      </div>
+                  </div>
+              </div>
+            </div>
+
         </div>
     </div>
 </div>

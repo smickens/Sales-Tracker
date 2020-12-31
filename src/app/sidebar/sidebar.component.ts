@@ -18,6 +18,14 @@ export class SidebarComponent implements OnInit {
   ngOnInit(): void {
   }
 
+  openSidebar() {
+    document.getElementById("sidebar").style.width = "250px";
+  }
+
+  closeSidebar() {
+    document.getElementById("sidebar").style.width = "50px";
+  }
+
   async logout(){
     await this.db_auth.signOut();
   }

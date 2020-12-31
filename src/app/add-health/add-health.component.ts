@@ -58,11 +58,12 @@ export class AddHealthComponent implements OnInit {
         if (this.app_id != null) {
           this.form_title = "Edit Health App";
           this.button_text = "UPDATE";
-          this.db.list('applications/' + this.app_id).snapshotChanges().subscribe(
+          let app_sub = this.db.list('applications/' + this.app_id).snapshotChanges().subscribe(
             (snapshot: any) => snapshot.map(snap => {
             this.addHealthAppForm.addControl(snap.payload.key, this.fb.control(snap.payload.val()));
             this.app_loaded = true;
           }));
+          this.subscriptions.push(app_sub);
         }
 
       } else {
@@ -161,7 +162,7 @@ export class AddHealthComponent implements OnInit {
       date: this.get("date"),
       client_name: this.get("client_name"),
       producer_id: this.get("producer_id"),
-      premium: this.get("premium"), // TODO: may need check for premium, if it is 0
+      premium: this.get("premium"), 
       mode: this.get("mode"),
       status: this.get("status"),
       annual_premium: this.get("annual_premium"),
@@ -171,11 +172,7 @@ export class AddHealthComponent implements OnInit {
       co_producer_id: this.get("co_producer_id"),
       co_producer_bonus: this.get("co_producer_bonus")
     }
-
-    // TODO: - had to add in co_producer_bonus value to bank app to keep from erroring (same issue as auto)
-    // * may need co bonus to default to 0
-
-    console.log(app);
+    //console.log(app);
 
     if (this.app_id == null) {
       // adds new application
@@ -188,8 +185,6 @@ export class AddHealthComponent implements OnInit {
         this.router.navigate(['health']);
       });
     }
-
-    // after add should bring up alert saying successfully added app
   }
 
   randomString(length: number) {

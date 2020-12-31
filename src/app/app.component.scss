@@ -1,0 +1,24 @@
+#openBtn {
+    font-size: 24px;
+    color: white;
+    padding-top: 15px;
+}
+
+#closeBtn {
+    font-size: 32px;
+    color: white;
+    padding-top: 5px;
+    display: none;
+}
+
+.sidebar {
+    height: 100%; 
+    position: fixed; 
+    z-index: 1;
+    top: 0;
+    left: 0;
+}
+
+.sidebar:hover {
+    width: 180px;
+}

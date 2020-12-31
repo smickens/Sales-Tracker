@@ -14,72 +14,21 @@
                 <input type="number" id="year" (change)="filterByYear($event.target.value)" placeholder="Enter Year" [value]="selected_year" style="width: 120px;" autocomplete="off">
               </div>
             </div>
-            <a style="text-decoration: none; display: block; color: #007bff;" (click)="add_bonus = !add_bonus">Add New Bonus</a>
             
             <div style="overflow-x: auto; overflow-y: auto; margin-top: 15px;">
-              
-              <!-- <form [formGroup]="addBonusForm" *ngIf="add_bonus">
-                <div class="row" style="display: flex; align-items: flex-end;">
-                  <div class="col-auto form-group">
-                    <label for="producer_id">PRODUCER</label>
-                    <select class="custom-select" formControlName="producer_id" id="producer_id">
-                        <option selected>Select Producer</option>
-                        <option *ngFor="let producer of producers" value="{{producer.id}}"> {{ producer.name }} </option>
-                    </select>
-                  </div>
-
-                  <div class="col-auto form-group">
-                    <label for="month">MONTH</label>
-                    <select class="custom-select" formControlName="month" id="month">
-                        <option selected>Select Month</option>
-                        <option *ngFor="let month of months" value="{{month}}"> {{ month }} </option>
-                    </select>
-                  </div>
-
-                  <div class="col form-group">
-                    <label for="year">YEAR</label>
-                    <input type="number" class="form-control" formControlName="year" id="year" autocomplete="off">
-                  </div>
-
-                  <div class="col-auto form-group">
-                    <label for="corporate_bonus">CORPORATE BONUS</label>
-                    <div class="input-group">
-                        <div class="input-group-prepend">
-                            <span class="input-group-text">$</span>
-                        </div>
-                        <input type="number" class="form-control" formControlName="corporate_bonus" id="corporate_bonus" autocomplete="off" style="max-width: 120px;">
-                    </div>
-                  </div>
-
-                  <div class="col-auto form-group">
-                    <input class="submit_btn" type="submit" value="ADD" (click)="addBonus()">
-                  </div>
-                </div>
-              </form> -->
 
               <div class="container" style="display: flex; justify-content: center;">
-                <div class="row" style="width: 80%;">
+                <div class="row" style="width: 95%;">
                   <!-- 
                       guides to install chart setup 
                       - https://medium.com/codingthesmartway-com-blog/angular-chart-js-with-ng2-charts-e21c8262777f 
                       - https://www.npmjs.com/package/ng2-charts
                   -->
-                  <canvas *ngIf="bonuses_loaded" #chart baseChart
-                          [datasets]="barChartData"
-                          [labels]="barChartLabels"
-                          [options]="barChartOptions"
-                          [legend]="barChartLegend"
-                          [chartType]="barChartType"
-                          [colors]="barChartColors"
-                          (chartClick)="chartClicked()"
-                          (chartHover)="chartHovered()">
-                  </canvas>
-                  <!-- <canvas #chart></canvas> -->
+                  <canvas id="canvas" #lineChart>{{ bonus_chart }}</canvas>
                 </div>
               </div>
               
               <!-- ? maybe modify font sizes/styling to get content to present better -->
-              <!-- TODO: double check if values are correct -->
               <!-- TODO: needs to only grab values of app's that are taken and in some cases add bonus to the taken month -->
               <div *ngFor="let producer of producers">
                 <h4>{{ producer.name }}</h4>
@@ -101,7 +50,7 @@
                       <th scope="row">Corporate Bonus</th>
                       <ng-container *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
                         <td>
-                          <input type="number" style="width: 50px;" [value]="corporate_bonuses[producer.id][i-1]" (click)="editBonus($event)" (blur)="updateBonus($event, producer.id)" readonly>
+                          <input type="number" style="width: 50px;" [value]="corporate_bonuses[producer.id][i-1]" (click)="editBonus($event)" (blur)="updateBonus($event, producer.id, i)" readonly>
                         </td>
                       </ng-container>
                     </tr>

@@ -11,7 +11,7 @@
 
 export interface Producer {
     name: string;
-    id: string;
+    id?: string;
     hired_date?: string;
     pin?: number;
     //showing?: boolean;

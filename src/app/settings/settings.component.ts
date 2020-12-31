@@ -126,8 +126,7 @@ export class SettingsComponent implements OnInit {
     if (name.trim() != "") {
       let id = this.randomProducerID();
       let producer: Producer = {
-        name: this.get(this.addProducerForm, "new_producer"),
-        id: id
+        name: this.get(this.addProducerForm, "new_producer")
       }
       this.db.list('producers').update(id, producer);
 

@@ -63,11 +63,12 @@ export class AddLifeComponent implements OnInit {
           //console.log("edit form");
           this.form_title = "Edit Life App";
           this.button_text = "UPDATE";
-          this.db.list('applications/' + this.app_id).snapshotChanges().subscribe(
+          let app_sub = this.db.list('applications/' + this.app_id).snapshotChanges().subscribe(
             (snapshot: any) => snapshot.map(snap => {
             this.addLifeAppForm.addControl(snap.payload.key, this.fb.control(snap.payload.val()));
             this.app_loaded = true;
           }));
+          this.subscriptions.push(app_sub);
         }
       } else {
         environment.logged_in = false;
@@ -177,10 +178,6 @@ export class AddLifeComponent implements OnInit {
     return true;
   }
   
-  // TODO: add validation checks on all add forms
-  // * pay attention to values that are optional 
-  // *    like bonus which when blank should get saved as 0
-  // *    and for ones like co-producer select co-producer should change to ""
   onSubmit() {
     let isValid = true;
     if (!this.checkIfValid("client_name", (this.get("client_name") as string).trim())) {

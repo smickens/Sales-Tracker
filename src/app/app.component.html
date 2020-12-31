@@ -1,38 +1,12 @@
-<!-- 
-<nav class="navbar navbar-expand-md navbar-light bg-light">
-  <a class="navbar-brand" href="#">App Tracker</a>
-  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-    <span class="navbar-toggler-icon"></span>
-  </button>
-  <div class="collapse navbar-collapse" id="navbarNav">
-    <ul class="navbar-nav ml-auto">
-      <li class="nav-item active">
-        <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="#">Year Chart</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="#">Breakdown</a>
-      </li>
-    </ul>
-  </div>
-</nav> -->
-
 <div class="container-fluid" style="height: 100%;">
-  <div class="row" style="height: 100%;">
-    <div class="col-2 noPrintPdf" style="background-color:#EE8572; min-width: 180px;">
-      <app-sidebar></app-sidebar>
+  <div class="row" style="height: 100%; flex-wrap: nowrap;">
+    <div id="sidebar" class="col noPrintPdf" style="background-color:#EE8572; flex-grow: 0; width: 50px; transition: all .5s ease-in-out; -webkit-transition: all 0.5s ease-in-out;">
+      <span id="closeBtn" (click)="closeSidebar()">&times;</span>
+      <span id="openBtn" (click)="openSidebar()">&#9776;</span>
+      <app-sidebar *ngIf="display_sidebar"></app-sidebar>
     </div>
-    <div class="col-10">
+    <div class="col">
       <router-outlet></router-outlet>
-      <!-- <app-main-view></app-main-view> -->
-      <!-- <app-settings></app-settings> -->
-      <!-- <app-add-life></app-add-life> -->
-      <!-- <app-add-auto></app-add-auto> -->
-      <!-- <app-add-bank></app-add-bank> -->
-      <!-- <app-add-fire></app-add-fire> -->
-      <!-- <app-add-health></app-add-health> -->
     </div>
   </div>
 </div>

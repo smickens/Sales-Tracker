@@ -24,27 +24,59 @@
                 </div>
             </div>
         </div>
-
-        <div class="row spacing" style="height: 50%; flex: 1; overflow: auto;">
+        <!-- height: 50%; flex: 1; overflow: auto; -->
+        <div class="row spacing">
             <div class="block" style="width: 100%; height: 100%;">
-                <h4 class="header">{{current_month}}'s Stats</h4>
+                <h4 class="header">Stats for Year</h4>
                 <table class="table table-hover table-bordered">
                     <thead>
                       <tr>
                         <th></th>
-                        <!-- TODO: get f in mutual funds to be capitlized and have no hyphen -->
                         <th *ngFor="let month of months" scope="col">{{month}}</th>
                       </tr>
                     </thead>
                     <tbody>
-                      <tr *ngFor="let type of app_types">
-                        <th scope="row">{{ type | titlecase }}</th>
-                        <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">{{ app_totals[type][i-1] }}</td>
+                      <tr *ngFor="let producer of producers">
+                        <th scope="row">{{ producer.name }}</th>
+                        <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">{{ app_totals_by_producer[producer.id][i-1] }}</td>
                       </tr>
                     </tbody>
                 </table>
             </div>
         </div>
+
+        <div class="row spacing" style="flex: 1; overflow: auto; padding-top: 0px;">
+            <div class="block" style="width: 100%; height: 100%;">
+                <h4 class="header">Life</h4>
+                <table class="table table-sm table-hover table-bordered">
+                    <thead>
+                      <tr>
+                        <th></th>
+                        <th *ngFor="let month of months" scope="col">{{month}}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                    
+                        <ng-container *ngFor="let producer of producers">
+                            <tr>
+                                <th>{{ producer.name }} Life Apps</th>
+                                <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">{{ app_totals_by_type['life'][i-1] }}</td>
+                            </tr>
+                            <tr>
+                                <th>{{ producer.name }} Life Apps Issued</th>
+                                <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">{{ app_totals_by_type['life'][i-1] }}</td>
+                            </tr>
+                            <tr>
+                                <th>{{ producer.name }} Life Bonus</th>
+                                <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">${{ app_totals_by_type['life'][i-1] }}</td>
+                            </tr>
+                        </ng-container>
+                        
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
         <div class="modal fade" id="confirmDeleteModal" tabindex="-1" role="dialog" aria-labelledby="confirmDeleteModalTitle" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered" role="document">
                 <div class="modal-content">

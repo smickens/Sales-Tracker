@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { Producer } from '../producer';
 import { FormBuilder } from '@angular/forms';
 
@@ -8,6 +8,7 @@ import { environment } from 'src/environments/environment';
 import { AngularFireAuth } from '@angular/fire/auth';
 import { Subscription } from 'rxjs';
 import { Color } from 'ng2-charts';
+import * as Chart from 'chart.js';
 
 @Component({
   selector: 'app-bonuses',
@@ -31,54 +32,13 @@ export class BonusesComponent implements OnInit {
     corporate_bonus: [0]
   });
 
-  add_bonus = false; // true when add bonus form is being displayed
   private today = new Date();
 
-  colors = ["#173F5F", "#20639B", "#3CAEA3", "#F6D55C", "#ED553B"];
-  hover_colors = ["#235f90", "#277abe", "#67cbc1", "#fae69e", "#f28673"]
+  // yellow: F6D55C
+  // mint green: 3CAEA3
 
-  // chart for team showing their bonus broken down by month and type
-  public barChartOptions = {
-    scales: {
-      yAxes: [{
-          id: 'left-y-axis',
-          type: 'linear',
-          position: 'left',
-          stacked: true,
-          ticks: {
-            min: 0,
-            max: 100
-          }
-      }]
-    },
-    legend: {
-      display: true,
-      labels: {
-          // fontColor: 'rgb(255, 99, 132)'
-      }
-    }
-  };
-
-  // public barChartOptions = {
-  //   scaleShowVerticalLines: false,
-  //   responsive: true
-  // };
-
-  public barChartLabels = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-  public barChartType = 'bar';
-  public barChartLegend = true;
-
+  bonus_chart: any;
   public barChartData = [];
-
-  // public barChartData = [
-  //   {data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], label: 'pb', stack: "test"},
-  //   {data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], label: 'cb', stack: "test"}
-  // ];
-
-  public barChartColors: Color[] = [
-    // { backgroundColor: '#E8AA9F' }
-  ]
-
   bonuses_loaded = false;
 
   subscriptions: Subscription[] = [];
@@ -98,6 +58,35 @@ export class BonusesComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    var ctx = document.getElementById('canvas') as HTMLCanvasElement;
+    this.bonus_chart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'], // your labels array
+        datasets: []
+      },
+      options: {
+        responsive: true,
+        scales: {
+          yAxes: [{
+              id: 'left-y-axis',
+              type: 'linear',
+              position: 'left',
+              stacked: true,
+              ticks: {
+                min: 0//,
+                //max: 100
+              }
+          }]
+        },
+        legend: {
+          display: true,
+          labels: {
+              // fontColor: 'rgb(255, 99, 132)'
+          }
+        }
+      }
+    });
     // sets month/year value on bonus form to current month/year
     this.addBonusForm.setValue(
       { 
@@ -116,23 +105,36 @@ export class BonusesComponent implements OnInit {
   }
 
   loadBonusData() {
-    // gets list of producers
-    let index = 0;
-    let producer_indexes = [];
+    // gets list of producers and corporate bonuses
     let sub1 = this.db.list('producers').snapshotChanges().subscribe(
-      (snapshot: any) => snapshot.map(snap => {
+      (snapshot: any) => snapshot.map((snap, index) => {
         const producer = snap.payload.val() as Producer;
         producer.id = snap.key;
-        this.all_producers.push(producer);
-        this.producers.push(producer);
 
-        this.barChartData.push({data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], label: producer.name + " CB", stack: producer.id, 
-        backgroundColor: this.colors[index], hoverBackgroundColor: this.hover_colors[index]})
-        this.barChartData.push({data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], label: producer.name + " PB", stack: producer.id, 
-        backgroundColor: this.colors[index], hoverBackgroundColor: this.hover_colors[index]})
-        producer_indexes.push(producer["id"]);
-
-        this.production_bonuses[producer["id"]] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+        if (!this.bonuses_loaded) { 
+          this.all_producers.push(producer);
+          this.producers.push(producer);
+        }
+        let i: number = this.getProducerIndex(producer["id"]);
+        if (!this.bonuses_loaded) {
+          this.barChartData.push({data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], label: producer.name + " CB", stack: producer.id, 
+          backgroundColor: producer["corp_color"], hoverBackgroundColor: producer["hover_color"]})
+          this.barChartData.push({data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], label: producer.name + " PB", stack: producer.id, 
+          backgroundColor: producer["color"], hoverBackgroundColor: producer["hover_color"]})
+          if (!(producer["id"] in this.production_bonuses)) {
+            this.production_bonuses[producer["id"]] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+          }
+        } else {
+          if (index == 0) {
+            // clear corporate bonus values from bar chart data first time through
+            for (let i = 0; i < this.barChartData.length; i++) {
+              let category = this.barChartData[i];
+              if (i % 2 == 0) {
+                category['data'] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+              }            
+            }
+          }
+        }
         this.corporate_bonuses[producer["id"]] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
         // gets corporate bonuses
@@ -141,93 +143,113 @@ export class BonusesComponent implements OnInit {
             const corporate_bonus = producer["corporate_bonuses"][this.selected_year];
             //console.log(corporate_bonus);
             for (let month in corporate_bonus) {
-              console.log(month + ": " + corporate_bonus[month]);
+              //console.log(month + ": " + corporate_bonus[month]);
               this.corporate_bonuses[producer["id"]][parseInt(month)-1] += corporate_bonus[month];
               //console.log("Corp-ID: " + producer["id"] + "   Bonus: " + corporate_bonus[month]);
-              //this.barChartData[1].data[parseInt(month)-1] += corporate_bonus[month];
-              this.barChartData[index*2].data[parseInt(month)-1] += corporate_bonus[month];
+              this.barChartData[i*2].data[parseInt(month)-1] += corporate_bonus[month];
             }
           }
         }
-        index += 1;
+        // once the snapshot's length and the index match, it means this was the last one
+        if (snapshot.length == index+1) {
+          this.bonus_chart.data.datasets = this.barChartData;
+          this.bonus_chart.update();
+        }
         //console.log(this.corporate_bonuses);
-
-        // gets production bonuses
-        let sub2 = this.db.list('applications').snapshotChanges().subscribe(
-          (snapshot: any) => snapshot.map(snap => {
-            const app = snap.payload.val();
-
-            const app_type = app["type"] as string;
-            const app_date = app["date"] as string;
-            const app_month = parseInt(app_date.substring(5, 7));
-            const app_year = parseInt(app_date.substring(0, 4));
-
-            let app_went_through = false;
-            /*
-              Life - Issue/Bonus Month “January”
-                ? might change issue_month to issue_date 	# and have it include 08-2019
-              Auto - Status “Issued”
-              Bank - Status “Issued”
-              Fire - Status “Issued”
-              Health - Status “Taken”
-            */
-            if (app["issue_month"] == "" || app["status"] == "Taken" || app["status"] == "Issued") {
-              app_went_through = true;
-            }
-
-            // TODO: NEED SOME KIND OF DROPDOWN FOR YEAR
-            // app_went_through == true && 
-            if (app_year == this.selected_year) {
-              const producer_id = app["producer_id"];
-              // production bonus
-              const bonus = app["bonus"];
-              this.production_bonuses[producer_id][app_month-1] += bonus;
-              //console.log("Name: " + producer_id + "    Month: " + app_month + "   Bonus: " + bonus);
-              let i = producer_indexes.indexOf(producer_id);
-              this.barChartData[(i*2)+1].data[app_month-1] += bonus;
-
-              // co-production bonus
-              const co_producer_bonus = app["co_producer_bonus"];
-              if (co_producer_bonus > 0 && co_producer_bonus != null) {
-                const co_producer_id = app["co_producer_id"];
-                this.production_bonuses[co_producer_id][app_month-1] += co_producer_bonus;
-                //this.barChartData[0].data[app_month-1] += co_producer_bonus;
-                // for (let i = 0; i < this.barChartData.length; i++) {
-                //   if (this.barChartData[i]["label"] == this.getProducerName(producer_id)) {
-                //     this.barChartData[i].data[app_month-1] += co_producer_bonus;
-                //   }
-                // }
-                let i = producer_indexes.indexOf(co_producer_id);
-                //console.log("Co- ID: " + co_producer_id + "   Bonus: " + co_producer_bonus + "  " + i);
-                this.barChartData[(i*2)+1].data[app_month-1] += co_producer_bonus;
-                // for (let i = 0; i < this.barChartData.length; i++) {
-                //   if (this.barChartData[i]["label"] == this.getProducerName(producer_id)) {
-                //     this.barChartData[(i*2)+1].data[app_month-1] += co_producer_bonus;
-                //     break;
-                //   }
-                // }
-              }
-            }
-            //console.log(this.production_bonuses);
-            //console.log(this.barChartData);
-            this.bonuses_loaded = true;
-          })
-        );
-        this.subscriptions.push(sub2);
      })
-
     );
     this.subscriptions.push(sub1);
+
+    // gets production bonuses
+    let sub2 = this.db.list('applications').snapshotChanges().subscribe(
+      (snapshot: any) => snapshot.map((snap, index) => {
+        const app = snap.payload.val();
+
+        //const app_type = app["type"] as string;
+        const app_date = app["date"] as string;
+        const app_month = parseInt(app_date.substring(5, 7));
+        const app_year = parseInt(app_date.substring(0, 4));
+
+        let app_went_through = false;
+        /*
+          Life - Issue/Bonus Month “January”
+            ? might change issue_month to issue_date 	# and have it include 08-2019
+          Auto - Status “Issued”
+          Bank - Status “Issued”
+          Fire - Status “Issued”
+          Health - Status “Taken”
+        */
+        if (app["issue_month"] == "" || app["status"] == "Taken" || app["status"] == "Issued") {
+          app_went_through = true;
+        }
+        
+        // app_went_through == true && 
+        if (app_year == this.selected_year && app["bonus"] > 0) {
+          const producer_id = app["producer_id"];
+          // production bonus
+          const bonus = app["bonus"];
+          if (!(producer_id in this.production_bonuses)) {
+            this.production_bonuses[producer_id] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+          }
+          this.production_bonuses[producer_id][app_month-1] += bonus;
+          //console.log("Name: " + producer_id + "    Month: " + app_month + "   Bonus: " + bonus);
+          let i = this.getProducerIndex(producer_id);
+          this.barChartData[(i*2)+1].data[app_month-1] += bonus;
+        }
+
+        if (app_year == this.selected_year && app["co_producer_bonus"] != "" && app["co_producer_bonus"] > 0) {
+          // co-production bonus
+          const co_producer_bonus = app["co_producer_bonus"];
+          if (co_producer_bonus > 0 && co_producer_bonus != null) {
+            const co_producer_id = app["co_producer_id"];
+            this.production_bonuses[co_producer_id][app_month-1] += co_producer_bonus;
+            let i = this.getProducerIndex(co_producer_id);
+            //console.log("Co- ID: " + co_producer_id + "   Bonus: " + co_producer_bonus + "  " + i);
+            this.barChartData[(i*2)+1].data[app_month-1] += co_producer_bonus;
+          }
+        }
+        // once the snapshot's length and the index match, it means this was the last one
+        if (snapshot.length == index+1) {
+          this.bonus_chart.data.datasets = this.barChartData;
+          this.bonus_chart.update();
+        }
+        this.bonuses_loaded = true;
+      })
+    );
+    this.subscriptions.push(sub2);
+  }
+
+  showData(id: string) {
+    for (let category of this.barChartData) {
+      if (category['stack'] == id) {
+        category['hidden'] = false;
+      } 
+    }
+  }
+
+  hideData(id: string) {
+    for (let category of this.barChartData) {
+      if (category['stack'] == id) {
+        category['hidden'] = true;
+      } 
+    }
   }
 
   updateList(filter: string) {
     this.producers = [];
     this.db.list('producers').snapshotChanges().subscribe(
-      (snapshot: any) => snapshot.map(snap => {
-        const producer = snap.payload.val();
-        //console.log(producer);
+      (snapshot: any) => snapshot.map((snap, index) => {
+        const producer = snap.payload.val() as Producer;
+        producer.id = snap.key;
         if (producer["name"] == filter || filter == "All Producers") {
+          // show their data
           this.producers.push(producer);
+          this.showData(producer["id"]);
+        } else {
+          this.hideData(producer["id"]);
+        }
+        if (snapshot.length == index+1) {
+          this.bonus_chart.update();
         }
        })
     );
@@ -237,46 +259,41 @@ export class BonusesComponent implements OnInit {
     return this.addBonusForm.get(field).value;
   }
 
-  addBonus() {
-    let producer_id = this.get("producer_id");
-    let month = this.months.indexOf(this.get("month")) + 1;
-    let year = this.get("year"); 
-    let bonus = {};
-    bonus[month] = this.get("corporate_bonus");
-
-    if (producer_id != "Select Producer" && bonus != 0) {
-      this.db.list('producers/'+producer_id+'/corporate_bonuses/'+year).update('/', bonus);
-      // this.db.list('producers').snapshotChanges().subscribe(
-      //   (snapshot: any) => snapshot.map(snap => {
-      //     const producer = snap.payload.val();
-      //     if (producer["name"] == producer_name) {
-      //       // adds new bonus
-      //       this.db.list('producers/'+snap.key+'/corporate_bonuses/'+year).update('/', bonus);
-      //     }
-      //    })
-      // );
-    } 
-  }
-
   editBonus(e) {
     e.target.removeAttribute('readonly');
   }
 
-  updateBonus(e, producer_id: string) {
+  updateBonus(e, producer_id: string, month: number) {
     e.target.setAttribute('readonly', true);
-    // TODO: have it update coporate bonus value in db here
-    // producer_id
-    console.log(producer_id);
-    // bonus
-    console.log(e.target);
-    console.log(e.target.value);
-    //this.db.list('producers/'+producer_id+'/corporate_bonuses/'+this.selected_year).update('/', bonus);
+    if (e.target.value != 0) {
+      let corporate_bonus = {};
+      corporate_bonus[month] = Number(e.target.value);
+      this.db.list('producers/'+producer_id+'/corporate_bonuses/'+this.selected_year).update('/', corporate_bonus);
+    }
   }
 
-  // ? I think switching the year thing to an input broke this a bit
-  // TODO: fix change of year
   filterByYear(year: number) {
     this.selected_year = year;
+    // clears out bar chart data values
+    for (let category of this.barChartData) {
+      category['data'] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    }
+    // clears out production bonuses
+    for (const producer_id in this.production_bonuses) {
+      this.production_bonuses[producer_id] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    }
+    this.loadBonusData();
+  }
+
+  getProducerIndex(producer_id: string) {
+    let index = 0;
+    for (const producer of this.all_producers) {
+      if (producer.id == producer_id) {
+        return index;
+      }
+      index += 1;
+    }
+    return -1;
   }
 
   chartClicked(): void {

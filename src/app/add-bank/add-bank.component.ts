@@ -60,11 +60,12 @@ export class AddBankComponent implements OnInit {
         if (this.app_id != null) {
           this.form_title = "Edit Bank App";
           this.button_text = "UPDATE";
-          this.db.list('applications/' + this.app_id).snapshotChanges().subscribe(
+          let app_sub = this.db.list('applications/' + this.app_id).snapshotChanges().subscribe(
             (snapshot: any) => snapshot.map(snap => {
             this.addBankAppForm.addControl(snap.payload.key, this.fb.control(snap.payload.val()));
             this.app_loaded = true;
           }));
+          this.subscriptions.push(app_sub);
         }
 
       } else {
@@ -165,8 +166,6 @@ export class AddBankComponent implements OnInit {
         this.router.navigate(['bank']);
       });
     }
-
-    // after add should bring up alert saying successfully added app
   }
 
   randomString(length: number) {

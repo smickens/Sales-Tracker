@@ -61,11 +61,12 @@ export class AddFireComponent implements OnInit {
         if (this.app_id != null) {
           this.form_title = "Edit Fire App";
           this.button_text = "UPDATE";
-          this.db.list('applications/' + this.app_id).snapshotChanges().subscribe(
+          let app_sub = this.db.list('applications/' + this.app_id).snapshotChanges().subscribe(
             (snapshot: any) => snapshot.map(snap => {
             this.addFireAppForm.addControl(snap.payload.key, this.fb.control(snap.payload.val()));
             this.app_loaded = true;
           }));
+          this.subscriptions.push(app_sub);
         }
 
       } else {
@@ -164,8 +165,6 @@ export class AddFireComponent implements OnInit {
         this.router.navigate(['fire']);
       });
     }
-
-    // after add should bring up alert saying successfully added app
   }
 
   randomString(length: number) {

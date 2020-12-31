@@ -1,0 +1,16 @@
+.hide { 
+    display: none;
+}
+
+.rowIndex:hover {
+    color: darkgray;
+}
+
+.rowIndex:hover .hide {
+    display: inline-block;
+    color: red;
+}
+
+.rowIndex:hover .show {
+    display: none;
+}

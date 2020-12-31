@@ -4,6 +4,7 @@
 
 export const environment = {
   production: false,
+  logged_in: false,
   firebase: {
     // got properties from firebase web app config
     apiKey: "AIzaSyB2m_1aKV-GQ3cq99RnY0BaG-ASNBpD_yA",
@@ -13,8 +14,7 @@ export const environment = {
     storageBucket: "state-farm-app-tracker.appspot.com",
     messagingSenderId: "551436189832",
     appId: "1:551436189832:web:e4ab0512a1ea87e8a19f3d"
-  },
-  logged_in: false
+  }
 };
 
 /*

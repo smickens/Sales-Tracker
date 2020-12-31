@@ -79,7 +79,6 @@ export class AddMutualFundComponent implements OnInit {
     this.app_id = this.route.snapshot.paramMap.get('id');
     //console.log(this.app_id);
 
-    // TODO: ask mom if status is needed
     if (this.app_id == null) {
       this.form_title = "Add Mutual Funds App";
       this.button_text = "SUBMIT";
@@ -89,7 +88,6 @@ export class AddMutualFundComponent implements OnInit {
         client_name: [''],
         product_type: ['Traditional IRA'],
         amount: ['1-Time Contribution'],
-        status: [''], 
         marketing_source: ['Current Client']
       });
       this.app_loaded = true;
@@ -132,9 +130,6 @@ export class AddMutualFundComponent implements OnInit {
     }
     if (!this.checkIfValid("amount", this.get("amount"))) {
       isValid = false;
-    } 
-    if (!this.checkIfValid("status", this.get("status"))) {
-      isValid = false;
     }
 
     // if form is invalid, it breaks out of function and displays a popup with the missing values
@@ -166,6 +161,8 @@ export class AddMutualFundComponent implements OnInit {
           this.router.navigate(['mutual-funds']);
         });
       }
+    } else {
+      document.getElementById("producer_id").classList.add("is-invalid");
     }
   }
 

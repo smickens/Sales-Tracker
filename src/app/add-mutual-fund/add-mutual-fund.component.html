@@ -43,14 +43,6 @@
                 </div>
         
                 <div class="form-row mb-2">
-                    <div class="col-auto form-group">
-                        <label for="status">STATUS</label>
-                        <select class="custom-select" formControlName="status" id="status" (focus)="setValid($event)">
-                            <option value="" selected>Select Status</option>
-                            <option *ngFor="let option of constants['status_options']" value="{{option}}"> {{ option }} </option>
-                        </select>
-                    </div>
-
                     <div class="col form-group">
                         <label for="marketing_source">MARKETING SOURCE</label>
                         <select class="custom-select" formControlName="marketing_source" id="marketing_source">

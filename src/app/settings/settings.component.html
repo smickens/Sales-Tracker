@@ -1,37 +1,37 @@
 <div class="row" style="height: 100%;">
     <div class="col">
-        <div class="row" style="height: 70px;">
-            <div class="col-auto spacing" style="padding-right: 0px;">
+        <div class="row" style="min-height: 70px;">
+            <div class="col-auto" style="padding: 10px; margin-left: 16px;">
                 <div class="block" (click)="setActive('producers')">
                     <h4 class="header" [ngClass]="{'active': active_page == 'producers'}">STAFF</h4>
                 </div>
             </div>
-            <div class="col-auto spacing" style="padding-right: 0px;">
+            <div class="col-auto" style="padding: 10px; margin-left: 5px;">
                 <div class="block" (click)="setActive('life')">
                     <h4 class="header" [ngClass]="{'active': active_page == 'life'}">LIFE</h4>
                 </div>
             </div>
-            <div class="col-auto spacing" style="padding-right: 0px;">
+            <div class="col-auto" style="padding: 10px; margin-left: 5px;">
                 <div class="block" (click)="setActive('auto')">
                     <h4 class="header" [ngClass]="{'active': active_page == 'auto'}">AUTO</h4>
                 </div>
             </div>
-            <div class="col-auto spacing" style="padding-right: 0px;">
+            <div class="col-auto" style="padding: 10px; margin-left: 5px;">
                 <div class="block" (click)="setActive('bank')">
                     <h4 class="header" [ngClass]="{'active': active_page == 'bank'}">BANK</h4>
                 </div>
             </div>
-            <div class="col-auto spacing" style="padding-right: 0px;">
+            <div class="col-auto" style="padding: 10px; margin-left: 5px;">
                 <div class="block" (click)="setActive('fire')">
                     <h4 class="header" [ngClass]="{'active': active_page == 'fire'}">FIRE</h4>
                 </div>
             </div>
-            <div class="col-auto spacing" style="padding-right: 0px;">
+            <div class="col-auto" style="padding: 10px; margin-left: 5px;">
                 <div class="block" (click)="setActive('health')">
                     <h4 class="header" [ngClass]="{'active': active_page == 'health'}">HEALTH</h4>
                 </div>
             </div>
-            <div class="col-auto spacing" style="padding-right: 0px;">
+            <div class="col-auto" style="padding: 10px; margin-left: 5px;">
                 <div class="block" (click)="setActive('mutual-funds')">
                     <h4 class="header" [ngClass]="{'active': active_page == 'mutual-funds'}">MUTUAL FUNDS</h4>
                 </div>
@@ -55,7 +55,6 @@
                                     </li>
                                 </ng-container>
                                 <ng-container *ngIf="active_page != 'producers'">
-                                    <!-- (click)="deleteConstant(header_index, constant_index)" -->
                                     <li *ngFor="let constant of options; index as constant_index;" (click)="confirmConstDelete(header_index, constant_index)" data-toggle="modal" data-target="#confirmDeleteModal" style="padding-bottom: 5px; display: flex;">
                                         <span class="option">{{ constant }}</span>
                                         <span class="hide" style="padding-left: 10px;">x</span>

@@ -472,7 +472,6 @@ export class TimesheetComponent implements OnInit {
         if (cells[6]["childNodes"][0].checked) {
           // holiday is checked
           this.timesheet["dates"][date] = { "holiday": true };
-          // TODO: on holiday still get paid hours (always 8 hours)
           this.total_hours += 8;
         } else if (cells[7]["childNodes"][0].checked) {
           // off is checked

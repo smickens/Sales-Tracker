@@ -27,8 +27,8 @@ export class MainViewComponent implements OnInit {
     "mutual-funds": [0, 0]
   };
 
-  app_types = ["life", "auto", "bank", "fire", "health", "mutual-funds"]
-  app_totals = {
+  app_types = ["life", "auto", "bank", "fire", "health", "mutual-funds"];
+  app_totals_by_type = {
     "life": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     "auto": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     "bank": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -36,11 +36,12 @@ export class MainViewComponent implements OnInit {
     "health": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     "mutual-funds": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
   };
+  app_totals_by_producer = {};
 
   producers: Producer[] = [];
 
   current_month = "";
-  months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  months = ['Jan.', 'Feb.', 'March', 'April', 'May', 'June', 'July', 'Aug.', 'Sept.', 'Oct.', 'Nov.', 'Dec.'];
 
   addNoteForm = this.fb.group({
     note: []
@@ -59,12 +60,17 @@ export class MainViewComponent implements OnInit {
 
         // loads producers
         let producer_sub = db.list('producers').snapshotChanges().subscribe(
-          (snapshot: any) => snapshot.map(snap => {
+          (snapshot: any) => snapshot.map((snap, index) => {
             let producer: Producer = {
               name: snap.payload.val().name,
               id: snap.key
             }
             this.producers.push(producer);
+            this.app_totals_by_producer[producer["id"]] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+
+            if (snapshot.length == index+1) {
+              
+            }
         }));
         this.subscriptions.push(producer_sub);
 
@@ -80,7 +86,8 @@ export class MainViewComponent implements OnInit {
         // loads in application totals for the year
         let sub1 = db.list('applications').snapshotChanges().subscribe(
           (snapshot: any) => snapshot.map(snap => {
-            const type = snap.payload.val().type as string;
+            const app = snap.payload.val();
+            const type = app["type"];
             this.apps_this_year[type][0] += 1;
             const status = snap.payload.val().status as string;
             // TODO: if app type is life need to know if issue month/date is set
@@ -88,9 +95,17 @@ export class MainViewComponent implements OnInit {
               this.apps_this_year[type][1] += 1;
             }
 
-            // TODO: check with mom if for life its app ocunt should get counted for date or issude month
+            // TODO: check with mom if for life its app count should get counted for submitted date or 
+            // don't get bonus until issue month
             const month = (snap.payload.val().date as string).substring(5, 7);
-            this.app_totals[type][Number(month)-1] += 1;
+            this.app_totals_by_type[type][Number(month)-1] += 1;
+
+            if (app["producer_id"] in this.app_totals_by_producer) {
+              this.app_totals_by_producer[app["producer_id"]][Number(month)-1] += 1;
+            } else {
+              this.app_totals_by_producer[app["producer_id"]] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+              this.app_totals_by_producer[type][Number(month)-1] = 1;
+            }
           })
         );
         this.subscriptions.push(sub1);
@@ -160,7 +175,7 @@ export class MainViewComponent implements OnInit {
   }
 
   deleteNote() {
-    let id = this.selected_note_id
+    let id = this.selected_note_id;
     this.db.list('notes/'+id).remove();
     for (let i = 0; i < this.notes.length; i++) {
       if (id == this.notes[i].id) {
@@ -172,7 +187,7 @@ export class MainViewComponent implements OnInit {
 
   displayConfirmDelete(id: number) {
     document.getElementById('modalDeleteMessage').innerHTML = "Press confirm to remove note \"" + this.getNoteMessage(id) + "\".";
-    this.selected_note_id = id
+    this.selected_note_id = id;
   }
 
   getNoteMessage(id: number) {

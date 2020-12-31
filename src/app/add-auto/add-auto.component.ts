@@ -59,11 +59,12 @@ export class AddAutoComponent implements OnInit {
           //console.log("edit form");
           this.form_title = "Edit Auto App";
           this.button_text = "UPDATE";
-          this.db.list('applications/' + this.app_id).snapshotChanges().subscribe(
+          let app_sub = this.db.list('applications/' + this.app_id).snapshotChanges().subscribe(
             (snapshot: any) => snapshot.map(snap => {
             this.addAutoAppForm.addControl(snap.payload.key, this.fb.control(snap.payload.val()));
             this.app_loaded = true;
           }));
+          this.subscriptions.push(app_sub);
         }
 
       } else {
@@ -128,7 +129,6 @@ export class AddAutoComponent implements OnInit {
     return true;
   }
   
-  // TODO: tiers is only used if auto type is RN
   onSubmit() {
     let isValid = true;
     if (!this.checkIfValid("client_name", (this.get("client_name") as string).trim())) {
