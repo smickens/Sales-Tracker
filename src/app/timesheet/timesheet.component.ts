@@ -34,6 +34,7 @@ export class TimesheetComponent implements OnInit {
   popup_title = "";
 
   monthForm: FormGroup = this.fb.group({ });
+  selected_year: number = 0;
 
   subscriptions: Subscription[] = [];
 
@@ -58,10 +59,13 @@ export class TimesheetComponent implements OnInit {
         let date: Date = new Date(); 
         if (date.getDate() <= 14) {
           (document.getElementById("second_half") as HTMLInputElement).checked = true;
-          this.updateSheet(date.getMonth());
+          if (date.getMonth() == 0) {
+            this.updateSheet(12);
+          } else {
+            this.updateSheet(date.getMonth());
+          }
 
           // * CHECK: only put prior month bonus on 2nd half of month
-          // when the timesheet is for the second half of the month, it displays the prior month bonus on the timesheet
           this.getPriorMonthBonus();
         } else {
           (document.getElementById("first_half") as HTMLInputElement).checked = true;
@@ -79,21 +83,26 @@ export class TimesheetComponent implements OnInit {
   ngOnInit(): void {
     // gets current month and updates sheet to last timesheet
     let date: Date = new Date(); 
+    this.selected_year = date.getFullYear();
+    (document.getElementById("year") as HTMLInputElement).value = this.selected_year.toString();
     let current_month = date.getMonth();
     if (date.getDate() <= 14) {
       // current date is in first half of the month, so selects timesheet #2 from previous month
+      if (current_month == 0) {
+        current_month = 12;
+        this.selected_year -= 1;
+        (document.getElementById("year") as HTMLInputElement).value = (this.selected_year).toString();
+      }
       this.monthForm = this.fb.group({
         month: [current_month]
       });
       (document.getElementById("second_half") as HTMLInputElement).checked = true;
-      //this.updateSheet(date.getMonth());
     } else {
       // current date is in second half of the month, so selects timesheet #1 from current month
       this.monthForm = this.fb.group({
         month: [current_month + 1]
       });
       (document.getElementById("first_half") as HTMLInputElement).checked = true;
-      //this.updateSheet(date.getMonth() + 1);
     }
   }
 
@@ -104,10 +113,11 @@ export class TimesheetComponent implements OnInit {
   }
 
   getPriorMonthBonus() {
-    // TODO: get timesheet year (new years check)
     let today = new Date();
-    let last_month = today.getMonth();
-    let year = today.getFullYear();
+    let last_month = today.getMonth() + 1;
+    if (last_month == 1) {
+      last_month = 12;
+    }
 
     // gets corporate bonuses
     let index = 0;
@@ -116,12 +126,10 @@ export class TimesheetComponent implements OnInit {
         this.prior_month_bonuses[snap.key] = 0;
         // gets corporate bonuses
         if ("corporate_bonuses" in snap.payload.val()) {
-          if (year in snap.payload.val()["corporate_bonuses"]) {
-            const corporate_bonus = snap.payload.val()["corporate_bonuses"][year];
-            console.log(corporate_bonus);
+          if (this.selected_year in snap.payload.val()["corporate_bonuses"]) {
+            const corporate_bonus = snap.payload.val()["corporate_bonuses"][this.selected_year];
             for (let month in corporate_bonus) {
               if (Number(month) == last_month) {
-                console.log(month + ": " + corporate_bonus[month]);
                 this.prior_month_bonuses[snap.key] += corporate_bonus[month];
               }
             }
@@ -137,9 +145,11 @@ export class TimesheetComponent implements OnInit {
     let production_bonus_sub = this.db.list('applications').snapshotChanges().subscribe(
       (snapshot: any) => snapshot.map(snap => {
         const app = snap.payload.val();
+        const app_type = app["type"] as string;
         const app_date = app["date"] as string;
-        const app_month = parseInt(app_date.substring(5, 7));
+        let app_month = parseInt(app_date.substring(5, 7));
         const app_year = parseInt(app_date.substring(0, 4));
+        let bonus = app["bonus"];
 
         let app_went_through = false;
         /*
@@ -150,27 +160,35 @@ export class TimesheetComponent implements OnInit {
           Fire - Status “Issued”
           Health - Status “Taken”
         */
-       // TODO: have it check if it is correct issue month/date
-        if (app["issue_month"] == "" || app["status"] == "Taken" || app["status"] == "Issued") {
-          app_went_through = true;
-        }
+        if (app_type != "fire" && app_type != "mutual-funds") {
+          if (app["status"] == "Taken" || app["status"] == "Issued") {
+            app_went_through = true;
+          }
+          if (app_type == "life") {
+            if (app["issue_month"] != last_month) {
+              app_went_through = false;
+            } else {
+              app_month = app["issue_month"];
+              bonus = app["paid_bonus"];
+            }
+          }
+  
+          if (app_went_through == true && app_year == this.selected_year && app_month == last_month) {
+            const producer_id = app["producer_id"];
+            // production bonus
+            this.prior_month_bonuses[producer_id] += bonus;
+            //console.log("ID: " + producer_id + "    Month: " + app_month + "   Bonus: " + bonus);
 
-        // * add if app_went_through == true && 
-        if (app_year == year && app_month == last_month) {
-          const producer_id = app["producer_id"];
-          // production bonus
-          this.prior_month_bonuses[producer_id] += app["bonus"];
-          console.log("ID: " + producer_id + "    Month: " + app_month + "   Bonus: " + app["bonus"]);
-
-          // co-production bonus
-          const co_producer_bonus = app["co_producer_bonus"];
-          if (co_producer_bonus > 0 && co_producer_bonus != null) {
-            const co_producer_id = app["co_producer_id"];
-            this.prior_month_bonuses[co_producer_id] += co_producer_bonus;
-            console.log("Co ID: " + co_producer_id + "   Bonus: " + co_producer_bonus);
+            // co-production bonus
+            const co_producer_bonus = app["co_producer_bonus"];
+            if (co_producer_bonus > 0 && co_producer_bonus != null) {
+              const co_producer_id = app["co_producer_id"];
+              this.prior_month_bonuses[co_producer_id] += co_producer_bonus;
+              //console.log("Co ID: " + co_producer_id + "   Bonus: " + co_producer_bonus);
+            }
           }
         }
-        console.log(this.prior_month_bonuses);
+        //console.log(this.prior_month_bonuses);
       })
     );
     this.subscriptions.push(production_bonus_sub);
@@ -199,46 +217,29 @@ export class TimesheetComponent implements OnInit {
   }
 
   editTimesheet(producer_id: string, name: string) {
-    //console.log("edit timesheet " + producer_id);
+    console.log("edit timesheet " + producer_id);
     this.selected_producer_id = producer_id;
 
-    // let hired_date = "";
-    // for (const producer of this.producers) {
-    //   if (producer.id == producer_id) {
-    //     hired_date = producer.hired_date;
-    //     break;
-    //   }
-    // }
-    // console.log("Hired - " + hired_date);
-    // 11/12/2001
-
     // display how many sick/vacation hours producer has left for the year
+    // ? unknown cause for why this query is being ran three times
+    // ? one site mentioned that this can happen where there are two connections to the same part of the db but idk that's the case here
     let current_month = Number((document.getElementById("month") as HTMLInputElement).value)-1;
-    let today = new Date();
-    let current_year = today.getFullYear();
-    this.sick_vacation_hours_used = 0;
-    let hours_sub = this.db.list('timesheets').snapshotChanges().subscribe(
-      (snapshot: any) => snapshot.map(snap => {
-        let timesheet_name = snap.key as string;
-        // TODO: check if date within current year is working
-        // December_2020_1 or November_2020_2
-        if (snap.payload.val()[producer_id]) {
-          // let withinYear = false;
-          // let name_of_month = timesheet_name.substring(0, timesheet_name.length - 7);
-          // if (this.months.indexOf(name_of_month) >= current_month && timesheet_name.includes((current_year as unknown) as string)) {
-          //   // if month is after hired month and year matches current year
-          //   withinYear = true;
-          // } else if (this.months.indexOf(name_of_month) < current_month && timesheet_name.includes(((current_year + 1) as unknown) as string)) {
-          //   // if month is before hired month and year matches current year
-          //   withinYear = true;
-          // }
-          if (timesheet_name.includes((current_year as unknown) as string)) {
-            this.sick_vacation_hours_used +=((snap.payload.val()[producer_id]["sick_vacation_hours"]) as number);
-          }
-        }
-       })
-    );
-    this.subscriptions.push(hours_sub);
+    // this.sick_vacation_hours_used = 0;
+    // let hours_sub = this.db.list('timesheets').snapshotChanges().subscribe(
+    //   (snapshot: any) => snapshot.map((snap, index) => {
+    //     console.log(snapshot.length);
+    //     console.log(index);
+    //     if (snapshot.length != index+1) {
+    //       let timesheet_name = snap.key as string;
+    //       if (producer_id in snap.payload.val()) {
+    //         if (timesheet_name.includes((this.selected_year as unknown) as string)) {
+    //           this.sick_vacation_hours_used += ((snap.payload.val()[producer_id]["sick_vacation_hours"]) as number);
+    //         }
+    //       }
+    //     }
+    //    })
+    // );
+    // this.subscriptions.push(hours_sub);
 
     if (this.saved_timesheets.has(producer_id)) {
       // get values from last saved timesheet
@@ -285,35 +286,35 @@ export class TimesheetComponent implements OnInit {
       this.submit_btn_text = "Submit";
     }
     this.popup_message = name + "\'s Timesheet Submitted!";
-    document.getElementById("title").innerHTML = name + "\'s Timesheet - " + this.months[current_month] + " 2020";
+    document.getElementById("title").innerHTML = name + "\'s Timesheet - " + this.months[current_month] + " " + this.selected_year;
     document.getElementById("backBtn").style.display = 'block';
-    document.getElementById("hours_left").style.display = 'block';
+    //document.getElementById("hours_left").style.display = 'block';
     document.getElementById("date_section").style.display = 'none';
     document.getElementById("auth_section").style.display = 'none';
     document.getElementById("producer_section").style.display = 'none';
     document.getElementById("timesheet_section").style.display = 'block';
+    document.getElementById("year_section").style.display = 'none';
     this.updateTimes();
   }
 
   exitTimesheet() {
     document.getElementById("title").innerHTML = "Timesheet - ";
     document.getElementById("backBtn").style.display = 'none';
-    document.getElementById("hours_left").style.display = 'none';
+    //document.getElementById("hours_left").style.display = 'none';
     document.getElementById("date_section").style.display = 'flex';
     document.getElementById("producer_section").style.display = 'block';
     document.getElementById("timesheet_section").style.display = 'none';
+    document.getElementById("year_section").style.display = 'block';
   }
 
   // called on month change
   updateSheet(month: number) {
     this.dates = [];
     let date: Date = new Date(); 
+    date.setFullYear(this.selected_year);
     date.setMonth(month-1);
-    let number_of_days = new Date(date.getFullYear(), date.getMonth()+1, 0).getDate();
-    //console.log(number_of_days);
     let path = this.months[Number(month)-1];
-    // TODO: get timesheet year
-    path += "_2020"; // year
+    path += "_" + this.selected_year;
     if ((document.getElementById("first_half") as HTMLInputElement).checked) {
       for (let i = 1; i <= 14; i++) {
         date.setDate(i);  
@@ -324,6 +325,7 @@ export class TimesheetComponent implements OnInit {
       }
       path += "_1/";
     } else {
+      let number_of_days = new Date(date.getFullYear(), date.getMonth()+1, 0).getDate();
       for (let i = 15; i <= number_of_days; i++) {
         date.setDate(i);  
         if (date.toDateString().substr(0, 3) != "Sun" && date.toDateString().substr(0, 3) != "Sat") {
@@ -350,12 +352,11 @@ export class TimesheetComponent implements OnInit {
   updateDates() {
     this.dates = [];
     let date: Date = new Date(); 
+    date.setFullYear(this.selected_year);
     let month = (document.getElementById("month") as HTMLInputElement).value;
     date.setMonth(Number(month)-1);
-    let number_of_days = new Date(date.getFullYear(), date.getMonth()+1, 0).getDate();
-    //console.log(number_of_days);
     let path = this.months[Number(month)-1];
-    path += "_2020"; // year
+    path += "_" + this.selected_year; // year
     if ((document.getElementById("first_half") as HTMLInputElement).checked) {
       for (let i = 1; i <= 14; i++) {
         date.setDate(i);  
@@ -366,6 +367,7 @@ export class TimesheetComponent implements OnInit {
       }
       path += "_1/";
     } else {
+      let number_of_days = new Date(date.getFullYear(), date.getMonth()+1, 0).getDate();
       for (let i = 15; i <= number_of_days; i++) {
         date.setDate(i);  
         if (date.toDateString().substr(0, 3) != "Sun" && date.toDateString().substr(0, 3) != "Sat") {
@@ -481,6 +483,21 @@ export class TimesheetComponent implements OnInit {
     }
   }
 
+  // called on selected year change
+  updateYear(year: number) {
+    console.log("change year to " + year);
+    this.selected_year = year;
+    let date: Date = new Date();
+    let month = (document.getElementById("month") as HTMLInputElement).value;
+    if (date.getDate() <= 14) {
+      this.updateSheet(Number(month));
+      this.getPriorMonthBonus();
+    } else {
+      this.updateSheet(Number(month) + 1);
+    }
+    console.log(this.dates);
+  }
+
   onSubmit() {
     if (this.selected_producer_id != "none") {
       //let id = this.randomTimesheetID();
@@ -488,7 +505,7 @@ export class TimesheetComponent implements OnInit {
       this.timesheet["producer_id"] = this.selected_producer_id;
       this.timesheet["sick_vacation_hours"] = this.sick_vacation_hours;
       let path = this.months[Number((document.getElementById("month") as HTMLInputElement).value)-1]; // month
-      path += "_2020"; // year
+      path += "_" + this.selected_year; // year
       if ((document.getElementById("first_half") as HTMLInputElement).checked) { // half of month and timesheet id
         path += "_1/" + this.selected_producer_id;
       } else {
@@ -512,7 +529,7 @@ export class TimesheetComponent implements OnInit {
     for (let i = 0; i < timesheet_titles.length; i++) {
       const title = timesheet_titles[i];
       if (!title.innerHTML.includes("Timesheet")) {
-        title.innerHTML += "\'s Timesheet - " + month + " 2020";
+        title.innerHTML += "\'s Timesheet - " + month + " " + this.selected_year;
       }
     }
     window.print();

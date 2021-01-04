@@ -111,10 +111,16 @@ export class BonusesComponent implements OnInit {
         const producer = snap.payload.val() as Producer;
         producer.id = snap.key;
 
-        if (!this.bonuses_loaded) { 
+        if (this.all_producers.indexOf(producer) == -1) {
           this.all_producers.push(producer);
+        }
+        if (this.producers.indexOf(producer) == -1) {
           this.producers.push(producer);
         }
+        // if (!this.bonuses_loaded) { 
+        //   this.all_producers.push(producer);
+        //   this.producers.push(producer);
+        // }
         let i: number = this.getProducerIndex(producer["id"]);
         if (!this.bonuses_loaded) {
           this.barChartData.push({data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], label: producer.name + " CB", stack: producer.id, 
@@ -165,10 +171,11 @@ export class BonusesComponent implements OnInit {
       (snapshot: any) => snapshot.map((snap, index) => {
         const app = snap.payload.val();
 
-        //const app_type = app["type"] as string;
+        const app_type = app["type"] as string;
         const app_date = app["date"] as string;
-        const app_month = parseInt(app_date.substring(5, 7));
+        let app_month = parseInt(app_date.substring(5, 7));
         const app_year = parseInt(app_date.substring(0, 4));
+        let bonus = app["bonus"];
 
         let app_went_through = false;
         /*
@@ -179,20 +186,24 @@ export class BonusesComponent implements OnInit {
           Fire - Status “Issued”
           Health - Status “Taken”
         */
-        if (app["issue_month"] == "" || app["status"] == "Taken" || app["status"] == "Issued") {
+        // TODO: check jan and dec ones to make sure month doesn't error
+        if (app["status"] == "Taken" || app["status"] == "Issued") {
           app_went_through = true;
         }
+        if (app_type == "life") {
+          app_month = app["issue_month"];
+          console.log("changed month to issue month - " + app_month);
+          bonus = app["paid_bonus"];
+        }
         
-        // app_went_through == true && 
-        if (app_year == this.selected_year && app["bonus"] > 0) {
+        if (app_went_through == true && app_year == this.selected_year && bonus > 0) {
           const producer_id = app["producer_id"];
           // production bonus
-          const bonus = app["bonus"];
           if (!(producer_id in this.production_bonuses)) {
             this.production_bonuses[producer_id] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
           }
           this.production_bonuses[producer_id][app_month-1] += bonus;
-          //console.log("Name: " + producer_id + "    Month: " + app_month + "   Bonus: " + bonus);
+          console.log("Name: " + producer_id + "    Month: " + app_month + "   Bonus: " + bonus);
           let i = this.getProducerIndex(producer_id);
           this.barChartData[(i*2)+1].data[app_month-1] += bonus;
         }
@@ -204,7 +215,7 @@ export class BonusesComponent implements OnInit {
             const co_producer_id = app["co_producer_id"];
             this.production_bonuses[co_producer_id][app_month-1] += co_producer_bonus;
             let i = this.getProducerIndex(co_producer_id);
-            //console.log("Co- ID: " + co_producer_id + "   Bonus: " + co_producer_bonus + "  " + i);
+            console.log("Co- ID: " + co_producer_id + "   Bonus: " + co_producer_bonus + "  " + i);
             this.barChartData[(i*2)+1].data[app_month-1] += co_producer_bonus;
           }
         }
@@ -260,16 +271,16 @@ export class BonusesComponent implements OnInit {
   }
 
   editBonus(e) {
-    e.target.removeAttribute('readonly');
+    //e.target.removeAttribute('readonly');
   }
 
   updateBonus(e, producer_id: string, month: number) {
-    e.target.setAttribute('readonly', true);
-    if (e.target.value != 0) {
-      let corporate_bonus = {};
-      corporate_bonus[month] = Number(e.target.value);
-      this.db.list('producers/'+producer_id+'/corporate_bonuses/'+this.selected_year).update('/', corporate_bonus);
-    }
+    //e.target.setAttribute('readonly', true);
+    //if (e.target.value != 0) {
+    let corporate_bonus = {};
+    corporate_bonus[month] = Number(e.target.value);
+    this.db.list('producers/'+producer_id+'/corporate_bonuses/'+this.selected_year).update('/', corporate_bonus);
+    //}
   }
 
   filterByYear(year: number) {

@@ -100,7 +100,7 @@ export class AddLifeComponent implements OnInit {
         status: [''],
         paid_bonus: [0],
         life_pivot_bonus: [''],
-        issue_month: [''],
+        issue_month: [this.today.getMonth()],
         marketing_source: ['Current Client'],
         co_producer_id: [''],
         co_producer_bonus: [0]
@@ -200,10 +200,7 @@ export class AddLifeComponent implements OnInit {
     } 
     if (!this.checkIfValid("life_pivot_bonus", this.get("life_pivot_bonus"))) {
       isValid = false;
-    } 
-    if (!this.checkIfValid("issue_month", this.get("issue_month"))) {
-      isValid = false;
-    } 
+    }
     if (!this.checkIfValid("status", this.get("status"))) {
       isValid = false;
     }

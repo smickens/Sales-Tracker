@@ -29,7 +29,6 @@
               </div>
               
               <!-- ? maybe modify font sizes/styling to get content to present better -->
-              <!-- TODO: needs to only grab values of app's that are taken and in some cases add bonus to the taken month -->
               <div *ngFor="let producer of producers">
                 <h4>{{ producer.name }}</h4>
                 <table class="table table-hover">
@@ -50,7 +49,8 @@
                       <th scope="row">Corporate Bonus</th>
                       <ng-container *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
                         <td>
-                          <input type="number" style="width: 50px;" [value]="corporate_bonuses[producer.id][i-1]" (click)="editBonus($event)" (blur)="updateBonus($event, producer.id, i)" readonly>
+                          <!-- readonly   (click)="editBonus($event)"   blur -> change -->
+                          <input type="number" style="width: 50px;" [value]="corporate_bonuses[producer.id][i-1]" (change)="updateBonus($event, producer.id, i)">
                         </td>
                       </ng-container>
                     </tr>

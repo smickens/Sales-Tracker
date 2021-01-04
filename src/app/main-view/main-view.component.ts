@@ -37,6 +37,7 @@ export class MainViewComponent implements OnInit {
     "mutual-funds": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
   };
   app_totals_by_producer = {};
+  life_dots = {};
 
   producers: Producer[] = [];
 
@@ -57,7 +58,6 @@ export class MainViewComponent implements OnInit {
     let auth_sub = db_auth.authState.subscribe(user => {
       if (user) {
         environment.logged_in = true;
-
         // loads producers
         let producer_sub = db.list('producers').snapshotChanges().subscribe(
           (snapshot: any) => snapshot.map((snap, index) => {
@@ -67,76 +67,106 @@ export class MainViewComponent implements OnInit {
             }
             this.producers.push(producer);
             this.app_totals_by_producer[producer["id"]] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+            this.life_dots[producer["id"]] = {};
+            // for (let i = 1; i <= 12; i++) {
+            //   this.life_dots[producer["id"]][i]["total"] = 0;
+            //   this.life_dots[producer["id"]][i]["issued"] = 0;
+            //   this.life_dots[producer["id"]][i]["bonus"] = 0;
+            // }
 
             if (snapshot.length == index+1) {
-              
+              this.loadDots();
             }
         }));
         this.subscriptions.push(producer_sub);
-
-        /*
-          Life - Issue/Bonus Month “January”
-            ? might change issue_month to issue_date 	# and have it include 08-2019
-          Auto - Status “Issued”
-          Bank - Status “Issued”
-          Fire - Status “Issued”
-          Health - Status “Taken”
-        */
-
-        // loads in application totals for the year
-        let sub1 = db.list('applications').snapshotChanges().subscribe(
-          (snapshot: any) => snapshot.map(snap => {
-            const app = snap.payload.val();
-            const type = app["type"];
-            this.apps_this_year[type][0] += 1;
-            const status = snap.payload.val().status as string;
-            // TODO: if app type is life need to know if issue month/date is set
-            if (status == "Issued" || status == "Taken") {
-              this.apps_this_year[type][1] += 1;
-            }
-
-            // TODO: check with mom if for life its app count should get counted for submitted date or 
-            // don't get bonus until issue month
-            const month = (snap.payload.val().date as string).substring(5, 7);
-            this.app_totals_by_type[type][Number(month)-1] += 1;
-
-            if (app["producer_id"] in this.app_totals_by_producer) {
-              this.app_totals_by_producer[app["producer_id"]][Number(month)-1] += 1;
-            } else {
-              this.app_totals_by_producer[app["producer_id"]] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-              this.app_totals_by_producer[type][Number(month)-1] = 1;
-            }
-          })
-        );
-        this.subscriptions.push(sub1);
-
-        // loads in goals/notes
-        let sub2 = db.list('notes').snapshotChanges().subscribe(
-          (snapshot: any) => snapshot.map(snap => {
-            let displayed = false;
-            this.notes.forEach(note => {
-              if (snap.payload.key == note.id) {
-                displayed = true;
-              }
-            });
-            if (!displayed) {
-              let note_object = { 
-                id: snap.payload.key,
-                text: snap.payload.val()['text'],
-                date: snap.payload.val()['date']
-              };
-              this.notes.push(note_object);
-              this.notes.sort((a, b) => a.date - b.date);
-          };
-          })
-        );
-        this.subscriptions.push(sub2);
       } else {
         environment.logged_in = false;
         this.router.navigate(['login']);
       }
     });
     this.subscriptions.push(auth_sub);
+  }
+
+  loadDots() {
+    /*
+      Life - Issue Month “January”
+        ? might change issue_month to issue_date 	# and have it include 08-2019
+        TODO: possible issue is life app in dec. that issues in jan
+      Auto - Status “Issued”
+      Bank - Status “Issued”
+      Fire - Status “Issued”
+      Health - Status “Taken”
+    */
+
+    // loads in application totals for the year
+    let app_sub = this.db.list('applications').snapshotChanges().subscribe(
+      (snapshot: any) => snapshot.map(snap => {
+        const app = snap.payload.val();
+        const type = app["type"];
+        this.apps_this_year[type][0] += 1;
+
+        // TODO: for life apps save bonus by issue_month (type == 'life' && issue_month == )
+        // TODO: life bonus is in issue month
+        // bonus
+        const issue_month = snap.payload.val().issue_month;
+        const status = snap.payload.val().status as string;
+        const month = (snap.payload.val().date as string).substring(5, 7);
+        if (status == "Issued" || status == "Taken") {
+          this.apps_this_year[type][1] += 1;
+        }
+        if (type == "life") {
+          if (!(month in this.life_dots[app["producer_id"]])) {
+            this.life_dots[app["producer_id"]][month] = {};
+          }
+          this.life_dots[app["producer_id"]][month] = {
+            total: (this.life_dots[app["producer_id"]][month]["total"] || 0) + 1
+          }
+          if (app["status"] == "Taken") {
+            this.life_dots[app["producer_id"]][month]["issued"] = (this.life_dots[app["producer_id"]][month]["issued"] || 0) + 1;
+            this.life_dots[app["producer_id"]][month]["bonus"] = (this.life_dots[app["producer_id"]][month]["issued"] || 0) + app["paid_bonus"];
+            if (app["co_producer_id"] == "") {
+              this.life_dots[app["co_producer_id"]][month]["bonus"] = (this.life_dots[app["co_producer_id"]][month]["bonus"] || 0) + app["co_producer_bonus"];
+            }
+          }
+        }
+        console.log(this.life_dots);
+
+        this.app_totals_by_type[type][Number(month)-1] += 1;
+
+        // app count
+        if (type != "life" && app["co_producer_id"] != "") {
+          // for non-life apps w/ co producer the app count is split
+          this.app_totals_by_producer[app["producer_id"]][Number(month)-1] += 0.5;
+          this.app_totals_by_producer[app["co_producer_id"]][Number(month)-1] += 0.5;
+        } else {
+          // full app count goes to main producer
+          this.app_totals_by_producer[app["producer_id"]][Number(month)-1] += 1;
+        }
+      })
+    );
+    this.subscriptions.push(app_sub);
+
+    // loads in goals/notes
+    let notes_sub = this.db.list('notes').snapshotChanges().subscribe(
+      (snapshot: any) => snapshot.map(snap => {
+        let displayed = false;
+        this.notes.forEach(note => {
+          if (snap.payload.key == note.id) {
+            displayed = true;
+          }
+        });
+        if (!displayed) {
+          let note_object = { 
+            id: snap.payload.key,
+            text: snap.payload.val()['text'],
+            date: snap.payload.val()['date']
+          };
+          this.notes.push(note_object);
+          this.notes.sort((a, b) => a.date - b.date);
+      };
+      })
+    );
+    this.subscriptions.push(notes_sub);
   }
 
   ngOnInit(): void {

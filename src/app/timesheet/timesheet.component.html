@@ -25,20 +25,16 @@
                   </div>
                 </div>
                 
-                <!-- <select class="custom-select" style="width: 250px;" id="producer">
-                    <option value="none" selected>Select Producer</option>
-                    <option *ngFor="let producer of producers" value="{{producer.id}}">{{ producer.name }}</option>
-                </select> -->
               </div>
 
               <div style="display: flex; align-items: center;">
+                <div id="year_section">
+                  <p class="noPrintPdf" style="margin: 0px; padding-right: 10px;">Year: </p>
+                  <input class="noPrintPdf" type="number" id="year" (change)="updateYear($event.target.value)" placeholder="Enter Year" value="2020" style="width: 120px;" autocomplete="off">
+                </div>
                 <!-- TODO: add anniversary date: 12/06/19 -->
-                <!-- ? seems to have issue with decimal, instead of 17.5 showed 17 -->
-                <p id="hours_left" style="margin: auto; display: none;">Sick/Vacation Used: {{ sick_vacation_hours_used }} hours</p>
+                <!-- <p id="hours_left" style="margin: auto; display: none;">Sick/Vacation Used: {{ sick_vacation_hours_used }} hours</p> -->
               </div>
-
-              <!-- ?: may need a year option for when it is new years -->
-              <!-- TODO: test new years time -->
             </div>
 
             <ul class="noPrintPdf" id="producer_section">
@@ -86,7 +82,7 @@
                 <div class="row" style="font-size: 18px; text-align: center;">
                     <p class="col">Total Hours - {{ total_hours }}</p>
                     <p class="col">Sick / Vacation Time - {{ sick_vacation_hours }}</p>
-                    <p class="col" *ngIf="isSecondHalf()">Prior Month Bonus - {{ prior_month_bonuses[selected_producer_id] }}</p>
+                    <p class="col" *ngIf="isSecondHalf()">Prior Month Bonus - ${{ prior_month_bonuses[selected_producer_id] }}</p>
                 </div>
                 
                 <div style="display: flex; justify-content: center;">
@@ -97,7 +93,7 @@
               <div *ngFor="let timesheet of saved_timesheets | keyvalue" class="printPdf" id="completed_timesheets_section" style="display: none;">
                 <!-- producer id -->
                 <h4 class="hidden_title">{{ getProducerName(timesheet.key) }}</h4>
-                <table class="table table-hover" id="timesheet_table">
+                <table class="table table-sm table-hover" id="timesheet_table">
                     <thead>
                         <tr>
                             <th></th>
@@ -134,7 +130,7 @@
                   <div class="row" style="font-size: 18px; text-align: center;">
                     <p class="col">Total Hours - {{ timesheet.value['hours_worked'] }}</p>
                     <p class="col">Sick / Vacation Time - {{ timesheet.value['sick_vacation_hours'] }}</p>
-                    <p class="col" *ngIf="isSecondHalf()">Prior Month Bonus - {{ prior_month_bonuses[timesheet.key] }}</p>
+                    <p class="col" *ngIf="isSecondHalf()">Prior Month Bonus - ${{ prior_month_bonuses[timesheet.key] }}</p>
                   </div>
                   
                   <div style="display: flex; justify-content: center; page-break-after: always;">
@@ -155,7 +151,7 @@
                   <div class="modal-body">
                     {{ popup_message }}
                     <div id="auth_section" style="display: none;">
-                      <input id="producer_pin" type="number" placeholder="Pin">
+                      <input id="producer_pin" type="number" min="0" placeholder="Pin">
                       <input class="submit_btn" type="submit" value="Submit" (click)="checkPin()" style="padding: 6px 20px; margin-left: 15px;" data-dismiss="modal">
                     </div>
                   </div>

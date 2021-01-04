@@ -17,14 +17,14 @@
                     </ul>
                     <form [formGroup]="addNoteForm">
                         <div class="col form-group">
-                            <input type="text" class="form-control" formControlName="note" id="note" placeholder="Enter new note" autocomplete="off">
-                            <input class="submit_btn" type="submit" value="" (click)="addNote()">
+                            <input type="text" class="form-control mb-2" formControlName="note" id="note" placeholder="Enter new note" autocomplete="off">
+                            <input class="submit_btn" type="submit" value="Add" (click)="addNote()">
                         </div>
                     </form>
                 </div>
             </div>
         </div>
-        <!-- height: 50%; flex: 1; overflow: auto; -->
+
         <div class="row spacing">
             <div class="block" style="width: 100%; height: 100%;">
                 <h4 class="header">Stats for Year</h4>
@@ -45,7 +45,7 @@
             </div>
         </div>
 
-        <div class="row spacing" style="flex: 1; overflow: auto; padding-top: 0px;">
+        <!-- <div class="row spacing" style="flex: 1; overflow: auto; padding-top: 0px;">
             <div class="block" style="width: 100%; height: 100%;">
                 <h4 class="header">Life</h4>
                 <table class="table table-sm table-hover table-bordered">
@@ -60,22 +60,34 @@
                         <ng-container *ngFor="let producer of producers">
                             <tr>
                                 <th>{{ producer.name }} Life Apps</th>
-                                <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">{{ app_totals_by_type['life'][i-1] }}</td>
+                                <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
+                                    <ng-container *ngIf="life_dots[producer.id][i]">
+                                        {{ life_dots[producer.id][i]['total'] }}
+                                    </ng-container>
+                                </td>
                             </tr>
                             <tr>
-                                <th>{{ producer.name }} Life Apps Issued</th>
-                                <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">{{ app_totals_by_type['life'][i-1] }}</td>
+                                <th>{{ producer.name }} Life Apps Issued</th> 
+                                <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
+                                    <ng-container *ngIf="i in life_dots[producer.id]">
+                                        {{ life_dots[producer.id][i]['issued'] }}
+                                    </ng-container>
+                                </td>
                             </tr>
                             <tr>
                                 <th>{{ producer.name }} Life Bonus</th>
-                                <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">${{ app_totals_by_type['life'][i-1] }}</td>
+                                <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
+                                    <ng-container *ngIf="i in life_dots[producer.id]">
+                                        ${{ life_dots[producer.id][i]['bonus'] }}
+                                    </ng-container>
+                                </td>
                             </tr>
                         </ng-container>
                         
                     </tbody>
                 </table>
             </div>
-        </div>
+        </div> -->
 
         <div class="modal fade" id="confirmDeleteModal" tabindex="-1" role="dialog" aria-labelledby="confirmDeleteModalTitle" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered" role="document">
