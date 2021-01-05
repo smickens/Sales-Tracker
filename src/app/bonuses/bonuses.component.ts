@@ -19,18 +19,12 @@ export class BonusesComponent implements OnInit {
 
   producers: Producer[] = [];
   all_producers: Producer[] = [];
-  months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  months = ['Jan.', 'Feb.', 'March', 'April', 'May', 'June', 'July', 'Aug.', 'Sept.', 'Oct.', 'Nov.', 'Dec.'];
   
   production_bonuses = {};
   corporate_bonuses = {};
   
   selected_year: number = 0;
-  addBonusForm = this.fb.group({
-    producer_id: ['Select Producer'],
-    month: [''],
-    year: [''],
-    corporate_bonus: [0]
-  });
 
   private today = new Date();
 
@@ -87,15 +81,6 @@ export class BonusesComponent implements OnInit {
         }
       }
     });
-    // sets month/year value on bonus form to current month/year
-    this.addBonusForm.setValue(
-      { 
-        producer_id: 'Select Producer',
-        month: this.months[this.today.getMonth()], 
-        year: this.today.getFullYear(),
-        corporate_bonus: 0
-      }
-    );
   }
 
   ngOnDestroy(): void {
@@ -190,6 +175,9 @@ export class BonusesComponent implements OnInit {
         if (app["status"] == "Taken" || app["status"] == "Issued") {
           app_went_through = true;
         }
+        if (app_type == "auto" && app["status"] != "Declined" && app["status"] != "Cancelled") {
+          app_went_through = true;
+        }
         if (app_type == "life") {
           app_month = app["issue_month"];
           console.log("changed month to issue month - " + app_month);
@@ -264,10 +252,6 @@ export class BonusesComponent implements OnInit {
         }
        })
     );
-  }
-
-  get(field: string) {
-    return this.addBonusForm.get(field).value;
   }
 
   editBonus(e) {

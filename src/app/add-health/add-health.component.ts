@@ -115,6 +115,16 @@ export class AddHealthComponent implements OnInit {
       factor = 2;
     }
     this.addHealthAppForm.get('annual_premium').setValue(factor * this.get('premium'));
+    this.updateBonus();
+  }
+
+  updateBonus() {
+    let premium = this.get("premium");
+    if (this.get("product") == "Blue Cross" || (premium > 0 && premium < 50)) {
+      this.addHealthAppForm.get('bonus').setValue(50);
+    } else {
+      this.addHealthAppForm.get('bonus').setValue(premium);
+    }
   }
 
   get(field: string) {

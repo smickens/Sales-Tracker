@@ -16,9 +16,11 @@ import { AngularFireAuth } from '@angular/fire/auth';
   styleUrls: ['./apps-list.component.scss']
 })
 export class AppsListComponent implements OnInit {
+
   app_type: string = "";
   headers: string[] = ["#", "Date", "Producer", "Client"];
   apps = [];
+  months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
   producers: Producer[] = [];
 

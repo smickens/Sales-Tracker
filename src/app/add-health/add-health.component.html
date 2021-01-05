@@ -64,7 +64,7 @@
                 <div class="form-row mb-2">   
                     <div class="col-auto form-group">
                         <label for="product">PRODUCT</label>
-                        <select class="custom-select" formControlName="product" id="product" (focus)="setValid($event)">
+                        <select class="custom-select" formControlName="product" id="product" (focus)="setValid($event)" (change)="updateBonus()">
                             <option value="" selected>Select Product</option>
                             <option *ngFor="let option of constants['products']" value="{{option}}"> {{ option }} </option>
                         </select>

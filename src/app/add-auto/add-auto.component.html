@@ -28,7 +28,7 @@
                 <div class="form-row mb-2">
                     <div class="col-auto form-group">
                         <label for="auto_type">AUTO TYPE</label>
-                        <select class="custom-select" formControlName="auto_type" id="auto_type" (focus)="setValid($event)">
+                        <select class="custom-select" formControlName="auto_type" id="auto_type" (focus)="setValid($event)" (change)="updateBonus()">
                             <option value="" selected>Select Auto Type</option>
                             <option *ngFor="let option of constants['auto_types']" value="{{option}}"> {{ option }} </option>
                         </select>
@@ -36,7 +36,7 @@
         
                     <div class="col form-group">
                         <label for="tiers">TIERS</label>
-                        <select class="custom-select" formControlName="tiers" id="tiers" (focus)="setValid($event)">
+                        <select class="custom-select" formControlName="tiers" id="tiers" (focus)="setValid($event)" (change)="updateBonus()">
                             <option value="" selected>Select Tier</option>
                             <option *ngFor="let option of constants['tiers']" value="{{option}}"> {{ option }} </option>
                         </select>

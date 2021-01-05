@@ -137,7 +137,7 @@
                 <div class="form-row mb-2">
                     <div class="col form-group">
                         <label for="issue_month">ISSUE / BONUS MONTH</label>
-                        <select class="custom-select" formControlName="issue_month" id="issue_month" (focus)="setValid($event)">
+                        <select class="custom-select" formControlName="issue_month" id="issue_month" (focus)="setValid($event)" (change)="updateAnnualPremium()">
                             <option value="" selected>Select Issue Month</option>
                             <option value="1">January</option>
                             <option value="2">February</option>

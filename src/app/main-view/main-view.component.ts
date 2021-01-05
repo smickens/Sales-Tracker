@@ -28,19 +28,22 @@ export class MainViewComponent implements OnInit {
   };
 
   app_types = ["life", "auto", "bank", "fire", "health", "mutual-funds"];
-  app_totals_by_type = {
-    "life": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    "auto": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    "bank": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    "fire": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    "health": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    "mutual-funds": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-  };
   app_totals_by_producer = {};
   life_dots = {};
+  auto_dots = {};
+  bank_dots = {};
+  fire_dots = {};
+  health_dots = {};
+
+  life_totals = {};
+  auto_totals = {};
+  bank_totals = {};
+  fire_totals = {};
+  health_totals = {};
 
   producers: Producer[] = [];
 
+  current_year = 0;
   current_month = "";
   months = ['Jan.', 'Feb.', 'March', 'April', 'May', 'June', 'July', 'Aug.', 'Sept.', 'Oct.', 'Nov.', 'Dec.'];
 
@@ -58,6 +61,10 @@ export class MainViewComponent implements OnInit {
     let auth_sub = db_auth.authState.subscribe(user => {
       if (user) {
         environment.logged_in = true;
+
+        let date = new Date();
+        this.current_year = date.getFullYear();
+
         // loads producers
         let producer_sub = db.list('producers').snapshotChanges().subscribe(
           (snapshot: any) => snapshot.map((snap, index) => {
@@ -67,12 +74,6 @@ export class MainViewComponent implements OnInit {
             }
             this.producers.push(producer);
             this.app_totals_by_producer[producer["id"]] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-            this.life_dots[producer["id"]] = {};
-            // for (let i = 1; i <= 12; i++) {
-            //   this.life_dots[producer["id"]][i]["total"] = 0;
-            //   this.life_dots[producer["id"]][i]["issued"] = 0;
-            //   this.life_dots[producer["id"]][i]["bonus"] = 0;
-            // }
 
             if (snapshot.length == index+1) {
               this.loadDots();
@@ -88,59 +89,121 @@ export class MainViewComponent implements OnInit {
   }
 
   loadDots() {
-    /*
-      Life - Issue Month “January”
-        ? might change issue_month to issue_date 	# and have it include 08-2019
-        TODO: possible issue is life app in dec. that issues in jan
-      Auto - Status “Issued”
-      Bank - Status “Issued”
-      Fire - Status “Issued”
-      Health - Status “Taken”
-    */
-
     // loads in application totals for the year
     let app_sub = this.db.list('applications').snapshotChanges().subscribe(
       (snapshot: any) => snapshot.map(snap => {
         const app = snap.payload.val();
-        const type = app["type"];
-        this.apps_this_year[type][0] += 1;
+        const app_date = app["date"] as string;
+        const app_year = parseInt(app_date.substring(0, 4));
 
-        // TODO: for life apps save bonus by issue_month (type == 'life' && issue_month == )
-        // TODO: life bonus is in issue month
-        // bonus
-        const issue_month = snap.payload.val().issue_month;
-        const status = snap.payload.val().status as string;
-        const month = (snap.payload.val().date as string).substring(5, 7);
-        if (status == "Issued" || status == "Taken") {
-          this.apps_this_year[type][1] += 1;
-        }
-        if (type == "life") {
-          if (!(month in this.life_dots[app["producer_id"]])) {
-            this.life_dots[app["producer_id"]][month] = {};
+        if (app_year == this.current_year) {
+          const type = app["type"];
+          this.apps_this_year[type][0] += 1;
+
+          // bonus
+          const issue_month = snap.payload.val().issue_month;
+          const status = snap.payload.val().status as string;
+          const month = Number((snap.payload.val().date as string).substring(5, 7));
+          if (status == "Issued" || status == "Taken") {
+            this.apps_this_year[type][1] += 1;
           }
-          this.life_dots[app["producer_id"]][month] = {
-            total: (this.life_dots[app["producer_id"]][month]["total"] || 0) + 1
-          }
-          if (app["status"] == "Taken") {
-            this.life_dots[app["producer_id"]][month]["issued"] = (this.life_dots[app["producer_id"]][month]["issued"] || 0) + 1;
-            this.life_dots[app["producer_id"]][month]["bonus"] = (this.life_dots[app["producer_id"]][month]["issued"] || 0) + app["paid_bonus"];
-            if (app["co_producer_id"] == "") {
-              this.life_dots[app["co_producer_id"]][month]["bonus"] = (this.life_dots[app["co_producer_id"]][month]["bonus"] || 0) + app["co_producer_bonus"];
+
+          if (type == "life") {
+            this.life_totals[month+"_total"] = (this.life_totals[month+"_total"] || 0) + 1;
+            this.life_dots[app["producer_id"]+"_"+month+"_total"] = (this.life_dots[app["producer_id"]+"_"+month+"_total"] || 0) + 1;
+            if (app["status"] == "Taken") {
+              this.life_dots[app["producer_id"]+"_"+month+"_issued"] = (this.life_dots[app["producer_id"]+"_"+month+"_issued"] || 0) + 1;
+              if (app["issue_month"] != "") {
+                this.life_dots[app["producer_id"]+"_"+issue_month+"_bonus"] = (this.life_dots[app["producer_id"]+"_"+issue_month+"_bonus"] || 0) + app["paid_bonus"];
+                if (app["co_producer_id"] != "") {
+                  this.life_dots[app["co_producer_id"]+"_"+issue_month+"_bonus"] = (this.life_dots[app["co_producer_id"]+"_"+issue_month+"_bonus"] || 0) + app["co_producer_bonus"];
+                }
+              }
             }
           }
-        }
-        console.log(this.life_dots);
+          //console.log("Life");
+          //console.log(this.life_dots);
 
-        this.app_totals_by_type[type][Number(month)-1] += 1;
+          if (type == "auto") {
+            if (app["co_producer_id"] == "") {
+              this.auto_dots[app["producer_id"]+"_"+month+"_total"] = (this.auto_dots[app["producer_id"]+"_"+month+"_total"] || 0) + 1;
+            } else {
+              // if there is a co-producer, then split app count
+              this.auto_dots[app["producer_id"]+"_"+month+"_total"] = (this.auto_dots[app["producer_id"]+"_"+month+"_total"] || 0) + 0.5;
+              this.auto_dots[app["co_producer_id"]+"_"+month+"_total"] = (this.auto_dots[app["co_producer_id"]+"_"+month+"_total"] || 0) + 0.5;
+            }
+            this.auto_totals[month+"_total"] = (this.auto_totals[month+"_total"] || 0) + 1;
+            if (app["auto_type"] == "RN") {
+              // TODO: should it only count auto RN dot if submitted or issued
+              this.auto_dots[app["producer_id"]+"_"+month+"_RN"] = (this.auto_dots[app["producer_id"]+"_"+month+"_RN"] || 0) + 1;
+              this.auto_totals[month+"_RN"] = (this.auto_totals[month+"_RN"] || 0) + 1;
+            } else {
+              this.auto_totals[month+"_other"] = (this.auto_totals[month+"_other"] || 0) + 1;
+            }
+            if (app["status"] == "Submitted" || app["status"] == "Issued") {
+              // TODO: should it only count auto dot if submitted or issued
+              this.auto_dots[app["producer_id"]+"_"+month+"_bonus"] = (this.auto_dots[app["producer_id"]+"_"+month+"_bonus"] || 0) + app["bonus"];
+            }
+          }
+          //console.log("Auto");
+          //console.log(this.auto_dots);
+          if (type == "fire") {
+            this.fire_totals[month+"_total"] = (this.fire_totals[month+"_total"] || 0) + 1;
+            // TODO: should it only count fire dot if submitted or issued
+            if (app["status"] == "Submitted" || app["status"] == "Issued") {
+              if (app["co_producer_id"] == "") {
+                this.fire_dots[app["producer_id"]+"_"+month+"_total"] = (this.fire_dots[app["producer_id"]+"_"+month+"_total"] || 0) + 1;
+              } else {
+                // if there is a co-producer, then split app count
+                this.fire_dots[app["producer_id"]+"_"+month+"_total"] = (this.fire_dots[app["producer_id"]+"_"+month+"_total"] || 0) + 0.5;
+                this.fire_dots[app["co_producer_id"]+"_"+month+"_total"] = (this.fire_dots[app["co_producer_id"]+"_"+month+"_total"] || 0) + 0.5;
+              }
+            }
+          }
+          //console.log("Fire");
+          //console.log(this.fire_dots);
+          if (type == "bank") {
+            this.bank_totals[month+"_total"] = (this.bank_totals[month+"_total"] || 0) + 1;
+            if (app["co_producer_id"] == "") {
+              this.bank_dots[app["producer_id"]+"_"+month+"_total"] = (this.bank_dots[app["producer_id"]+"_"+month+"_total"] || 0) + 1;
+            } else {
+              // if there is a co-producer, then split app count
+              this.bank_dots[app["producer_id"]+"_"+month+"_total"] = (this.bank_dots[app["producer_id"]+"_"+month+"_total"] || 0) + 0.5;
+              this.bank_dots[app["co_producer_id"]+"_"+month+"_total"] = (this.bank_dots[app["co_producer_id"]+"_"+month+"_total"] || 0) + 0.5;
+              this.bank_dots[app["co_producer_id"]+"_"+month+"_bonus"] = (this.bank_dots[app["co_producer_id"]+"_"+month+"_bonus"] || 0) + app["co_producer_bonus"];
+            }
+            if (app["status"] == "Issued") {
+              this.bank_dots[app["producer_id"]+"_"+month+"_bonus"] = (this.bank_dots[app["producer_id"]+"_"+month+"_bonus"] || 0) + app["bonus"];
+            }
+          }
+          //console.log("Bank");
+          //console.log(this.bank_dots);
+          if (type == "health") {
+            this.health_totals[month+"_total"] = (this.health_totals[month+"_total"] || 0) + 1;
+            if (app["co_producer_id"] == "") {
+              this.health_dots[app["producer_id"]+"_"+month+"_total"] = (this.health_dots[app["producer_id"]+"_"+month+"_total"] || 0) + 1;
+            } else {
+              // if there is a co-producer, then split app count
+              this.health_dots[app["producer_id"]+"_"+month+"_total"] = (this.health_dots[app["producer_id"]+"_"+month+"_total"] || 0) + 0.5;
+              this.health_dots[app["co_producer_id"]+"_"+month+"_total"] = (this.health_dots[app["co_producer_id"]+"_"+month+"_total"] || 0) + 0.5;
+              this.health_dots[app["co_producer_id"]+"_"+month+"_bonus"] = (this.health_dots[app["co_producer_id"]+"_"+month+"_bonus"] || 0) + app["co_producer_bonus"];
+            }
+            if (app["status"] == "Issued") {
+              this.health_dots[app["producer_id"]+"_"+month+"_bonus"] = (this.health_dots[app["producer_id"]+"_"+month+"_bonus"] || 0) + app["bonus"];
+            }
+          }
+          //console.log("Health");
+          //console.log(this.health_dots);
 
-        // app count
-        if (type != "life" && app["co_producer_id"] != "") {
-          // for non-life apps w/ co producer the app count is split
-          this.app_totals_by_producer[app["producer_id"]][Number(month)-1] += 0.5;
-          this.app_totals_by_producer[app["co_producer_id"]][Number(month)-1] += 0.5;
-        } else {
-          // full app count goes to main producer
-          this.app_totals_by_producer[app["producer_id"]][Number(month)-1] += 1;
+          // app count
+          if (type != "life" && app["co_producer_id"] != "") {
+            // for non-life apps w/ co producer the app count is split
+            this.app_totals_by_producer[app["producer_id"]][Number(month)-1] += 0.5;
+            this.app_totals_by_producer[app["co_producer_id"]][Number(month)-1] += 0.5;
+          } else {
+            // full app count goes to main producer
+            this.app_totals_by_producer[app["producer_id"]][Number(month)-1] += 1;
+          }
         }
       })
     );
@@ -204,6 +267,16 @@ export class MainViewComponent implements OnInit {
     this.addNoteForm.setValue({'note': ''});
   }
 
+  displayNotePopup(id: number) {
+    document.getElementById('modalMessage').innerHTML = "";
+    this.selected_note_id = id;
+    (document.getElementById('note_to_edit') as HTMLInputElement).value = this.getNoteMessage(id);
+  }
+
+  updateNote() {
+
+  }
+
   deleteNote() {
     let id = this.selected_note_id;
     this.db.list('notes/'+id).remove();
@@ -216,7 +289,7 @@ export class MainViewComponent implements OnInit {
   }
 
   displayConfirmDelete(id: number) {
-    document.getElementById('modalDeleteMessage').innerHTML = "Press confirm to remove note \"" + this.getNoteMessage(id) + "\".";
+    document.getElementById('modalMessage').innerHTML = "Press confirm to remove note \"" + this.getNoteMessage(id) + "\".";
     this.selected_note_id = id;
   }
 

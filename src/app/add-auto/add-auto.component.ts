@@ -89,7 +89,7 @@ export class AddAutoComponent implements OnInit {
         client_name: [''],
         auto_type: ['RN'],
         tiers: ['Tier 1'], // * only needed if RN otherwise be 0
-        bonus: [0],
+        bonus: [5],
         submitted_premium: [0], // keep manual
         status: ['Submitted'],
         issued_premium: [0], 
@@ -110,6 +110,27 @@ export class AddAutoComponent implements OnInit {
     if (status == "Issued") {
       this.addAutoAppForm.get('issued_premium').setValue(this.get('submitted_premium'));
     }
+  }
+
+  updateBonus() {
+    let bonus = 0;
+    if (this.get("auto_type") == "RN") {
+      let tier = this.get("tiers");
+      if (tier == "Tier 1") {
+        bonus = 5;
+      } else if (tier == "Tier 2") {
+        bonus = 8;
+      } else if (tier == "Tier 3") {
+        bonus = 12;
+      } else if (tier == "Tier 4") {
+        bonus = 14;
+      } else if (tier == "Tier 5") {
+        bonus = 16;
+      } else if (tier == "Tier 6") {
+        bonus = 20;
+      }
+    }
+    this.addAutoAppForm.get('bonus').setValue(bonus);
   }
 
   get(field: string) {

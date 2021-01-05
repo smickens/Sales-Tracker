@@ -100,7 +100,7 @@ export class AddLifeComponent implements OnInit {
         status: [''],
         paid_bonus: [0],
         life_pivot_bonus: [''],
-        issue_month: [this.today.getMonth()],
+        issue_month: [''],
         marketing_source: ['Current Client'],
         co_producer_id: [''],
         co_producer_bonus: [0]
@@ -121,9 +121,8 @@ export class AddLifeComponent implements OnInit {
     if (mode == "Monthly") {
       factor = 12;
     }
-    this.addLifeAppForm.get('bonus').setValue(factor * this.get('premium'));
-    this.addLifeAppForm.get('annual_premium').setValue(factor * this.get('premium'));
     this.updateBonus();
+    this.addLifeAppForm.get('annual_premium').setValue(factor * this.get('premium'));
   }
 
   updateBonus() {
@@ -131,7 +130,7 @@ export class AddLifeComponent implements OnInit {
       // in manual mode paid bonus and co producer bonus are allowed to be manually edited
       document.getElementById('paid_bonus').removeAttribute('readonly');
       document.getElementById('co_producer_bonus').removeAttribute('readonly');
-    } else {
+    } else if (this.get("issue_month") != "" && this.get("life_pivot_bonus") != "") {
       // if a life pivot percentage is set, then paid and co producer bonus are read only values determined by percentage
       document.getElementById('paid_bonus').setAttribute('readonly', 'true');
       document.getElementById('co_producer_bonus').setAttribute('readonly', 'true');
@@ -139,25 +138,37 @@ export class AddLifeComponent implements OnInit {
       let percentage = Number(this.get("life_pivot_bonus").substring(0, this.get("life_pivot_bonus").length-1)) / 100;
       //console.log("Percentage: " + percentage);
 
-      // min bonus is always 25
-      if (percentage * this.get('annual_premium') >= 25) {
-        let main_producer_bonus = percentage * this.get('annual_premium');
-        main_producer_bonus = Math.round(main_producer_bonus * 100) / 100;
-        this.addLifeAppForm.get('paid_bonus').setValue(main_producer_bonus);
-      } else {
-        this.addLifeAppForm.get('paid_bonus').setValue(25);
+      let bonus = this.get('annual_premium') / 12;
+      if (this.get("policy_type") == "Permanent") {
+        console.log("permanent");
+        bonus = Math.round(0.25 * this.get('annual_premium') * 100) / 100;
+      } else if (this.get("policy_type") == "Term") {
+        console.log("term");
+        bonus = Math.round(0.15 * this.get('annual_premium') * 100) / 100;
       }
+      console.log(bonus);
+      this.addLifeAppForm.get('bonus').setValue(bonus);
+
+      // min bonus is always 25
+      let main_producer_bonus = 25;
+      if (percentage * bonus >= 25) {
+        main_producer_bonus = Math.round(percentage * bonus * 100) / 100;
+      }
+      this.addLifeAppForm.get('paid_bonus').setValue(main_producer_bonus);
+
       if (this.get('co_producer_id') != "") {
-        if ((1-percentage) * this.get('annual_premium') >= 25) {
-          let co_producer_bonus = (1-percentage) * this.get('annual_premium');
-          co_producer_bonus = Math.round(co_producer_bonus * 100) / 100;
-          this.addLifeAppForm.get('co_producer_bonus').setValue(co_producer_bonus);
-        } else {
-          this.addLifeAppForm.get('co_producer_bonus').setValue(25);
+        let co_producer_bonus = 25;
+        if ((1-percentage) * bonus >= 25) {
+          co_producer_bonus = Math.round((1-percentage) * bonus * 100) / 100;
         }
+        this.addLifeAppForm.get('co_producer_bonus').setValue(co_producer_bonus);
       } else {
         this.addLifeAppForm.get('co_producer_bonus').setValue(0);
       }
+    } else {
+      this.addLifeAppForm.get('bonus').setValue(0);
+      this.addLifeAppForm.get('paid_bonus').setValue(0);
+      this.addLifeAppForm.get('co_producer_bonus').setValue(0);
     }
   }
 
