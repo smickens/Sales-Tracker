@@ -14,3 +14,24 @@
     display: inline-block;
     color: red;
 }
+
+.progress {
+    height: 10px;
+}
+
+@media print {
+    table {
+        font-size: small;
+        width: max-content;
+    }
+    .block {
+        background-color: white !important;
+    }
+}
+@page {
+    size: portrait;
+}
+
+li {
+    padding-bottom: 12px;
+}

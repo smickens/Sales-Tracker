@@ -11,6 +11,8 @@ import { Router } from '@angular/router';
 import { environment } from 'src/environments/environment';
 import { AngularFireAuth } from '@angular/fire/auth';
 import { Subscription } from 'rxjs';
+import { DataService } from '../data.service';
+import { take } from 'rxjs/operators';
 
 @Component({
   selector: 'app-add-auto',
@@ -33,13 +35,13 @@ export class AddAutoComponent implements OnInit {
 
   subscriptions: Subscription[] = [];
 
-  constructor(private db: AngularFireDatabase, private fb: FormBuilder, public  db_auth:  AngularFireAuth, private route: ActivatedRoute, private location: Location, private router: Router) {
-    let auth_sub = db_auth.authState.subscribe(user => {
-      if (user) {
-        environment.logged_in = true;
+  constructor(private db: AngularFireDatabase, private fb: FormBuilder, private dataService: DataService, public  db_auth:  AngularFireAuth, private route: ActivatedRoute, private location: Location, private router: Router) { }
 
+  ngOnInit(): void {
+    this.dataService.auth_state_ob.pipe(take(1)).subscribe(user => {
+      if (user) {
         // loads producers
-        let producer_sub = db.list('producers').snapshotChanges().subscribe(
+        this.dataService.prod_ob.pipe(take(1)).subscribe(
           (snapshot: any) => snapshot.map(snap => {
             let producer: Producer = {
               name: snap.payload.val().name,
@@ -47,9 +49,8 @@ export class AddAutoComponent implements OnInit {
             }
             this.producers.push(producer);
         }));
-        this.subscriptions.push(producer_sub);
     
-        let sub2 = db.list('constants/auto').snapshotChanges().subscribe(
+        let sub2 = this.db.list('constants/auto').snapshotChanges().pipe(take(1)).subscribe(
           (snapshot: any) => snapshot.map(snap => {
           this.constants[snap.payload.key] = snap.payload.val().split("_");
         }));
@@ -59,32 +60,38 @@ export class AddAutoComponent implements OnInit {
           //console.log("edit form");
           this.form_title = "Edit Auto App";
           this.button_text = "UPDATE";
-          let app_sub = this.db.list('applications/' + this.app_id).snapshotChanges().subscribe(
+          let app_sub = this.db.list('applications/' + this.app_id).snapshotChanges().pipe(take(1)).subscribe(
             (snapshot: any) => snapshot.map(snap => {
             this.addAutoAppForm.addControl(snap.payload.key, this.fb.control(snap.payload.val()));
             this.app_loaded = true;
           }));
           this.subscriptions.push(app_sub);
         }
-
       } else {
-        environment.logged_in = false;
+        // if user is not logged in, reroute them to the login page
         this.router.navigate(['login']);
       }
     });
-    this.subscriptions.push(auth_sub);
-  }
 
-  ngOnInit(): void {
     this.app_id = this.route.snapshot.paramMap.get('id');
-    //console.log(this.today.toISOString().substr(0, 10));
+    let todays_date: string = this.today.getFullYear() + "-";
+    if (this.today.getMonth() < 9) {
+      todays_date += "0" + (this.today.getMonth() + 1) + "-";
+    } else {
+      todays_date += (this.today.getMonth() + 1) + "-";
+    }
+    if (this.today.getDate() >= 10) {
+      todays_date += this.today.getDate();
+    } else {
+      todays_date += "0" + this.today.getDate();
+    }
 
     if (this.app_id == null) {
       //console.log("add form");
       this.form_title = "Add Auto App";
       this.button_text = "SUBMIT";
       this.addAutoAppForm = this.fb.group({
-        date: [this.today.toISOString().substr(0, 10)],
+        date: [todays_date],
         producer_id: [''],
         client_name: [''],
         auto_type: ['RN'],
@@ -134,7 +141,7 @@ export class AddAutoComponent implements OnInit {
   }
 
   get(field: string) {
-    return this.addAutoAppForm.get(field).value;
+    return this.addAutoAppForm.get(field).value == null ? 0 : this.addAutoAppForm.get(field).value;
   }
 
   setValid(e) {
@@ -189,7 +196,14 @@ export class AddAutoComponent implements OnInit {
       co_producer_id: this.get("co_producer_id")
     }
     //console.log(app);
+    if (this.get("auto_type") == "RN") {
+      this.getTier(this.get("producer_id"), app);
+    } else {
+      this.addAutoApp(app);
+    }
+  }
 
+  addAutoApp(app: AutoApp) {
     if (this.app_id == null) {
       // adds new application
       this.db.list('/applications').update(this.randomString(16), app).then(() => {
@@ -201,6 +215,64 @@ export class AddAutoComponent implements OnInit {
         this.router.navigate(['auto']);
       });
     }
+  }
+
+  getTier(producer_id: string, auto_app: AutoApp) {
+    // calculates producer's tier based on number of auto raw new apps
+    let count = 0;
+    if (this.app_id == null && auto_app["status"] != "Declined") {
+      // adding new RN app
+      count = 1;
+    }
+    let cur_month = this.today.getMonth()+1;
+    let raw_new_app_ids = [];
+    let calculated_tier = 1;
+    let bonus_values = { 1: 5, 2: 8, 3: 12, 4: 14, 5: 16, 6: 20};
+    this.dataService.apps_ob.pipe(take(1)).subscribe(
+      (snapshot: any) => snapshot.map((snap, index) => {
+        const app = snap.payload.val();
+        const app_id = snap.key;
+        const app_date = app["date"] as string;
+        const app_month = parseInt(app_date.substring(5, 7));
+        const app_producer_id = app["producer_id"] as string;
+        const app_type = app["type"] as string;
+        const app_auto_type = app["auto_type"] as string;
+        const app_status = app["status"] as string;
+        if (app_month == cur_month && app_producer_id == producer_id && app_type == "auto" && app_auto_type == "RN") {
+          let status = app_status;
+          if (app_id == this.app_id) {
+            status = auto_app["status"]
+          }
+          if (status != "Declined") {
+            count += 1;
+            raw_new_app_ids.push(snap.key);
+            //console.log(count);
+          }
+        }
+        if (snapshot.length == index+1) {
+          if (count <= 11) {
+            calculated_tier = 1; // tier 1 - up to 11 ($5 each)
+          } else if (count <= 16) {
+            calculated_tier = 2; // tier 2 - 12 to 16 ($8 each)
+          } else if (count <= 20) {
+            calculated_tier = 3; // tier 3 - 17 to 20 ($12 each)
+          } else if (count <= 24) {
+            calculated_tier = 4; // tier 4 - 21 to 24 ($14 each)
+          } else if (count <= 29) {
+            calculated_tier = 5; // tier 5 - 25 to 29 ($16 each)
+          } else {
+            calculated_tier = 6; // tier 6 - 30+ ($20 each)
+          }
+          console.log("count - " + count, "  tier - ", calculated_tier);
+          console.log(raw_new_app_ids.length);
+          raw_new_app_ids.forEach(app_id => {
+            this.db.list('/applications').update(app_id, { 'tiers': "Tier " + calculated_tier, 'bonus': bonus_values[calculated_tier] });
+          });
+          auto_app["tiers"] = "Tier " + calculated_tier;
+          this.addAutoApp(auto_app);
+        }
+       })
+    );
   }
 
   randomString(length: number) {

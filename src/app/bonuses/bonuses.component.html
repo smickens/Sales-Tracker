@@ -3,21 +3,21 @@
         <div class="block">
             <div style="display: flex; justify-content: space-between;">
               <div style="display: flex; align-items: center;">
-                <h4 class="header" style="margin-bottom: 0px; padding-right: 15px;"> Bonuses - </h4>
-                <select class="custom-select" style="width: 250px;" id="producer" (change)="updateList($event.target.value)">
+                <h4 class="header" style="margin-bottom: 0px; padding-right: 15px; page-break-before: always;"> Bonuses - </h4>
+                <select class="custom-select noPrintPdf" style="width: 250px;" id="producer" (change)="updateList($event.target.value)">
                     <option selected>All Producers</option>
                     <option *ngFor="let producer of all_producers" value="{{producer.name}}">{{ producer.name }}</option>
                 </select>
               </div>
               <div style="display: flex; align-items: center;">
-                <p style="margin: 0px; padding-right: 10px;">Year: </p>
-                <input type="number" id="year" (change)="filterByYear($event.target.value)" placeholder="Enter Year" [value]="selected_year" style="width: 120px;" autocomplete="off">
+                <p class="noPrintPdf" style="margin: 0px; padding-right: 10px;">Year: </p>
+                <input class="noPrintPdf" type="number" id="year" (change)="filterByYear($event.target.value)" placeholder="Enter Year" [value]="selected_year" style="width: 120px;" autocomplete="off">
               </div>
             </div>
             
             <div style="overflow-x: auto; overflow-y: auto; margin-top: 15px;">
 
-              <div class="container mb-3" style="display: flex; justify-content: center;">
+              <div class="container mb-3 noPrintPdf" style="display: flex; justify-content: center;">
                 <div class="row" style="width: 95%;">
                   <!-- 
                       guides to install chart setup 
@@ -29,32 +29,30 @@
               </div>
               
               <div *ngFor="let producer of producers">
-                <h4>{{ producer.name }}</h4>
-                <table class="table table-sm table-hover">
+                <table class="table table-sm table-hover table-bordered">
                   <thead>
                     <tr>
-                      <th></th>
+                      <th>{{ producer.name }}</th>
                       <th *ngFor="let month of months" scope="col">{{ month }}</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr>
-                      <th scope="row">Production Bonus</th>
+                      <td scope="row">Production Bonus</td>
                       <ng-container *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
                         <td>{{ production_bonuses[producer.id][i-1] }}</td>
                       </ng-container>
                     </tr>
                     <tr>
-                      <th scope="row">Corporate Bonus</th>
+                      <td scope="row">Corporate Bonus</td>
                       <ng-container *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
                         <td>
-                          <!-- readonly   (click)="editBonus($event)"   blur -> change -->
-                          <input type="number" style="width: 50px;" [value]="corporate_bonuses[producer.id][i-1]" (change)="updateBonus($event, producer.id, i)">
+                          <input type="number" style="width: 40px;" [value]="corporate_bonuses[producer.id][i-1]" (change)="updateBonus($event, producer.id, i)">
                         </td>
                       </ng-container>
                     </tr>
                     <tr>
-                      <th scope="row">Total Bonus</th>
+                      <td scope="row"><i>Total Bonus</i></td>
                       <ng-container *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
                         <td>{{ production_bonuses[producer.id][i-1] + corporate_bonuses[producer.id][i-1] }}</td>
                       </ng-container>

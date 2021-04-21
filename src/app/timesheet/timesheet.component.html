@@ -40,11 +40,18 @@
             <ul class="noPrintPdf" id="producer_section">
               <li class="noPrintPdf" *ngFor="let producer of producers">
                 {{ producer.name }}
-                <!-- (click)="editTimesheet(producer.id, producer.name)" -->
                 <button *ngIf="!saved_timesheets.has(producer.id)" class="btn btn-link btn-sm" (click)="displayPinAuth(producer.id)" data-toggle="modal" data-target="#popupModal" type="button">Submit</button>
                 <button *ngIf="saved_timesheets.has(producer.id)" class="btn btn-link btn-sm" style="color: #6c757d;" (click)="displayPinAuth(producer.id)" data-toggle="modal" data-target="#popupModal" type="button">Edit</button>
               </li>
-              <button class="btn btn-sm btn-secondary noPrintPdf" style="margin-top: 10px;" (click)="downloadTimesheets()">Download</button>
+              <form class="noPrintPdf" style="margin-top: 10px;" [formGroup]="producerForm">
+                <select class="custom-select" style="width: 150px; margin-right: 20px;" id="producer" formControlName="producer">
+                  <option value="all" selected>All Producers</option>
+                  <ng-container *ngFor="let producer of producers">
+                    <option value="{{producer.id}}">{{ producer.name }}</option>
+                  </ng-container>
+                </select>
+                <button class="btn btn-sm btn-secondary noPrintPdf" (click)="downloadTimesheets()">Download</button>
+              </form>
             </ul>
 
             <div id="timesheet_section" style="display: none;">
@@ -90,8 +97,7 @@
                 </div>
               </div>
 
-              <div *ngFor="let timesheet of saved_timesheets | keyvalue" class="printPdf" id="completed_timesheets_section" style="display: none;">
-                <!-- producer id -->
+              <div *ngFor="let timesheet of saved_timesheets | keyvalue" class="timesheets_to_print printPdf" id="{{timesheet.key}}" style="display: none;">
                 <h4 class="hidden_title">{{ getProducerName(timesheet.key) }}</h4>
                 <table class="table table-sm table-hover" id="timesheet_table">
                     <thead>
@@ -130,10 +136,10 @@
                   <div class="row" style="font-size: 18px; text-align: center;">
                     <p class="col">Total Hours - {{ timesheet.value['hours_worked'] }}</p>
                     <p class="col">Sick / Vacation Time - {{ timesheet.value['sick_vacation_hours'] }}</p>
-                    <p class="col" *ngIf="isSecondHalf()">Prior Month Bonus - ${{ prior_month_bonuses[timesheet.key] }}</p>
+                    <p class="col"><ng-container *ngIf="isSecondHalf()">Prior Month Bonus - ${{ prior_month_bonuses_override[timesheet.key] ? prior_month_bonuses_override[timesheet.key] : prior_month_bonuses[timesheet.key] }}</ng-container></p>
                   </div>
                   
-                  <div style="display: flex; justify-content: center; page-break-after: always;">
+                  <div style="display: flex; justify-content: center; padding-bottom: 35px;">
                       <input class="submit_btn noPrintPdf" type="submit" [value]="submit_btn_text" (click)="onSubmit()" data-toggle="modal" data-target="#popupModal">
                   </div>
                 </div>
@@ -154,6 +160,31 @@
                       <input id="producer_pin" type="number" min="0" placeholder="Pin">
                       <input class="submit_btn" type="submit" value="Submit" (click)="checkPin()" style="padding: 6px 20px; margin-left: 15px;" data-dismiss="modal">
                     </div>
+                  </div>
+              </div>
+          </div>
+        </div>
+
+        <div class="modal fade" id="downloadModal" tabindex="-1" role="dialog" aria-labelledby="downloadModalTitle" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered noPrintPdf" role="document">
+              <div class="modal-content">
+                  <div class="modal-header">
+                      <h5 class="modal-title">Download</h5>
+                      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                          <span aria-hidden="true">&times;</span>
+                      </button>
+                  </div>
+                  <div class="modal-body">
+                    <ng-container *ngFor="let timesheet of saved_timesheets | keyvalue">
+                      <label for="{{timesheet.key}}" style="margin-right: 15px;">{{ getProducerName(timesheet.key) }} -</label>
+                      <input name="{{timesheet.key}}" style="width: 115px;" type="number" id="{{timesheet.key}}_prior_month_bonus" min="0" value="{{prior_month_bonuses[timesheet.key]}}" (change)="overridePriorMonthBonus(timesheet.key, $event.target.value)">
+                      <br>
+                    </ng-container>
+                  </div>
+                  <div class="modal-footer">
+                    <input class="submit_btn" type="submit" value="Download" (click)="downloadTimesheetsWithOverride()" style="padding: 6px 20px; margin-left: 15px;" data-dismiss="modal">
+                    <!-- Hidden button to trigger modal -->
+                    <button id="download_btn" [hidden]="true" data-toggle="modal" data-target="#downloadModal"></button>
                   </div>
               </div>
           </div>

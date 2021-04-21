@@ -9,6 +9,7 @@ import { ActivatedRoute } from "@angular/router";  //  holds information about t
 import { Location } from "@angular/common"; // Angular service for interacting with the browser
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
+import { DataService } from '../data.service';
 
 @Component({
   selector: 'app-login',
@@ -21,33 +22,31 @@ export class LoginComponent implements OnInit {
     email: [''],
     password: ['']
   });
+  // subscription: Subscription;
 
-  subscription: Subscription;
+  constructor(private db: AngularFireDatabase, private fb: FormBuilder, private dataService: DataService, public  db_auth:  AngularFireAuth, private router: Router) { }
 
-  constructor(private db: AngularFireDatabase, private fb: FormBuilder, public  db_auth:  AngularFireAuth, private router: Router) {
-    this.subscription = db_auth.authState.subscribe(user => {
+  ngOnInit(): void {
+    this.dataService.auth_state_ob.subscribe(user => {
       if (user) {
-        environment.logged_in = true;
         this.router.navigate(['home']);
+        environment.logged_in = true;
       } else {
         environment.logged_in = false;
       }
     });
   }
 
-  ngOnInit(): void {
-  }
-
-  ngOnDestroy(): void {
-    this.subscription.unsubscribe();
-  }
+  // ngOnDestroy(): void {
+  //   this.subscription.unsubscribe();
+  // }
 
   get(field: string) {
     return this.loginForm.get(field).value;
   }
 
   async login() {
-    let result = await this.db_auth.signInWithEmailAndPassword(this.get("email").trim(), this.get("password"));
+    await this.db_auth.signInWithEmailAndPassword(this.get("email").trim(), this.get("password"));
   }
 
 }

@@ -14,5 +14,7 @@ export interface Producer {
     id?: string;
     hired_date?: string;
     pin?: number;
-    //showing?: boolean;
+    color?: string;
+    corp_color?: string;
+    hover_color?: string;
 }

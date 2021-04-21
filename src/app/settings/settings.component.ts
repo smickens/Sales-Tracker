@@ -8,6 +8,8 @@ import { environment } from 'src/environments/environment';
 import { AngularFireAuth } from '@angular/fire/auth';
 import { Subscription } from 'rxjs';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
+import { DataService } from '../data.service';
+import { take } from 'rxjs/operators';
 
 @Component({
   selector: 'app-settings',
@@ -21,14 +23,17 @@ export class SettingsComponent implements OnInit {
   constants = [];
 
   addProducerForm = this.fb.group({
-    new_producer: []
+    new_producer: [],
+    pin: []
   });
   addConstantForm = this.fb.group({
     new_constant: [],
-    header: []
+    header: ['default']
   });
 
-  subscription: Subscription;
+  app_types = ["life", "auto", "bank", "fire", "health", "mutual-funds"];
+
+  subscriptions: Subscription[] = [];
 
   movies = [
     'Episode I - The Phantom Menace',
@@ -42,53 +47,47 @@ export class SettingsComponent implements OnInit {
     'Episode IX – The Rise of Skywalker'
   ];
 
-  constructor(private db: AngularFireDatabase, private fb: FormBuilder, public  db_auth:  AngularFireAuth, private router: Router) {
-    this.subscription = db_auth.authState.subscribe(user => {
+  constructor(private db: AngularFireDatabase, private fb: FormBuilder, private dataService: DataService, public  db_auth:  AngularFireAuth, private router: Router) { }
+
+  ngOnInit(): void {
+    this.dataService.auth_state_ob.pipe(take(1)).subscribe(user => {
       if (user) {
-        environment.logged_in = true;
         this.setActive('producers');
       } else {
-        environment.logged_in = false;
+        // if user is not logged in, reroute them to the login page
         this.router.navigate(['login']);
       }
     });
-
-    //this.setActive('producers');
-  }
-
-  ngOnInit(): void {
   }
 
   ngOnDestroy(): void {
-    this.subscription.unsubscribe();
+    this.subscriptions.forEach(sub => {
+      sub.unsubscribe();
+    });
   }
 
   setActive(page: string) {
     this.active_page = page;
     this.headers = [];
     this.constants = [[]];
-
-    // have them not keep listening
-    // .unsubscribe() ends the listening but need a way to know when they're finished first
-
     if (this.active_page == 'producers') {
       this.headers = ["Producers"];
-      this.db.list('producers').snapshotChanges().subscribe(
-        (snapshot: any) => snapshot.map(snap => {
+      this.dataService.prod_ob.pipe(take(1)).subscribe(
+        (snapshot: any) => snapshot.map((snap, index) => {
           let displayed = false;
           this.constants[0].forEach(producer => {
             if (producer[0] == snap.key) {
               displayed = true;
             }
           });
-
           if (!displayed) {
             this.constants[0].push([snap.key, snap.payload.val().name]);
           }
-          //console.log(this.constants);
-      }));
+        })
+      );
+      this.loadGoals();
     } else {
-      this.db.list('constants/' + this.active_page).snapshotChanges().subscribe(
+      this.db.list('constants/' + this.active_page).snapshotChanges().pipe(take(1)).subscribe(
         (snapshot: any) => snapshot.map(snap => {
         let header = snap.key as string;
         if (this.headers.includes(header.split("_").join(" ")) == false) {
@@ -122,20 +121,45 @@ export class SettingsComponent implements OnInit {
   }
 
   addProducer() {
-    let name = this.get(this.addProducerForm, "new_producer");
-    if (name.trim() != "") {
+    const name = this.get(this.addProducerForm, "new_producer");
+    const pin = this.get(this.addProducerForm, "pin");
+    const color = (document.getElementById("color") as HTMLInputElement).value;
+    const hover_color = this.adjustColor(color, -45);
+    const corp_color = this.adjustColor(hover_color, -45);
+    if (name.trim() != "" && pin != "") {
       let id = this.randomProducerID();
-      let producer: Producer = {
-        name: this.get(this.addProducerForm, "new_producer")
+      let producer = {
+        name: name.trim(),
+        pin: pin,
+        color: color,
+        hover_color: hover_color,
+        corp_color: corp_color
       }
       this.db.list('producers').update(id, producer);
-
       // clears input field
-      this.addProducerForm.setValue({new_producer: ''});
+      this.addProducerForm.setValue({new_producer: '', pin: ''});
       this.addConstantForm.setValue({new_constant: '', header: ''});
     }
 
     (document.getElementById("new_producer") as HTMLInputElement).value = "";
+  }
+
+  adjustColor(col, amt) {
+    col = col.replace(/^#/, '')
+    if (col.length === 3) col = col[0] + col[0] + col[1] + col[1] + col[2] + col[2]
+  
+    let [r, g, b] = col.match(/.{2}/g);
+    ([r, g, b] = [parseInt(r, 16) + amt, parseInt(g, 16) + amt, parseInt(b, 16) + amt])
+  
+    r = Math.max(Math.min(255, r), 0).toString(16)
+    g = Math.max(Math.min(255, g), 0).toString(16)
+    b = Math.max(Math.min(255, b), 0).toString(16)
+  
+    const rr = (r.length < 2 ? '0' : '') + r
+    const gg = (g.length < 2 ? '0' : '') + g
+    const bb = (b.length < 2 ? '0' : '') + b
+
+    return `#${rr}${gg}${bb}`
   }
 
   confirmProducerDelete(id: number, constant_index: number) {
@@ -147,25 +171,26 @@ export class SettingsComponent implements OnInit {
   }
 
   deleteProducer(id: number, constant_index: number) {
-    console.log("delete producer " + id);
     this.db.list('producers/' + id).remove();
     this.constants[0].splice(constant_index, 1);
   }
 
   addConstant() {
-    // brings up modal, confirming addition of producer or constant
     let app_type = this.active_page;
     let header = this.get(this.addConstantForm, 'header').toLowerCase();
     let new_constant = this.get(this.addConstantForm, 'new_constant');
 
-    let header_index = this.headers.indexOf(header.toLowerCase());
-    this.constants[header_index].push(new_constant);
+    // only adds constant if, a header was selected
+    if (header != "default") {
+      let header_index = this.headers.indexOf(header.toLowerCase());
+      this.constants[header_index].push(new_constant);
 
-    let constant = {};
-    constant[header.split(" ").join("_")] = this.constants[header_index].join("_");
-    this.db.list('constants/' + app_type + '/').update('/', constant);
+      let constant = {};
+      constant[header.split(" ").join("_")] = this.constants[header_index].join("_");
+      this.db.list('constants/' + app_type + '/').update('/', constant);
 
-    (document.getElementById("new_constant") as HTMLInputElement).value = "";
+      (document.getElementById("new_constant") as HTMLInputElement).value = "";
+    }
   }
 
   confirmConstDelete(header_index: number, constant_index: number) {
@@ -177,7 +202,6 @@ export class SettingsComponent implements OnInit {
   }
 
   deleteConstant(header_index: number, constant_index: number) { 
-    console.log("delete constant ");
     // brings up modal, confirming deletion of producer or constant
     let app_type = this.active_page;
     let header = this.headers[header_index];
@@ -207,6 +231,31 @@ export class SettingsComponent implements OnInit {
       });
     }
     return random_id;
+  }
+
+  loadGoals() {
+    this.dataService.goals_ob.pipe(take(1)).subscribe(
+      (snapshot: any) => snapshot.map(snap => {
+        (document.getElementById(snap.key+"_weekly") as HTMLInputElement).value = snap.payload.val()["weekly"];
+        (document.getElementById(snap.key+"_monthly") as HTMLInputElement).value = snap.payload.val()["monthly"];
+        (document.getElementById(snap.key+"_yearly") as HTMLInputElement).value = snap.payload.val()["yearly"];
+      }
+    ));
+  }
+
+  getGoal(id: string) {
+    return (document.getElementById(id) as HTMLInputElement).value;
+  }
+
+  updateGoals() {
+    this.app_types.forEach(type => {
+      let goals = {
+        "weekly": Number(this.getGoal(type+"_weekly")),
+        "monthly": Number(this.getGoal(type+"_monthly")),
+        "yearly": Number(this.getGoal(type+"_yearly"))
+      };
+      this.db.list('goals').update(type, goals);
+    });
   }
 
   randomString(length: number) {

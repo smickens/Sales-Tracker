@@ -1,11 +1,11 @@
 <div class="container-fluid" style="height: 100%;">
   <div class="row" style="height: 100%; flex-wrap: nowrap;">
-    <div id="sidebar" class="col noPrintPdf" style="background-color:#EE8572; flex-grow: 0; width: 50px; transition: all .5s ease-in-out; -webkit-transition: all 0.5s ease-in-out;">
+    <div id="sidebar" class="col noPrintPdf" style="position: fixed; height: 100%; background-color:#EE8572; flex-grow: 0; width: 50px; transition: all .5s ease-in-out; -webkit-transition: all 0.5s ease-in-out;">
       <span id="closeBtn" (click)="closeSidebar()">&times;</span>
       <span id="openBtn" (click)="openSidebar()">&#9776;</span>
       <app-sidebar *ngIf="display_sidebar"></app-sidebar>
     </div>
-    <div class="col">
+    <div class="col" id="main-view" style="margin-left: 50px; transition: all .5s ease-in-out; -webkit-transition: all 0.5s ease-in-out;">
       <router-outlet></router-outlet>
     </div>
   </div>

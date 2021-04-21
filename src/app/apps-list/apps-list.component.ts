@@ -1,14 +1,17 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { Producer } from "../producer";
-import { LifeApp, AutoApp, BankApp, FireApp, HealthApp, MutualFundApp, Application } from '../application';
+import { Application } from '../application';
 import { AngularFireDatabase } from '@angular/fire/database';
 
-import { ActivatedRoute } from "@angular/router";  //  holds information about the route to this instance of the HeroDetailComponent
-import { Location } from "@angular/common"; // Angular service for interacting with the browser
 import { Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { AngularFireAuth } from '@angular/fire/auth';
+import { FormBuilder, FormGroup } from '@angular/forms';
+
+import { DataService } from '../data.service';
+import { take } from 'rxjs/operators';
+import { TitleCasePipe } from '@angular/common';
 
 @Component({
   selector: 'app-apps-list',
@@ -17,11 +20,24 @@ import { AngularFireAuth } from '@angular/fire/auth';
 })
 export class AppsListComponent implements OnInit {
 
-  app_type: string = "";
+  @Input() app_type: string = "";
+  @Input() month: number = 0;
   headers: string[] = ["#", "Date", "Producer", "Client"];
   apps = [];
+  monthForm: FormGroup = this.fb.group({ });
   months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
+  all_apps: Application[] = [];
+  apps_loaded = false;
+  prod_loaded = false;
+  applications = {
+    'life': [],
+    'auto': [],
+    'fire': [],
+    'health': [],
+    'bank': [],
+    'mutual-funds': []
+  }
   producers: Producer[] = [];
 
   life_headers: string[] = ["Premium", "Mode", "Annual Premium", "Policy Type", "Product", "Client Type", "Bonus", "Status", "Paid Bonus", "Issue / Bonus Month", "Life Pivot Bonus"];
@@ -31,6 +47,15 @@ export class AppsListComponent implements OnInit {
   health_headers: string[] = ["Premium", "Mode", "Status", "Annual Premium", "Product", "Bonus", "Marketing Source"];
   mutual_funds_headers: string[] = ["Product Type", "Amount", "Marketing Source"];
 
+  apps_by_type = {
+    "life": new Set(),
+    "auto": new Set(),
+    "bank": new Set(),
+    "fire": new Set(),
+    "health": new Set(),
+    "mutual-funds": new Set()
+  }
+
   life_apps = new Set();
   auto_apps = new Set();
   bank_apps = new Set();
@@ -38,84 +63,90 @@ export class AppsListComponent implements OnInit {
   health_apps = new Set();
   mutual_funds_apps = new Set();
 
-  // life_apps: LifeApp[] = [];
-  // auto_apps: AutoApp[] = [];
-  // bank_apps: BankApp[] = [];
-  // fire_apps: FireApp[] = [];
-  // health_apps: HealthApp[] = [];
-  // mutual_funds_apps: MutualFundApp[] = [];
-
   subscriptions: Subscription[] = [];
   year: number = 0;
+
+  isViewingAppList = false;
 
   selected_app_id = "";
   isHoveringDelete = false;
 
-  constructor(private db: AngularFireDatabase, public  db_auth:  AngularFireAuth, private route: ActivatedRoute, private location: Location, private router: Router) {
-    let auth_sub = db_auth.authState.subscribe(user => {
-      if (user) {
-        environment.logged_in = true;
-
-        let date: Date = new Date(); 
-        this.year = date.getFullYear();
-        this.app_type = this.router.url.substring(1);
-
-        // loads producers
-        let producer_sub = db.list('producers').snapshotChanges().subscribe(
-          (snapshot: any) => snapshot.map(snap => {
-            let producer: Producer = {
-              name: snap.payload.val().name,
-              id: snap.key
-            }
-            this.producers.push(producer);
-        }));
-        this.subscriptions.push(producer_sub);
-
-        // loads applications
-        let app_sub = db.list('applications').snapshotChanges().subscribe(
-          (snapshot: any) => snapshot.map((snap, index) => {
-            const app = snap.payload.val();
-            //console.log(app);
-            if (app["type"] == "life" && !this.life_apps.has(app)) {
-              this.life_apps.add(app);
-            } else if (app["type"] == "auto" && !this.auto_apps.has(app)) {
-              this.auto_apps.add(app);
-            } else if (app["type"] == "bank" && !this.bank_apps.has(app)) {
-              this.bank_apps.add(app);
-            } else if (app["type"] == "fire" && !this.fire_apps.has(app)) {
-              this.fire_apps.add(app);
-            } else if (app["type"] == "health" && !this.health_apps.has(app)) {
-              this.health_apps.add(app);
-            } else if (app["type"] == "mutual-funds" && !this.mutual_funds_apps.has(app)) {
-              this.mutual_funds_apps.add(app);
-            }
-            const app_id = snap.key;
-            app.id = app_id;
-    
-            if (snapshot.length == index+1) {
-              this.getHeaders();
-              this.getApps();
-            }
-           })
-        );
-        this.subscriptions.push(app_sub);
-      } else {
-        environment.logged_in = false;
-        this.router.navigate(['login']);
-      }
-    });
-    this.subscriptions.push(auth_sub);
-
-  }
+  constructor(private db: AngularFireDatabase, private fb: FormBuilder, public  db_auth:  AngularFireAuth, private dataService: DataService, private router: Router) { }
 
   ngOnInit(): void {
-    
+    let date: Date = new Date(); 
+    this.year = date.getFullYear();
+    if (this.app_type == "") {
+      this.app_type = this.router.url.substring(1);
+      this.isViewingAppList = true;
+    } else {
+      // if app type was passed in, then it makes the tables smaller since it is being used to print the production report
+      document.getElementById("appTable").classList.add("table-sm");
+    }
+
+    if (this.month == 0) {
+      this.month = date.getMonth() + 1;
+      this.monthForm = this.fb.group({
+        month: [this.month]
+      });
+    }
+
+    this.dataService.auth_state_ob.pipe(take(1)).subscribe(user => {
+      if (user) {
+        if (!this.apps_loaded) {
+          this.loadApplications();
+        }
+        if (!this.prod_loaded) {
+          this.loadProducers();
+        }
+      }
+    });
   }
 
   ngOnDestroy(): void {
     this.subscriptions.forEach(sub => {
       sub.unsubscribe();
     });
+  }
+
+  loadApplications() {
+    this.dataService.apps_ob.pipe(take(1)).subscribe(
+      (snapshot: any) => snapshot.map((snap, index) => {
+        const app = snap.payload.val();
+        const app_id = snap.key;
+        const app_date = app["date"] as string;
+        const app_month = parseInt(app_date.substring(5, 7));
+        app.id = app_id;
+        
+        // if a month wasn't passed in, or the passed in month matches the app's month then add the app
+        if (this.app_type == app["type"]) {
+          if (this.month == 0 || this.month == app_month) {
+            this.apps_by_type[app["type"]].add(app);
+          }
+        }
+
+        if (snapshot.length == index+1) {
+          this.getHeaders();
+          this.getApps();
+          this.apps_loaded = true;
+        }
+      })
+    );
+  }
+
+  loadProducers() {
+    this.dataService.prod_ob.pipe(take(1)).subscribe(
+      (snapshot: any) => snapshot.map((snap, index) => {
+        let producer: Producer = {
+          name: snap.payload.val().name,
+          id: snap.key
+        }
+        this.producers.push(producer);
+        if (snapshot.length == index+1) {
+          this.prod_loaded = true;
+        }
+      })
+    );
   }
 
   getHeaders() {
@@ -147,32 +178,14 @@ export class AppsListComponent implements OnInit {
 
   getApps() {
     this.apps = [];
-    let apps_to_copy;
-    if (this.app_type === "life") {
-      apps_to_copy = this.life_apps;
-      console.log(this.life_apps);
-    } else if (this.app_type === "auto") {
-      apps_to_copy = this.auto_apps;
-      console.log(this.auto_apps);
-    } else if (this.app_type === "bank") {
-      apps_to_copy = this.bank_apps;
-      console.log(this.bank_apps);
-    } else if (this.app_type === "fire") {
-      apps_to_copy = this.fire_apps;
-      console.log(this.fire_apps);
-    } else if (this.app_type === "health") {
-      apps_to_copy = this.health_apps;
-      console.log(this.health_apps);
-    } else if (this.app_type === "mutual-funds") {
-      apps_to_copy = this.mutual_funds_apps;
-      console.log(this.mutual_funds_apps);
-    }
+    let apps_to_copy = this.apps_by_type[this.app_type];
+
     for (const app of apps_to_copy) {
       this.apps.push(app);
     }
 
-    // by default it sorts the apps by date
-    this.apps.sort((a, b) => a.date.localeCompare(b.date));
+    // by default it sorts the apps by most recent
+    this.apps.sort((a, b) => b.date.localeCompare(a.date));
   }
 
   editApp(id: string) {
@@ -180,30 +193,61 @@ export class AppsListComponent implements OnInit {
     this.router.navigate([this.app_type + '/' + id]);
   }
 
-  updateList(filter: string) {
-    this.apps = [];
-    this.db.list('applications').snapshotChanges().subscribe(
-      (snapshot: any) => snapshot.map(snap => {
-        const app = snap.payload.val();
-        //console.log(app);
-        if (app["producer_name"] == filter || filter == "All Producers") {
-          if (app["type"] == this.app_type) {
-            this.apps.push(app);
-          }
-          app.id = snap.key;
-        }
-       })
-    );
-  }
-
   orderList(filter: string) {
     if (filter == "date") {
       this.apps.sort((a, b) => a.date.localeCompare(b.date));
+    } else if (filter == "recent") {
+      this.apps.sort((a, b) => b.date.localeCompare(a.date));
     } else if (filter == "client_name") {
       this.apps.sort((a, b) => a.client_name.localeCompare(b.client_name));
     } else if (filter == "producer") {
       this.apps.sort((a, b) => this.getProducerName(a.producer_id).localeCompare(this.getProducerName(b.producer_id)));
     }
+  }
+
+  filterByMonth(month: number, producer: string) {
+    if (month == -1) {
+      this.month = ((document.getElementById("month") as HTMLInputElement).value as unknown) as number;
+    } else {
+      this.month = month;
+    }
+    if (producer == "") {
+      producer = (document.getElementById("producer") as HTMLInputElement).value;
+    }
+    this.apps_by_type = {
+      "life": new Set(),
+      "auto": new Set(),
+      "bank": new Set(),
+      "fire": new Set(),
+      "health": new Set(),
+      "mutual-funds": new Set()
+    }
+    this.dataService.apps_ob.pipe(take(1)).subscribe(
+      (snapshot: any) => snapshot.map((snap, index) => {
+        const app = snap.payload.val();
+        const app_id = snap.key;
+        const app_date = app["date"] as string;
+        const app_month = parseInt(app_date.substring(5, 7));
+        app.id = app_id;
+
+        let passes_filter = true;
+        if (producer != "" && producer != app["producer_id"] && producer != "All Producers") {
+          passes_filter = false;
+        }
+        
+        if (this.app_type == app["type"] && passes_filter) {
+          if (this.month == 0 || this.month == app_month) {
+            // if a month wasn't passed in, or the passed in month matches the app's month then add the app
+            this.apps_by_type[app["type"]].add(app);
+          }
+        }
+
+        if (snapshot.length == index+1) {
+          this.getHeaders();
+          this.getApps();
+        }
+       })
+    );
   }
 
   getProducerName(id: string) {
@@ -224,33 +268,18 @@ export class AppsListComponent implements OnInit {
     }
     document.getElementById('modalDeleteMessage').innerHTML = "Press confirm to remove " + app.client_name + "'s " + type + " app.";
     this.selected_app_id = app.id;
-    this.router.navigate([this.app_type]);
   }
 
   deleteApp() {
-    // clears out the set of the selected app type
-    if (this.app_type === "life") {
-      this.life_apps = new Set();
-    } else if (this.app_type === "auto") {
-      this.auto_apps  = new Set();
-    } else if (this.app_type === "bank") {
-      this.bank_apps = new Set();
-    } else if (this.app_type === "fire") {
-      this.fire_apps = new Set();
-    } else if (this.app_type === "health") {
-      this.health_apps = new Set();
-    } else if (this.app_type === "mutual-funds") {
-      this.mutual_funds_apps = new Set();
-    }
-
     let id = this.selected_app_id;
-    this.db.list('applications/'+id).remove();
     for (let i = 0; i < this.apps.length; i++) {
       if (id == this.apps[i].id) {
-        this.apps.splice(i);
+        console.log('here');
+        this.apps.splice(i, 1);
         break;
       }
     }
+    this.db.list('applications/'+id).remove();
   }
 
 }

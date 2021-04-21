@@ -2,14 +2,136 @@
     <div class="col" style="display: flex; flex-flow: column;">
         <div class="row spacing" style="padding-bottom: 0px;">
             <div class="col-8" style="padding-left: 0px;">
-                <div class="block" style="width: 100%; height: 100%;">
+                <div class="block noPrintPdf" style="width: 100%; height: 100%;">
                     <h4 class="header">Dashboard {{ current_year }}</h4>
                     <app-dashboard></app-dashboard>
+                    <button class="btn btn-sm btn-secondary noPrintPdf" (click)="downloadReport()">Download Report</button>
+                    <button class="btn btn-sm btn-secondary noPrintPdf" style="margin-left: 20px;" (click)="downloadProductionReport()">Download Production Report</button>
+                    <form style="display: inline-flex; margin-top: 10px;" class="noPrintPdf" [formGroup]="monthForm">
+                        <select class="custom-select" style="width: 100px; margin-left: 20px;" id="month" formControlName="month" (change)="updateSelectedMonth($event.target.value)">
+                        <option value="all" selected>Show All Apps</option>
+                        <ng-container *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
+                            <option value="{{i}}">{{ months[i-1] }}</option>
+                        </ng-container>
+                        </select>
+                    </form>
+                </div>
+            </div>
+
+            <div class="col-4" style="padding-right: 0px;">
+                <div class="block noPrintPdf">
+                    <h4 class="header">Goals</h4>
+                    <ul>
+                        <li>
+                            <span style="padding-right: 10px;">Life:</span>
+                            <span id="life_monthly" style="padding-right: 15px;">Month - ___ to go</span>
+                            <span id="life_yearly">Year - ___ to go</span>
+                            <div id="life-progress-bar-week" class="progress mb-2">
+                                <div class="progress-bar bg-success" id="life_weekly" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="20"></div>
+                            </div>
+                        </li>
+                        <li>
+                            <span style="padding-right: 10px;">Auto:</span>
+                            <span id="auto_monthly" style="padding-right: 15px;">Month - ___ to go</span>
+                            <span id="auto_yearly">Year - ___ to go</span>
+                            <div id="auto-progress-bar-week" class="progress mb-2">
+                                <div class="progress-bar bg-info" id="auto_weekly" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="20"></div>
+                            </div>
+                        </li>
+                        <li>
+                            <span style="padding-right: 10px;">Fire:</span>
+                            <span id="fire_monthly" style="padding-right: 15px;">Month - ___ to go</span>
+                            <span id="fire_yearly">Year - ___ to go</span>
+                            <div id="fire-progress-bar-week" class="progress mb-2">
+                                <div class="progress-bar bg-warning" role="progressbar" id="fire_weekly" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                        </li>
+                        <li>
+                            <span style="padding-right: 10px;">Bank:</span>
+                            <span id="bank_monthly" style="padding-right: 15px;">Month - ___ to go</span>
+                            <span id="bank_yearly">Year - ___ to go</span>
+                            <div id="bank-progress-bar-week" class="progress mb-2">
+                                <div class="progress-bar bg-danger" id="bank_weekly" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                        </li>
+                        <li>
+                            <span style="padding-right: 10px;">Health:</span>
+                            <span id="health_monthly" style="padding-right: 15px;">Month - ___ to go</span>
+                            <span id="health_yearly">Year - ___ to go</span>
+                            <div id="health-progress-bar-week" class="progress mb-2">
+                                <div class="progress-bar" id="health_weekly" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                        </li>
+                        <li>
+                            <span>Mutual Funds:</span>
+                            <div id="mutual-funds-progress-bar-year" class="progress mb-2">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" id="mutual_funds_yearly" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="row spacing" id="stats" style="padding-bottom: 0px;">
+            <div class="col-8" style="padding-left: 0px;">
+                <div class="block" style="width: 100%; height: 100%;">
+                    <h4 class="header">Stats for Year</h4>
+                    <table class="table table-sm table-hover table-bordered">
+                        <thead>
+                        <tr>
+                            <th></th>
+                            <th *ngFor="let month of months" scope="col">{{month}}</th>
+                        </tr>
+                        </thead>
+                        <tbody id="stats_table">
+                            <ng-container *ngFor="let producer of producers">
+                                <tr>
+                                    <th style="display: flex;">
+                                        <span style="font-size: 14px; padding-left: 0px; padding-right: 0px;" class="col">{{ producer.name }}</span>
+                                        <span class="col-auto" type="button" (click)="toggleRow($event.target, producer.id)">+</span>
+                                    </th>
+                                    <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
+                                        <ng-container *ngIf="i <= month_number">
+                                            {{ app_totals[producer.id][i-1] }}
+                                        </ng-container>
+                                    </td>
+                                </tr>
+                                <tr id="{{producer.id}}_prod" class="hiddenRows d-none">
+                                    <td style="text-align: right; padding-right: 10px;"><i>Main</i></td>
+                                    <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
+                                        <ng-container *ngIf="i <= month_number">
+                                            {{ app_totals_by_producer[producer.id][i-1] }}
+                                        </ng-container>
+                                    </td>
+                                </tr>
+                                <tr id="{{producer.id}}_co" class="hiddenRows d-none">
+                                    <td style="text-align: right; padding-right: 10px;"><i>Co</i></td>
+                                    <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
+                                        <ng-container *ngIf="i <= month_number">
+                                            {{ app_totals_by_co_producer[producer.id][i-1] }}
+                                        </ng-container>
+                                    </td>
+                                </tr>
+                            </ng-container>
+                            <tr> <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]"><hr style="margin-top: 0.5rem; margin-bottom: 0.5rem;"/></td> </tr>
+                            <tr>
+                                <th>Totals</th>
+                                <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
+                                    <ng-container *ngIf="i <= month_number">
+                                        {{ 
+                                            (life_totals[i+'_total'] ? life_totals[i+'_total'] : 0  * 1) + (auto_totals[i+'_total'] ? auto_totals[i+'_total'] : 0 * 1) + (fire_totals[i+'_total'] ? fire_totals[i+'_total'] : 0 * 1) + (bank_totals[i+'_total'] ? bank_totals[i+'_total'] : 0 * 1) + (health_totals[i+'_total'] ? health_totals[i+'_total'] : 0 * 1) + (mutual_funds_totals[i+'_total'] ? mutual_funds_totals[i+'_total'] : 0 * 1)
+                                        }}
+                                    </ng-container>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
             <div class="col-4" style="padding-right: 0px;">
-                <div class="block">
-                    <h4 class="header">Goals / Notes</h4>
+                <div class="block noPrintPdf">
+                    <h4 class="header">Notes</h4>
                     <ul>
                         <li class="note" *ngFor="let note of notes" (click)="displayConfirmDelete(note.id)" data-toggle="modal" data-target="#popupModal">{{ note.text }}
                             <span class="hide">x</span>
@@ -25,27 +147,7 @@
             </div>
         </div>
 
-        <div class="row spacing" style="padding-bottom: 0px;">
-            <div class="block" style="width: 100%; height: 100%;">
-                <h4 class="header">Stats for Year</h4>
-                <table class="table table-hover table-bordered">
-                    <thead>
-                      <tr>
-                        <th></th>
-                        <th *ngFor="let month of months" scope="col">{{month}}</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr *ngFor="let producer of producers">
-                        <th scope="row">{{ producer.name }}</th>
-                        <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">{{ app_totals_by_producer[producer.id][i-1] }}</td>
-                      </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <div class="row spacing" style="padding-bottom: 0px;">
+        <div class="row spacing" id="life" style="padding-bottom: 0px;">
             <div class="block" style="width: 100%; height: 100%;">
                 <h4 class="header">Life</h4>
                 <table class="table table-sm table-hover table-bordered" style="font-size: smaller;">
@@ -58,31 +160,49 @@
                     <tbody>
                     
                         <ng-container *ngFor="let producer of producers">
-                            <tr> <th>{{ producer.name }}</th> <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]"><hr style="margin-top: 0.5rem; margin-bottom: 0.5rem;"/></td> </tr>
-                            <tr>
-                                <td style="text-align: right;">Life Apps</td>
-                                <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
-                                    {{ life_dots[producer.id+'_'+i+'_total'] ? life_dots[producer.id+'_'+i+'_total'] : 0 }}
-                                </td>
-                            </tr>
-                            <tr>
-                                <td style="text-align: right;">Life Apps Issued</td> 
-                                <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
-                                    {{ life_dots[producer.id+'_'+i+'_issued'] ? life_dots[producer.id+'_'+i+'_issued'] : 0 }}
-                                </td>
-                            </tr>
-                            <tr style="border-collapse: separate; border-spacing: 0 15px; ">
-                                <td style="text-align: right;">Life Bonus</td>
-                                <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
-                                    ${{ life_dots[producer.id+'_'+i+'_bonus'] ? life_dots[producer.id+'_'+i+'_bonus'] : 0 }}
-                                </td>
-                            </tr>
+                            <ng-container *ngIf="producer.id != 'napD'">
+                                <tr> <th>{{ producer.name }}</th> <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]"><hr style="margin-top: 0.5rem; margin-bottom: 0.5rem;"/></td> </tr>
+                                <tr>
+                                    <td style="text-align: right;">Life Apps</td>
+                                    <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
+                                        <ng-container *ngIf="i <= month_number">
+                                            {{ life_dots[producer.id+'_'+i+'_total'] ? life_dots[producer.id+'_'+i+'_total'] : 0 }}
+                                        </ng-container>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="text-align: right;">Life Apps Issued</td> 
+                                    <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
+                                        <ng-container *ngIf="i <= month_number">
+                                            {{ life_dots[producer.id+'_'+i+'_issued'] ? life_dots[producer.id+'_'+i+'_issued'] : 0 }}
+                                        </ng-container>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="text-align: right;">Life Bonus</td>
+                                    <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
+                                        <ng-container *ngIf="i <= month_number">
+                                            ${{ life_dots[producer.id+'_'+i+'_bonus'] ? life_dots[producer.id+'_'+i+'_bonus'] : 0 }}
+                                        </ng-container>
+                                    </td>
+                                </tr>
+                            </ng-container>
                         </ng-container>
                         <tr> <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]"><hr style="margin-top: 0.5rem; margin-bottom: 0.5rem;"/></td> </tr>
                         <tr>
                             <th>Total Life</th>
                             <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
-                                {{ life_totals[i+'_total'] ? life_totals[i+'_total'] : 0 }}
+                                <ng-container *ngIf="i <= month_number">
+                                    {{ life_totals[i+'_total'] ? life_totals[i+'_total'] : 0 }}
+                                </ng-container>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Total Life Issued</th>
+                            <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
+                                <ng-container *ngIf="i <= month_number">
+                                    {{ life_totals[i+'_issued'] ? life_totals[i+'_issued'] : 0 }}
+                                </ng-container>
                             </td>
                         </tr>
                         
@@ -91,7 +211,7 @@
             </div>
         </div>
 
-        <div class="row spacing" style="padding-bottom: 0px;">
+        <div class="row spacing" id="auto" style="padding-bottom: 0px;">
             <div class="block" style="width: 100%; height: 100%;">
                 <h4 class="header">Auto</h4>
                 <table class="table table-sm table-hover table-bordered" style="font-size: smaller;">
@@ -104,43 +224,57 @@
                     <tbody>
                     
                         <ng-container *ngFor="let producer of producers">
-                            <tr> <th>{{ producer.name }}</th> <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]"><hr style="margin-top: 0.5rem; margin-bottom: 0.5rem;"/></td> </tr>
-                            <tr>
-                                <td style="text-align: right;">Auto Apps</td>
-                                <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
-                                    {{ auto_dots[producer.id+'_'+i+'_total'] ? auto_dots[producer.id+'_'+i+'_total'] : 0 }}
-                                </td>
-                            </tr>
-                            <tr>
-                                <td style="text-align: right;">Auto Bonus</td> 
-                                <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
-                                    ${{ auto_dots[producer.id+'_'+i+'_bonus'] ? auto_dots[producer.id+'_'+i+'_bonus'] : 0 }}
-                                </td>
-                            </tr>
-                            <tr style="border-collapse: separate; border-spacing: 0 15px; ">
-                                <td style="text-align: right;">Auto R/N</td>
-                                <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
-                                    {{ auto_dots[producer.id+'_'+i+'_RN'] ? auto_dots[producer.id+'_'+i+'_RN'] : 0 }}
-                                </td>
-                            </tr>
+                            <ng-container *ngIf="producer.id != 'napD'">
+                                <tr> <th>{{ producer.name }}</th> <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]"><hr style="margin-top: 0.5rem; margin-bottom: 0.5rem;"/></td> </tr>
+                                <tr>
+                                    <td style="text-align: right;">Auto Apps</td>
+                                    <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
+                                        <ng-container *ngIf="i <= month_number">
+                                            {{ auto_dots[producer.id+'_'+i+'_total'] ? auto_dots[producer.id+'_'+i+'_total'] : 0 }}
+                                        </ng-container>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="text-align: right;">Auto Bonus</td> 
+                                    <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
+                                        <ng-container *ngIf="i <= month_number">
+                                            ${{ auto_dots[producer.id+'_'+i+'_bonus'] ? auto_dots[producer.id+'_'+i+'_bonus'] : 0 }}
+                                        </ng-container>
+                                    </td>
+                                </tr>
+                                <tr style="border-collapse: separate; border-spacing: 0 15px; ">
+                                    <td style="text-align: right;">Auto R/N</td>
+                                    <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
+                                        <ng-container *ngIf="i <= month_number">
+                                            {{ auto_dots[producer.id+'_'+i+'_RN'] ? auto_dots[producer.id+'_'+i+'_RN'] : 0 }}
+                                        </ng-container>
+                                    </td>
+                                </tr>
+                            </ng-container>
                         </ng-container>
                         <tr> <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]"><hr style="margin-top: 0.5rem; margin-bottom: 0.5rem;"/></td> </tr>
                         <tr>
                             <th>Total R/N</th>
                             <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
-                                {{ auto_totals[i+'_RN'] ? auto_totals[i+'_RN'] : 0 }}
+                                <ng-container *ngIf="i <= month_number">
+                                    {{ auto_totals[i+'_RN'] ? auto_totals[i+'_RN'] : 0 }}
+                                </ng-container>
                             </td>
                         </tr>
                         <tr>
                             <th>Total Other</th>
                             <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
-                                {{ auto_totals[i+'_other'] ? auto_totals[i+'_other'] : 0 }}
+                                <ng-container *ngIf="i <= month_number">
+                                    {{ auto_totals[i+'_other'] ? auto_totals[i+'_other'] : 0 }}
+                                </ng-container>
                             </td>
                         </tr>
                         <tr>
                             <th>Total Auto</th>
                             <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
-                                {{ auto_totals[i+'_total'] ? auto_totals[i+'_total'] : 0 }}
+                                <ng-container *ngIf="i <= month_number">
+                                    {{ auto_totals[i+'_total'] ? auto_totals[i+'_total'] : 0 }}
+                                </ng-container>
                             </td>
                         </tr>
                         
@@ -149,7 +283,7 @@
             </div>
         </div>
 
-        <div class="row spacing" style="padding-bottom: 0px;">
+        <div class="row spacing" id="fire" style="padding-bottom: 0px;">
             <div class="block" style="width: 100%; height: 100%;">
                 <h4 class="header">Fire</h4>
                 <table class="table table-sm table-hover table-bordered" style="font-size: smaller;">
@@ -162,19 +296,25 @@
                     <tbody>
                     
                         <ng-container *ngFor="let producer of producers">
-                            <tr> <th>{{ producer.name }}</th> <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]"><hr style="margin-top: 0.5rem; margin-bottom: 0.5rem;"/></td> </tr>
-                            <tr>
-                                <td style="text-align: right;">Fire Apps</td>
-                                <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
-                                    {{ fire_dots[producer.id+'_'+i+'_total'] ? fire_dots[producer.id+'_'+i+'_total'] : 0 }}
-                                </td>
-                            </tr>
+                            <ng-container *ngIf="producer.id != 'napD'">
+                                <tr> <th>{{ producer.name }}</th> <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]"><hr style="margin-top: 0.5rem; margin-bottom: 0.5rem;"/></td> </tr>
+                                <tr>
+                                    <td style="text-align: right;">Fire Apps</td>
+                                    <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
+                                        <ng-container *ngIf="i <= month_number">
+                                            {{ fire_dots[producer.id+'_'+i+'_total'] ? fire_dots[producer.id+'_'+i+'_total'] : 0 }}
+                                        </ng-container>
+                                    </td>
+                                </tr>
+                            </ng-container>
                         </ng-container>
                         <tr> <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]"><hr style="margin-top: 0.5rem; margin-bottom: 0.5rem;"/></td> </tr>
                         <tr>
                             <th>Total Fire</th>
                             <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
-                                {{ fire_totals[i+'_total'] ? fire_totals[i+'_total'] : 0 }}
+                                <ng-container *ngIf="i <= month_number">
+                                    {{ fire_totals[i+'_total'] ? fire_totals[i+'_total'] : 0 }}
+                                </ng-container>
                             </td>
                         </tr>
                         
@@ -183,7 +323,7 @@
             </div>
         </div>
 
-        <div class="row spacing">
+        <div class="row spacing" id="bank">
             <div class="block" style="width: 100%; height: 100%;">
                 <h4 class="header">Bank</h4>
                 <table class="table table-sm table-hover table-bordered" style="font-size: smaller;">
@@ -196,25 +336,33 @@
                     <tbody>
                     
                         <ng-container *ngFor="let producer of producers">
-                            <tr> <th>{{ producer.name }}</th> <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]"><hr style="margin-top: 0.5rem; margin-bottom: 0.5rem;"/></td> </tr>
-                            <tr>
-                                <td style="text-align: right;">Bank Apps</td>
-                                <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
-                                    {{ bank_dots[producer.id+'_'+i+'_total'] ? bank_dots[producer.id+'_'+i+'_total'] : 0 }}
-                                </td>
-                            </tr>
-                            <tr>
-                                <td style="text-align: right;">Bank Bonus</td> 
-                                <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
-                                    ${{ bank_dots[producer.id+'_'+i+'_bonus'] ? bank_dots[producer.id+'_'+i+'_bonus'] : 0 }}
-                                </td>
-                            </tr>
+                            <ng-container *ngIf="producer.id != 'napD'">
+                                <tr> <th>{{ producer.name }}</th> <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]"><hr style="margin-top: 0.5rem; margin-bottom: 0.5rem;"/></td> </tr>
+                                <tr>
+                                    <td style="text-align: right;">Bank Apps</td>
+                                    <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
+                                        <ng-container *ngIf="i <= month_number">
+                                            {{ bank_dots[producer.id+'_'+i+'_total'] ? bank_dots[producer.id+'_'+i+'_total'] : 0 }}
+                                        </ng-container>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="text-align: right;">Bank Bonus</td> 
+                                    <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
+                                        <ng-container *ngIf="i <= month_number">
+                                            ${{ bank_dots[producer.id+'_'+i+'_bonus'] ? bank_dots[producer.id+'_'+i+'_bonus'] : 0 }}
+                                        </ng-container>
+                                    </td>
+                                </tr>
+                            </ng-container>
                         </ng-container>
                         <tr> <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]"><hr style="margin-top: 0.5rem; margin-bottom: 0.5rem;"/></td> </tr>
                         <tr>
                             <th>Total Bank</th>
                             <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
-                                {{ bank_totals[i+'_total'] ? bank_totals[i+'_total'] : 0 }}
+                                <ng-container *ngIf="i <= month_number">
+                                    {{ bank_totals[i+'_total'] ? bank_totals[i+'_total'] : 0 }}
+                                </ng-container>
                             </td>
                         </tr>
                         
@@ -223,7 +371,7 @@
             </div>
         </div>
 
-        <div class="row spacing" style="flex: 1; overflow: auto; padding-top: 0px;">
+        <div class="row spacing" id="health" style="flex: 1; overflow: auto; padding-top: 0px;">
             <div class="block" style="width: 100%; height: 100%;">
                 <h4 class="header">Health</h4>
                 <table class="table table-sm table-hover table-bordered" style="font-size: smaller;">
@@ -236,25 +384,33 @@
                     <tbody>
                     
                         <ng-container *ngFor="let producer of producers">
-                            <tr> <th>{{ producer.name }}</th> <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]"><hr style="margin-top: 0.5rem; margin-bottom: 0.5rem;"/></td> </tr>
-                            <tr>
-                                <td style="text-align: right;">Health Apps</td>
-                                <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
-                                    {{ health_dots[producer.id+'_'+i+'_total'] ? health_dots[producer.id+'_'+i+'_total'] : 0 }}
-                                </td>
-                            </tr>
-                            <tr>
-                                <td style="text-align: right;">Health Bonus</td> 
-                                <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
-                                    ${{ health_dots[producer.id+'_'+i+'_bonus'] ? health_dots[producer.id+'_'+i+'_bonus'] : 0 }}
-                                </td>
-                            </tr>
+                            <ng-container *ngIf="producer.id != 'napD'">
+                                <tr> <th>{{ producer.name }}</th> <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]"><hr style="margin-top: 0.5rem; margin-bottom: 0.5rem;"/></td> </tr>
+                                <tr>
+                                    <td style="text-align: right;">Health Apps</td>
+                                    <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
+                                        <ng-container *ngIf="i <= month_number">
+                                            {{ health_dots[producer.id+'_'+i+'_total'] ? health_dots[producer.id+'_'+i+'_total'] : 0 }}
+                                        </ng-container>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="text-align: right;">Health Bonus</td> 
+                                    <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
+                                        <ng-container *ngIf="i <= month_number">
+                                            ${{ health_dots[producer.id+'_'+i+'_bonus'] ? health_dots[producer.id+'_'+i+'_bonus'] : 0 }}
+                                        </ng-container>
+                                    </td>
+                                </tr>
+                            </ng-container>
                         </ng-container>
                         <tr> <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]"><hr style="margin-top: 0.5rem; margin-bottom: 0.5rem;"/></td> </tr>
                         <tr>
                             <th>Total Health</th>
                             <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
-                                {{ health_totals[i+'_total'] ? health_totals[i+'_total'] : 0 }}
+                                <ng-container *ngIf="i <= month_number">
+                                    {{ health_totals[i+'_total'] ? health_totals[i+'_total'] : 0 }}
+                                </ng-container>
                             </td>
                         </tr>
                         
@@ -286,6 +442,18 @@
                 </div>
             </div>
         </div>
+
+        <app-bonuses id="bonuses" class="printPdf" style="display: none;"></app-bonuses>
+
+        <ng-container *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
+            <app-apps-list id="apps-list-life-{{i}}" class="noPrintPdf" style="display: none;" app_type="life" month="{{i}}"></app-apps-list>
+            <app-apps-list id="apps-list-auto-{{i}}" class="noPrintPdf" style="display: none;" app_type="auto" month="{{i}}"></app-apps-list>
+            <app-apps-list id="apps-list-bank-{{i}}"  class="noPrintPdf" style="display: none;" app_type="bank" month="{{i}}"></app-apps-list>
+            <app-apps-list id="apps-list-fire-{{i}}"  class="noPrintPdf" style="display: none;" app_type="fire" month="{{i}}"></app-apps-list>
+            <app-apps-list id="apps-list-health-{{i}}"  class="noPrintPdf" style="display: none;" app_type="health" month="{{i}}"></app-apps-list>
+            <app-apps-list id="apps-list-mutual-funds-{{i}}"  class="noPrintPdf" style="display: none;" app_type="mutual-funds" month="{{i}}"></app-apps-list>
+        </ng-container>
+
     </div>
 
 </div>

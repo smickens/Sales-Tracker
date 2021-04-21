@@ -9,6 +9,8 @@ import { AngularFireAuth } from '@angular/fire/auth';
 import { Subscription } from 'rxjs';
 import { Color } from 'ng2-charts';
 import * as Chart from 'chart.js';
+import { DataService } from '../data.service';
+import { take } from 'rxjs/operators';
 
 @Component({
   selector: 'app-bonuses',
@@ -37,21 +39,19 @@ export class BonusesComponent implements OnInit {
 
   subscriptions: Subscription[] = [];
 
-  constructor(private db: AngularFireDatabase, private fb: FormBuilder, public  db_auth:  AngularFireAuth, private router: Router) {
-    let auth_sub = db_auth.authState.subscribe(user => {
+  constructor(private db: AngularFireDatabase, private fb: FormBuilder, private dataService: DataService, public db_auth:  AngularFireAuth, private router: Router) { }
+
+  ngOnInit(): void {
+    this.dataService.auth_state_ob.pipe(take(1)).subscribe(user => {
       if (user) {
-        environment.logged_in = true;
         this.selected_year = this.today.getFullYear();
-        this.loadBonusData();
+        this.loadCorporateBonuses();
       } else {
-        environment.logged_in = false;
+        // if user is not logged in, reroute them to the login page
         this.router.navigate(['login']);
       }
     });
-    this.subscriptions.push(auth_sub);
-  }
 
-  ngOnInit(): void {
     var ctx = document.getElementById('canvas') as HTMLCanvasElement;
     this.bonus_chart = new Chart(ctx, {
       type: 'bar',
@@ -89,9 +89,9 @@ export class BonusesComponent implements OnInit {
     });
   }
 
-  loadBonusData() {
+  loadCorporateBonuses() {
     // gets list of producers and corporate bonuses
-    let sub1 = this.db.list('producers').snapshotChanges().subscribe(
+    this.dataService.prod_ob.pipe(take(1)).subscribe(
       (snapshot: any) => snapshot.map((snap, index) => {
         const producer = snap.payload.val() as Producer;
         producer.id = snap.key;
@@ -145,14 +145,18 @@ export class BonusesComponent implements OnInit {
         if (snapshot.length == index+1) {
           this.bonus_chart.data.datasets = this.barChartData;
           this.bonus_chart.update();
+
+          // after getting all the coporate bonuses, it loads the production bonuses
+          this.loadProductionBonuses();
         }
         //console.log(this.corporate_bonuses);
      })
     );
-    this.subscriptions.push(sub1);
+  }
 
+  loadProductionBonuses() {
     // gets production bonuses
-    let sub2 = this.db.list('applications').snapshotChanges().subscribe(
+    this.dataService.apps_ob.pipe(take(1)).subscribe(
       (snapshot: any) => snapshot.map((snap, index) => {
         const app = snap.payload.val();
 
@@ -163,15 +167,6 @@ export class BonusesComponent implements OnInit {
         let bonus = app["bonus"];
 
         let app_went_through = false;
-        /*
-          Life - Issue/Bonus Month “January”
-            ? might change issue_month to issue_date 	# and have it include 08-2019
-          Auto - Status “Issued”
-          Bank - Status “Issued”
-          Fire - Status “Issued”
-          Health - Status “Taken”
-        */
-        // TODO: check jan and dec ones to make sure month doesn't error
         if (app["status"] == "Taken" || app["status"] == "Issued") {
           app_went_through = true;
         }
@@ -180,7 +175,7 @@ export class BonusesComponent implements OnInit {
         }
         if (app_type == "life") {
           app_month = app["issue_month"];
-          console.log("changed month to issue month - " + app_month);
+          //console.log("changed month to issue month - " + app_month);
           bonus = app["paid_bonus"];
         }
         
@@ -190,8 +185,8 @@ export class BonusesComponent implements OnInit {
           if (!(producer_id in this.production_bonuses)) {
             this.production_bonuses[producer_id] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
           }
-          this.production_bonuses[producer_id][app_month-1] += bonus;
-          console.log("Name: " + producer_id + "    Month: " + app_month + "   Bonus: " + bonus);
+          this.production_bonuses[producer_id][app_month-1] = ((this.production_bonuses[producer_id][app_month-1] * 100) + (bonus * 100)) / 100;
+          //console.log("Name: " + producer_id + "    Month: " + app_month + "   Bonus: " + bonus);
           let i = this.getProducerIndex(producer_id);
           this.barChartData[(i*2)+1].data[app_month-1] += bonus;
         }
@@ -201,9 +196,9 @@ export class BonusesComponent implements OnInit {
           const co_producer_bonus = app["co_producer_bonus"];
           if (co_producer_bonus > 0 && co_producer_bonus != null) {
             const co_producer_id = app["co_producer_id"];
-            this.production_bonuses[co_producer_id][app_month-1] += co_producer_bonus;
+            this.production_bonuses[co_producer_id][app_month-1] = ((this.production_bonuses[co_producer_id][app_month-1] * 100) + (co_producer_bonus * 100)) / 100;
             let i = this.getProducerIndex(co_producer_id);
-            console.log("Co- ID: " + co_producer_id + "   Bonus: " + co_producer_bonus + "  " + i);
+            //console.log("Co- ID: " + co_producer_id + "   Bonus: " + co_producer_bonus + "  " + i);
             this.barChartData[(i*2)+1].data[app_month-1] += co_producer_bonus;
           }
         }
@@ -215,7 +210,6 @@ export class BonusesComponent implements OnInit {
         this.bonuses_loaded = true;
       })
     );
-    this.subscriptions.push(sub2);
   }
 
   showData(id: string) {
@@ -236,7 +230,7 @@ export class BonusesComponent implements OnInit {
 
   updateList(filter: string) {
     this.producers = [];
-    this.db.list('producers').snapshotChanges().subscribe(
+    this.dataService.prod_ob.pipe(take(1)).subscribe(
       (snapshot: any) => snapshot.map((snap, index) => {
         const producer = snap.payload.val() as Producer;
         producer.id = snap.key;
@@ -277,7 +271,7 @@ export class BonusesComponent implements OnInit {
     for (const producer_id in this.production_bonuses) {
       this.production_bonuses[producer_id] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
     }
-    this.loadBonusData();
+    this.loadCorporateBonuses();
   }
 
   getProducerIndex(producer_id: string) {

@@ -198,9 +198,6 @@ input:checked + .slider:before {
     .pageBreak { page-break-before: always; } 
     .labelPdf { font-weight: bold; font-size: 20px; } 
     .noPrintPdf { display: none; } 
-    .printPdf {display: block !important; }
-}
-
-@page {
-    size: landscape;
+    .printPdf { display: block !important; }
+    #main-view { margin-left: 0px !important; }
 }

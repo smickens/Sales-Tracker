@@ -14,6 +14,7 @@ export class AppComponent {
     document.getElementById("sidebar").style.width = "180px";
     document.getElementById("openBtn").style.display = "none";
     document.getElementById("closeBtn").style.display = "block";
+    document.getElementById("main-view").style.marginLeft = "180px";
   }
 
   closeSidebar() {
@@ -21,5 +22,6 @@ export class AppComponent {
     document.getElementById("sidebar").style.width = "50px";
     document.getElementById("openBtn").style.display = "block";
     document.getElementById("closeBtn").style.display = "none";
+    document.getElementById("main-view").style.marginLeft = "50px";
   }
 }

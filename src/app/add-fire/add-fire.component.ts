@@ -11,6 +11,8 @@ import { Router } from '@angular/router';
 import { environment } from 'src/environments/environment';
 import { AngularFireAuth } from '@angular/fire/auth';
 import { Subscription } from 'rxjs';
+import { DataService } from '../data.service';
+import { take } from 'rxjs/operators';
 
 @Component({
   selector: 'app-add-fire',
@@ -33,13 +35,13 @@ export class AddFireComponent implements OnInit {
 
   subscriptions: Subscription[] = [];
 
-  constructor(private db: AngularFireDatabase, private fb: FormBuilder, public  db_auth:  AngularFireAuth, private route: ActivatedRoute, private location: Location, private router: Router) {
-    let auth_sub = db_auth.authState.subscribe(user => {
-      if (user) {
-        environment.logged_in = true;
+  constructor(private db: AngularFireDatabase, private fb: FormBuilder, private dataService: DataService, public  db_auth:  AngularFireAuth, private route: ActivatedRoute, private location: Location, private router: Router) { }
 
+  ngOnInit(): void {
+    this.dataService.auth_state_ob.pipe(take(1)).subscribe(user => {
+      if (user) {
         // loads producers
-        let producer_sub = db.list('producers').snapshotChanges().subscribe(
+        this.dataService.prod_ob.pipe(take(1)).subscribe(
           (snapshot: any) => snapshot.map(snap => {
             let producer: Producer = {
               name: snap.payload.val().name,
@@ -47,43 +49,49 @@ export class AddFireComponent implements OnInit {
             }
             this.producers.push(producer);
         }));
-        this.subscriptions.push(producer_sub);
 
-        let sub2 = db.list('constants/fire').snapshotChanges().subscribe(
+        let sub2 = this.db.list('constants/fire').snapshotChanges().pipe(take(1)).subscribe(
           (snapshot: any) => snapshot.map(snap => {
           this.constants[snap.payload.key] = snap.payload.val().split("_");
         }));
         this.subscriptions.push(sub2);
 
         this.app_id = this.route.snapshot.paramMap.get('id');
-        console.log(this.app_id);
         
         if (this.app_id != null) {
           this.form_title = "Edit Fire App";
           this.button_text = "UPDATE";
-          let app_sub = this.db.list('applications/' + this.app_id).snapshotChanges().subscribe(
+          let app_sub = this.db.list('applications/' + this.app_id).snapshotChanges().pipe(take(1)).subscribe(
             (snapshot: any) => snapshot.map(snap => {
             this.addFireAppForm.addControl(snap.payload.key, this.fb.control(snap.payload.val()));
             this.app_loaded = true;
           }));
           this.subscriptions.push(app_sub);
         }
-
       } else {
-        environment.logged_in = false;
+        // if user is not logged in, reroute them to the login page
         this.router.navigate(['login']);
       }
     });
-    this.subscriptions.push(auth_sub);
-  }
 
-  ngOnInit(): void {
     this.app_id = this.route.snapshot.paramMap.get('id');
+    let todays_date: string = this.today.getFullYear() + "-";
+    if (this.today.getMonth() < 9) {
+      todays_date += "0" + (this.today.getMonth() + 1) + "-";
+    } else {
+      todays_date += (this.today.getMonth() + 1) + "-";
+    }
+    if (this.today.getDate() >= 10) {
+      todays_date += this.today.getDate();
+    } else {
+      todays_date += "0" + this.today.getDate();
+    }
+
     if (this.app_id == null) {
       this.form_title = "Add Fire App";
       this.button_text = "SUBMIT";
       this.addFireAppForm = this.fb.group({
-        date: [this.today.toISOString().substr(0, 10)],
+        date: [todays_date],
         producer_id: [''],
         client_name: [''],
         product: ['Homeowners'], // * CHECK w/ mom for more options later
@@ -104,7 +112,13 @@ export class AddFireComponent implements OnInit {
   }
 
   get(field: string) {
-    return this.addFireAppForm.get(field).value;
+    return this.addFireAppForm.get(field).value == null ? 0 : this.addFireAppForm.get(field).value;
+  }
+
+  isIssued(status: string) {
+    if (status == "Issued") {
+      this.addFireAppForm.get('issued_premium').setValue(this.get('submitted_premium'));
+    }
   }
 
   setValid(e) {

@@ -11,6 +11,8 @@ import { Router } from '@angular/router';
 import { environment } from 'src/environments/environment';
 import { AngularFireAuth } from '@angular/fire/auth';
 import { Subscription } from 'rxjs';
+import { DataService } from '../data.service';
+import { take } from 'rxjs/operators';
 
 @Component({
   selector: 'app-add-life',
@@ -33,13 +35,13 @@ export class AddLifeComponent implements OnInit {
 
   subscriptions: Subscription[] = [];
 
-  constructor(private db: AngularFireDatabase, private fb: FormBuilder, public  db_auth:  AngularFireAuth, private route: ActivatedRoute, private location: Location, private router: Router) {
-    let auth_sub = db_auth.authState.subscribe(user => {
-      if (user) {
-        environment.logged_in = true;
+  constructor(private db: AngularFireDatabase, private fb: FormBuilder, private dataService: DataService, public db_auth:  AngularFireAuth, private route: ActivatedRoute, private location: Location, private router: Router) { }
 
+  ngOnInit(): void {
+    this.dataService.auth_state_ob.pipe(take(1)).subscribe(user => {
+      if (user) {
         // loads producers
-        let producer_sub = db.list('producers').snapshotChanges().subscribe(
+        this.dataService.prod_ob.pipe(take(1)).subscribe(
           (snapshot: any) => snapshot.map(snap => {
             let producer: Producer = {
               name: snap.payload.val().name,
@@ -47,23 +49,18 @@ export class AddLifeComponent implements OnInit {
             }
             this.producers.push(producer);
         }));
-        this.subscriptions.push(producer_sub);
     
-        let sub2 = db.list('constants/life').snapshotChanges().subscribe(
+        let sub2 = this.db.list('constants/life').snapshotChanges().pipe(take(1)).subscribe(
           (snapshot: any) => snapshot.map(snap => {
           this.constants[snap.payload.key] = snap.payload.val().split("_");
-          //console.log(this.constants);
         }));
         this.subscriptions.push(sub2);
 
         this.app_id = this.route.snapshot.paramMap.get('id');
-        //console.log(this.app_id);
-
         if (this.app_id != null) {
-          //console.log("edit form");
           this.form_title = "Edit Life App";
           this.button_text = "UPDATE";
-          let app_sub = this.db.list('applications/' + this.app_id).snapshotChanges().subscribe(
+          let app_sub = this.db.list('applications/' + this.app_id).snapshotChanges().pipe(take(1)).subscribe(
             (snapshot: any) => snapshot.map(snap => {
             this.addLifeAppForm.addControl(snap.payload.key, this.fb.control(snap.payload.val()));
             this.app_loaded = true;
@@ -71,24 +68,30 @@ export class AddLifeComponent implements OnInit {
           this.subscriptions.push(app_sub);
         }
       } else {
-        environment.logged_in = false;
+        // if user is not logged in, reroute them to the login page
         this.router.navigate(['login']);
       }
     });
-    this.subscriptions.push(auth_sub);
-  }
 
-  ngOnInit(): void {
     this.app_id = this.route.snapshot.paramMap.get('id');
-    //console.log(this.app_id);
+    let todays_date: string = this.today.getFullYear() + "-";
+    if (this.today.getMonth() < 9) {
+      todays_date += "0" + (this.today.getMonth() + 1) + "-";
+    } else {
+      todays_date += (this.today.getMonth() + 1) + "-";
+    }
+    if (this.today.getDate() >= 10) {
+      todays_date += this.today.getDate();
+    } else {
+      todays_date += "0" + this.today.getDate();
+    }
 
     if (this.app_id == null) {
-      //console.log("add form");
       this.form_title = "Add Life App";
       this.button_text = "SUBMIT";
       this.addLifeAppForm = this.fb.group({
-        date: [this.today.toISOString().substr(0, 10)],
-        producer_id: [''], // * CHECK that only main producer get life app count
+        date: [todays_date],
+        producer_id: [''],
         client_name: [''],
         premium: [0],
         mode: ['Monthly'],
@@ -96,7 +99,7 @@ export class AddLifeComponent implements OnInit {
         policy_type: ['Term'],
         product: ['20 Yr Term'],
         client_type: ['New'],
-        bonus: [0], // * CHECK can this just be removed, since it equals annual premium
+        bonus: [0],
         status: [''],
         paid_bonus: [0],
         life_pivot_bonus: [''],
@@ -116,16 +119,27 @@ export class AddLifeComponent implements OnInit {
   }
 
   updateAnnualPremium() {
-    let factor = 1; // defaults to annual
+    let factor = 1;
     let mode = this.get("mode");
     if (mode == "Monthly") {
       factor = 12;
     }
+    let annual_premium = Math.round(factor * this.get('premium') * 100) / 100;
+    this.addLifeAppForm.get('annual_premium').setValue(annual_premium);
     this.updateBonus();
-    this.addLifeAppForm.get('annual_premium').setValue(factor * this.get('premium'));
   }
 
   updateBonus() {
+    let bonus = this.get('annual_premium') / 12;
+    if (this.get("policy_type") == "Permanent") {
+      console.log("perm")
+      bonus = Math.round(0.25 * this.get('annual_premium') * 100) / 100;
+    } else if (this.get("policy_type") == "Term") {
+      console.log("term")
+      bonus = Math.round(0.15 * this.get('annual_premium') * 100) / 100;
+    }
+    this.addLifeAppForm.get('bonus').setValue(bonus);
+    
     if (this.get("life_pivot_bonus") == "Manual") {
       // in manual mode paid bonus and co producer bonus are allowed to be manually edited
       document.getElementById('paid_bonus').removeAttribute('readonly');
@@ -136,18 +150,6 @@ export class AddLifeComponent implements OnInit {
       document.getElementById('co_producer_bonus').setAttribute('readonly', 'true');
 
       let percentage = Number(this.get("life_pivot_bonus").substring(0, this.get("life_pivot_bonus").length-1)) / 100;
-      //console.log("Percentage: " + percentage);
-
-      let bonus = this.get('annual_premium') / 12;
-      if (this.get("policy_type") == "Permanent") {
-        console.log("permanent");
-        bonus = Math.round(0.25 * this.get('annual_premium') * 100) / 100;
-      } else if (this.get("policy_type") == "Term") {
-        console.log("term");
-        bonus = Math.round(0.15 * this.get('annual_premium') * 100) / 100;
-      }
-      console.log(bonus);
-      this.addLifeAppForm.get('bonus').setValue(bonus);
 
       // min bonus is always 25
       let main_producer_bonus = 25;
@@ -166,14 +168,13 @@ export class AddLifeComponent implements OnInit {
         this.addLifeAppForm.get('co_producer_bonus').setValue(0);
       }
     } else {
-      this.addLifeAppForm.get('bonus').setValue(0);
       this.addLifeAppForm.get('paid_bonus').setValue(0);
       this.addLifeAppForm.get('co_producer_bonus').setValue(0);
     }
   }
 
   get(field: string) {
-    return this.addLifeAppForm.get(field).value;
+    return this.addLifeAppForm.get(field).value == null ? 0 : this.addLifeAppForm.get(field).value;
   }
 
   setValid(e) {
@@ -241,7 +242,6 @@ export class AddLifeComponent implements OnInit {
       co_producer_id: this.get("co_producer_id"),
       co_producer_bonus: this.get("co_producer_bonus")
     }
-    console.log(app);
 
     if (this.app_id == null) {
       // adds new application

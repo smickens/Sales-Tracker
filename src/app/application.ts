@@ -30,7 +30,7 @@ export interface AutoApp extends Application {
     tiers?: string;
     bonus?: number;
     submitted_premium?: number;
-    status?: boolean;
+    status?: string;
     issued_premium?: number;
     marketing_source?: string;
 }
@@ -50,7 +50,7 @@ export interface BankApp extends Application {
 export interface FireApp extends Application {
     product?: string;
     submitted_premium?: number;
-    status?: boolean;
+    status?: string;
     issued_premium?: number;
     marketing_source?: string;
 }

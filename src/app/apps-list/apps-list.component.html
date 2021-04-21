@@ -3,16 +3,25 @@
         <div class="block">
             <div style="display: flex; justify-content: space-between;">
               <div style="display: flex; align-items: center;">
-                <h4 class="header" style="margin-bottom: 0px; padding-right: 15px;">{{ this.app_type | titlecase }} Apps {{ year }} - </h4>
-                <select class="custom-select" style="width: 250px;" id="producer" (change)="updateList($event.target.value)">
+                <h4 class="header" style="margin-bottom: 0px; padding-right: 15px;">{{ app_type === "mutual-funds" ? "Mutual Funds" : app_type | titlecase }} Apps {{ year }} - </h4>
+                <select class="custom-select" style="width: 200px;" id="producer" (change)="filterByMonth(-1, $event.target.value)">
                     <option selected>All Producers</option>
-                    <option *ngFor="let producer of producers" value="{{producer.name}}">{{ producer.name }}</option>
+                    <option *ngFor="let producer of producers" value="{{producer.id}}">{{ producer.name }}</option>
                 </select>
+                <form *ngIf="isViewingAppList" class="noPrintPdf" [formGroup]="monthForm">
+                  <select class="custom-select" style="width: 150px; margin-left: 20px;" id="month" formControlName="month" (change)="filterByMonth($event.target.value, '')">
+                    <option value="all" selected>Show All Apps</option>
+                    <ng-container *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
+                      <option value="{{i}}">{{ months[i-1] }}</option>
+                    </ng-container>
+                  </select>
+                </form>
               </div>
               <div style="display: flex; align-items: center;">
                 <p style="margin: 0px; padding-right: 10px;">Sort:</p>
                 <select class="custom-select" style="width: 175px;" id="producer" (change)="orderList($event.target.value)">
-                  <option selected value="date">By Date</option>
+                  <option selected value="recent">Most Recent</option>
+                  <option value="date">By Date</option>
                   <option value="client_name">By Client Name</option>
                   <option value="producer">By Producer</option>
                 </select>
@@ -21,7 +30,7 @@
             <a routerLink="/add-{{ this.app_type }}" style="text-decoration: none; display: block; cursor: pointer;">Add {{ app_type === "mutual-funds" ? "Mutual Funds" : app_type | titlecase }} App</a>
             
             <div style="overflow-x: auto; overflow-y: auto;">
-                <table class="table table-hover">
+                <table id="appTable" class="table table-hover">
                     <thead>
                       <tr>
                         <th *ngFor="let header of headers" scope="col">{{header}}</th>
@@ -37,24 +46,24 @@
                         <td>{{ app.client_name | titlecase }}</td>
                         
                         <ng-container *ngIf="app.type === 'life'">
-                          <td>${{ app.premium }}</td>
+                          <td>{{ app.premium | currency }}</td>
                           <td>{{ app.mode }}</td>
-                          <td>${{ app.annual_premium }}</td>
+                          <td>{{ app.annual_premium | currency }}</td>
                           <td>{{ app.policy_type }}</td>
                           <td>{{ app.product }}</td>
                           <td>{{ app.client_type }}</td>
-                          <td>${{ app.bonus }}</td>
+                          <td>{{ app.bonus | currency }}</td>
                           <td>{{ app.status }}</td>
-                          <td>${{ app.paid_bonus }}</td>
-                          <td>{{ months[app.issue_month] }}</td>
+                          <td>{{ app.paid_bonus | currency }}</td>
+                          <td>{{ months[app.issue_month-1] }}</td>
                           <td>{{ app.life_pivot_bonus }}</td>
                         </ng-container>
 
                         <ng-container *ngIf="app.type === 'auto'">
                           <td>{{ app.auto_type }}</td>
                           <td>{{ app.tiers }}</td>
-                          <td>${{ app.bonus }}</td>
-                          <td>${{ app.submitted_premium }}</td>
+                          <td>{{ app.bonus | currency }}</td>
+                          <td>{{ app.submitted_premium | currency }}</td>
                           <td>{{ app.status }}</td>
                           <td [ngStyle]="{'color': app.submitted_premium == app.issued_premium ? 'black' : 'red'}">${{ app.issued_premium }}</td>
                           <td>{{ app.marketing_source }}</td>
@@ -62,26 +71,26 @@
 
                         <ng-container *ngIf="app.type === 'bank'">
                           <td>{{ app.product_type }}</td>
-                          <td>${{ app.bonus }}</td>
+                          <td>{{ app.bonus | currency }}</td>
                           <td>{{ app.status }}</td>
                           <td>{{ app.marketing_source }}</td>
                         </ng-container>
 
                         <ng-container *ngIf="app.type === 'fire'">
                           <td>{{ app.product }}</td>
-                          <td>${{ app.submitted_premium }}</td>
+                          <td>{{ app.submitted_premium | currency }}</td>
                           <td>{{ app.status }}</td>
                           <td [ngStyle]="{'color': app.submitted_premium == app.issued_premium ? 'black' : 'red'}">${{ app.issued_premium }}</td>
                           <td>{{ app.marketing_source }}</td>
                         </ng-container>
 
                         <ng-container *ngIf="app.type === 'health'">
-                          <td>${{ app.premium }}</td>
+                          <td>{{ app.premium | currency }}</td>
                           <td>{{ app.mode }}</td>
                           <td>{{ app.status }}</td>
-                          <td>${{ app.annual_premium }}</td>
+                          <td>{{ app.annual_premium | currency }}</td>
                           <td>{{ app.product }}</td>
-                          <td>${{ app.bonus }}</td>
+                          <td>{{ app.bonus | currency }}</td>
                           <td>{{ app.marketing_source }}</td>
                         </ng-container>
 

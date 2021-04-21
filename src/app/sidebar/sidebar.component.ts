@@ -13,17 +13,9 @@ export class SidebarComponent implements OnInit {
   // env is used in html to only display sidebar if user is logged in
   env = environment;
 
-  constructor(public  db_auth:  AngularFireAuth) { }
+  constructor(public db_auth: AngularFireAuth) { }
 
   ngOnInit(): void {
-  }
-
-  openSidebar() {
-    document.getElementById("sidebar").style.width = "250px";
-  }
-
-  closeSidebar() {
-    document.getElementById("sidebar").style.width = "50px";
   }
 
   async logout(){

@@ -6,6 +6,8 @@ import { environment } from 'src/environments/environment';
 import { AngularFireAuth } from '@angular/fire/auth';
 import { Subscription } from 'rxjs';
 import { Producer } from '../producer';
+import { DataService } from '../data.service';
+import { take } from 'rxjs/operators';
 
 @Component({
   selector: 'app-timesheet',
@@ -14,7 +16,6 @@ import { Producer } from '../producer';
 })
 export class TimesheetComponent implements OnInit {
 
-  // TODO: test if year dropdown is needed
   // TODO: down the road change used to available, store total sick/vacation they get a year on producer node
 
   producers: Producer[] = [];
@@ -29,81 +30,56 @@ export class TimesheetComponent implements OnInit {
   sick_vacation_hours = 0;
   sick_vacation_hours_used = 0;
   prior_month_bonuses = {};
+  prior_month_bonuses_override= {};
 
   popup_message = "";
   popup_title = "";
 
   monthForm: FormGroup = this.fb.group({ });
+  producerForm: FormGroup = this.fb.group({ });
   selected_year: number = 0;
 
   subscriptions: Subscription[] = [];
 
-  constructor(private db: AngularFireDatabase, private fb: FormBuilder, public  db_auth:  AngularFireAuth, private router: Router) {
-    let auth_sub = db_auth.authState.subscribe(user => {
+  constructor(private db: AngularFireDatabase, private fb: FormBuilder, private dataService: DataService, public  db_auth:  AngularFireAuth, private router: Router) { }
+
+  ngOnInit(): void {
+    let date: Date = new Date(); 
+    this.dataService.auth_state_ob.pipe(take(1)).subscribe(user => {
       if (user) {
-        environment.logged_in = true;
-
-        // loads producers
-        let producer_sub = db.list('producers').snapshotChanges().subscribe(
-          (snapshot: any) => snapshot.map(snap => {
-            let producer: Producer = {
-              name: snap.payload.val().name,
-              id: snap.key,
-              pin: snap.payload.val().pin
-            }
-            this.producers.push(producer);
-        }));
-        this.subscriptions.push(producer_sub);
-
-         // gets current month and updates sheet to most recent timesheet
-        let date: Date = new Date(); 
+        this.loadProducers();
+        // gets current month and updates sheet to most recent timesheet
         if (date.getDate() <= 14) {
-          (document.getElementById("second_half") as HTMLInputElement).checked = true;
-          if (date.getMonth() == 0) {
-            this.updateSheet(12);
-          } else {
-            this.updateSheet(date.getMonth());
-          }
-
-          // * CHECK: only put prior month bonus on 2nd half of month
-          this.getPriorMonthBonus();
-        } else {
           (document.getElementById("first_half") as HTMLInputElement).checked = true;
           this.updateSheet(date.getMonth() + 1);
+        } else {
+          (document.getElementById("second_half") as HTMLInputElement).checked = true;
+          this.updateSheet(date.getMonth()+1); // TODO: check if adding +1 broke anything
+          this.getPriorMonthBonus(); // only have prior month bonus on 2nd half of month
         }
-
       } else {
-        environment.logged_in = false;
+        // if user is not logged in, reroute them to the login page
         this.router.navigate(['login']);
       }
     });
-    this.subscriptions.push(auth_sub);
-  }
 
-  ngOnInit(): void {
     // gets current month and updates sheet to last timesheet
-    let date: Date = new Date(); 
     this.selected_year = date.getFullYear();
     (document.getElementById("year") as HTMLInputElement).value = this.selected_year.toString();
     let current_month = date.getMonth();
     if (date.getDate() <= 14) {
-      // current date is in first half of the month, so selects timesheet #2 from previous month
-      if (current_month == 0) {
-        current_month = 12;
-        this.selected_year -= 1;
-        (document.getElementById("year") as HTMLInputElement).value = (this.selected_year).toString();
-      }
-      this.monthForm = this.fb.group({
-        month: [current_month]
-      });
-      (document.getElementById("second_half") as HTMLInputElement).checked = true;
-    } else {
       // current date is in second half of the month, so selects timesheet #1 from current month
-      this.monthForm = this.fb.group({
-        month: [current_month + 1]
-      });
       (document.getElementById("first_half") as HTMLInputElement).checked = true;
+    } else {
+      // current date is in first half of the month, so selects timesheet #2 from previous month
+      (document.getElementById("second_half") as HTMLInputElement).checked = true;
     }
+    this.monthForm = this.fb.group({
+      month: [current_month + 1]
+    });
+    this.producerForm = this.fb.group({
+      producer: ["all"]
+    });
   }
 
   ngOnDestroy(): void {
@@ -112,22 +88,36 @@ export class TimesheetComponent implements OnInit {
     });
   }
 
+  loadProducers() {
+    this.dataService.prod_ob.pipe(take(1)).subscribe(
+      (snapshot: any) => snapshot.map((snap) => {
+        let producer: Producer = {
+          name: snap.payload.val().name,
+          id: snap.key,
+          pin: snap.payload.val().pin
+        }
+        this.producers.push(producer);
+      })
+    );
+  }
+
   getPriorMonthBonus() {
-    let today = new Date();
-    let last_month = today.getMonth() + 1;
-    if (last_month == 1) {
+    let current_month = Number((document.getElementById("month") as HTMLInputElement).value);
+    let year = this.selected_year;
+    let last_month = current_month - 1;
+    if (last_month == 0) {
       last_month = 12;
+      year -= 1;
     }
 
     // gets corporate bonuses
-    let index = 0;
-    let corporate_bonus_sub = this.db.list('producers').snapshotChanges().subscribe(
-      (snapshot: any) => snapshot.map(snap => {
+    this.dataService.prod_ob.pipe(take(1)).subscribe(
+      (snapshot: any) => snapshot.map((snap) => {
         this.prior_month_bonuses[snap.key] = 0;
         // gets corporate bonuses
         if ("corporate_bonuses" in snap.payload.val()) {
-          if (this.selected_year in snap.payload.val()["corporate_bonuses"]) {
-            const corporate_bonus = snap.payload.val()["corporate_bonuses"][this.selected_year];
+          if (year in snap.payload.val()["corporate_bonuses"]) {
+            const corporate_bonus = snap.payload.val()["corporate_bonuses"][year];
             for (let month in corporate_bonus) {
               if (Number(month) == last_month) {
                 this.prior_month_bonuses[snap.key] += corporate_bonus[month];
@@ -135,15 +125,12 @@ export class TimesheetComponent implements OnInit {
             }
           }
         }
-        index += 1;
-        //console.log(this.corporate_bonuses);
-    })
+      })
     );
-    this.subscriptions.push(corporate_bonus_sub);
 
     // gets production bonuses
-    let production_bonus_sub = this.db.list('applications').snapshotChanges().subscribe(
-      (snapshot: any) => snapshot.map(snap => {
+    this.dataService.apps_ob.pipe(take(1)).subscribe(
+      (snapshot: any) => snapshot.map((snap) => {
         const app = snap.payload.val();
         const app_type = app["type"] as string;
         const app_date = app["date"] as string;
@@ -152,16 +139,11 @@ export class TimesheetComponent implements OnInit {
         let bonus = app["bonus"];
 
         let app_went_through = false;
-        /*
-          Life - Issue/Bonus Month “January”
-            ? might change issue_month to issue_date 	# and have it include 08-2019
-          Auto - Status “Issued”
-          Bank - Status “Issued”
-          Fire - Status “Issued”
-          Health - Status “Taken”
-        */
         if (app_type != "fire" && app_type != "mutual-funds") {
           if (app["status"] == "Taken" || app["status"] == "Issued") {
+            app_went_through = true;
+          }
+          if (app_type == "auto" && app["status"] != "Declined" && app["status"] != "Cancelled") {
             app_went_through = true;
           }
           if (app_type == "life") {
@@ -173,17 +155,17 @@ export class TimesheetComponent implements OnInit {
             }
           }
   
-          if (app_went_through == true && app_year == this.selected_year && app_month == last_month) {
+          if (app_went_through == true && app_year == year && app_month == last_month) {
             const producer_id = app["producer_id"];
             // production bonus
-            this.prior_month_bonuses[producer_id] += bonus;
+            this.prior_month_bonuses[producer_id] = ((this.prior_month_bonuses[producer_id] * 100) + (bonus * 100)) / 100;
             //console.log("ID: " + producer_id + "    Month: " + app_month + "   Bonus: " + bonus);
 
             // co-production bonus
             const co_producer_bonus = app["co_producer_bonus"];
             if (co_producer_bonus > 0 && co_producer_bonus != null) {
               const co_producer_id = app["co_producer_id"];
-              this.prior_month_bonuses[co_producer_id] += co_producer_bonus;
+              this.prior_month_bonuses[co_producer_id] = ((this.prior_month_bonuses[co_producer_id] * 100) + (co_producer_bonus * 100)) / 100;
               //console.log("Co ID: " + co_producer_id + "   Bonus: " + co_producer_bonus);
             }
           }
@@ -191,7 +173,6 @@ export class TimesheetComponent implements OnInit {
         //console.log(this.prior_month_bonuses);
       })
     );
-    this.subscriptions.push(production_bonus_sub);
   }
 
   displayPinAuth(producer_id: string) {
@@ -216,6 +197,7 @@ export class TimesheetComponent implements OnInit {
     }
   }
 
+  // TODO: get it to display total sick vacation hours for the year
   editTimesheet(producer_id: string, name: string) {
     console.log("edit timesheet " + producer_id);
     this.selected_producer_id = producer_id;
@@ -332,14 +314,15 @@ export class TimesheetComponent implements OnInit {
           this.dates.push(date.toDateString().substring(0, date.toDateString().length-5));
         }
       }
+      this.getPriorMonthBonus();
       path += "_2/";
     }
     this.total_hours = this.dates.length * 8;
     this.sick_vacation_hours = 0;
 
+    //let filter = (document.getElementById("producer") as HTMLInputElement).value;
     this.saved_timesheets.clear();
-    // check which producers have submitted the timesheet for the selected time
-    let timesheet_sub = this.db.list('timesheets/' + path).snapshotChanges().subscribe(
+    let timesheet_sub = this.db.list('timesheets/' + path).snapshotChanges().pipe(take(1)).subscribe(
       (snapshot: any) => snapshot.map(snap => {
         const id = snap.payload.val().producer_id as string;
         this.saved_timesheets.set(id, snap.payload.val());
@@ -374,18 +357,19 @@ export class TimesheetComponent implements OnInit {
           this.dates.push(date.toDateString().substring(0, date.toDateString().length-5));
         }
       }
+      this.getPriorMonthBonus();
       path += "_2/";
     }
     this.total_hours = this.dates.length * 8;
     this.sick_vacation_hours = 0;
 
+    //let filter = (document.getElementById("producer") as HTMLInputElement).value;
     this.saved_timesheets.clear();
-    // check which producers have submitted the timesheet for the selected time
-    let timesheet_sub = this.db.list('timesheets/' + path).snapshotChanges().subscribe(
+    let timesheet_sub = this.db.list('timesheets/' + path).snapshotChanges().pipe(take(1)).subscribe(
       (snapshot: any) => snapshot.map(snap => {
         const id = snap.payload.val().producer_id as string;
         this.saved_timesheets.set(id, snap.payload.val());
-       })
+      })
     );
     this.subscriptions.push(timesheet_sub);
   }
@@ -485,17 +469,15 @@ export class TimesheetComponent implements OnInit {
 
   // called on selected year change
   updateYear(year: number) {
-    console.log("change year to " + year);
     this.selected_year = year;
     let date: Date = new Date();
     let month = (document.getElementById("month") as HTMLInputElement).value;
     if (date.getDate() <= 14) {
       this.updateSheet(Number(month));
-      this.getPriorMonthBonus();
     } else {
-      this.updateSheet(Number(month) + 1);
+      this.updateSheet(Number(month));
+      this.getPriorMonthBonus();
     }
-    console.log(this.dates);
   }
 
   onSubmit() {
@@ -511,7 +493,6 @@ export class TimesheetComponent implements OnInit {
       } else {
         path += "_2/" + this.selected_producer_id;
       }
-      // ? instead of random timesheet id, use producer id, that way if they messup something they can resubmit and it will overwrite their previous stuff
       this.db.list('timesheets').update(path, this.timesheet);
       // success message
       this.popup_title = "Success";
@@ -524,6 +505,19 @@ export class TimesheetComponent implements OnInit {
   }
 
   downloadTimesheets() {
+    let filter = (document.getElementById("producer") as HTMLInputElement).value;
+    let timesheets_to_print = document.getElementsByClassName("timesheets_to_print");
+    for (let i = 0; i < timesheets_to_print.length; i++) {
+      const timesheet = timesheets_to_print[i];
+      if (filter == "all" || timesheet.id == filter) {
+        timesheet.classList.remove("noPrintPdf");
+        timesheet.classList.add("printPdf");
+      } else {
+        timesheet.classList.add("noPrintPdf");
+        timesheet.classList.remove("printPdf");
+      }
+    }
+
     let month = this.months[Number((document.getElementById("month") as HTMLInputElement).value)-1];
     let timesheet_titles = document.getElementsByClassName("hidden_title");
     for (let i = 0; i < timesheet_titles.length; i++) {
@@ -532,7 +526,27 @@ export class TimesheetComponent implements OnInit {
         title.innerHTML += "\'s Timesheet - " + month + " " + this.selected_year;
       }
     }
+
+    if ((document.getElementById("second_half") as HTMLInputElement).checked) {
+      this.prior_month_bonuses_override = {};
+      for (const id in this.prior_month_bonuses) {
+        if (document.getElementById(id+"_prior_month_bonus")) {
+          (document.getElementById(id+"_prior_month_bonus") as HTMLInputElement).value = this.prior_month_bonuses[id]
+        }
+      }
+      document.getElementById("download_btn").click();
+    } else {
+      window.print();
+    }
+  }
+
+  overridePriorMonthBonus(id: string, bonus: number) {
+    this.prior_month_bonuses_override[id] = bonus;
+  }
+
+  downloadTimesheetsWithOverride() {
     window.print();
+    this.prior_month_bonuses_override = {};
   }
 
   isSecondHalf() {
