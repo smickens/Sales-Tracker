@@ -47,7 +47,7 @@
                       <td scope="row">Corporate Bonus</td>
                       <ng-container *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
                         <td>
-                          <input type="number" style="width: 40px;" [value]="corporate_bonuses[producer.id][i-1]" (change)="updateBonus($event, producer.id, i)">
+                          <input type="number" style="width: 65px;" [value]="corporate_bonuses[producer.id][i-1]" (change)="updateBonus($event, producer.id, i)">
                         </td>
                       </ng-container>
                     </tr>

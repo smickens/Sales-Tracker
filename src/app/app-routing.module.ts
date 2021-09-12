@@ -33,12 +33,12 @@ const routes: Routes = [
   { path: 'add-mutual-funds', component: AddMutualFundComponent },
 
   // edit app forms
-  { path: 'life/:id', component: AddLifeComponent },
-  { path: 'auto/:id', component: AddAutoComponent },
-  { path: 'bank/:id', component: AddBankComponent },
-  { path: 'fire/:id', component: AddFireComponent },
-  { path: 'health/:id', component: AddHealthComponent },
-  { path: 'mutual-funds/:id', component: AddMutualFundComponent },
+  { path: 'life/:year/:id', component: AddLifeComponent },
+  { path: 'auto/:year/:id', component: AddAutoComponent },
+  { path: 'bank/:year/:id', component: AddBankComponent },
+  { path: 'fire/:year/:id', component: AddFireComponent },
+  { path: 'health/:year/:id', component: AddHealthComponent },
+  { path: 'mutual-funds/:year/:id', component: AddMutualFundComponent },
 
   // app list pages
   { path: 'life', component: AppsListComponent },

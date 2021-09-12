@@ -46,22 +46,41 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <td *ngFor="let options of constants; index as header_index;">
-                            <ng-container *ngIf="options.length >= 1">
-                                <ng-container *ngIf="active_page == 'producers'">
+
+                        <ng-container *ngIf="active_page == 'producers'">
+                            <td *ngFor="let options of constants; index as header_index;">
+                                <ng-container *ngIf="options.length >= 1">
                                     <li *ngFor="let producer of options; index as constant_index;" (click)="confirmProducerDelete(producer[0], constant_index)" data-toggle="modal" data-target="#confirmDeleteModal" style="padding-bottom: 5px; display: flex;">
                                         <span class="option">{{ producer[1] }}</span>
                                         <span class="hide" style="padding-left: 10px;">x</span>
                                     </li>
                                 </ng-container>
-                                <ng-container *ngIf="active_page != 'producers'">
+                            </td>
+                            <td *ngFor="let options of constants; index as header_index;">
+                                <ng-container *ngIf="options.length >= 1">
+                                    <li *ngFor="let producer of options; index as constant_index;" (click)="toggleLicensed(producer[0], producer[2])" style="padding-bottom: 5px; display: flex;">
+                                        <ng-container *ngIf="producer[2] == true">
+                                            <span class="option">&#x2713;</span>
+                                        </ng-container>
+                                        <ng-container *ngIf="producer[2] == false">
+                                            <span>&nbsp;</span>
+                                        </ng-container>
+                                    </li>
+                                </ng-container>
+                            </td>
+                        </ng-container>
+                        
+                        <ng-container *ngIf="active_page != 'producers'">
+                            <td *ngFor="let options of constants; index as header_index;">
+                                <ng-container *ngIf="options.length >= 1">
                                     <li *ngFor="let constant of options; index as constant_index;" (click)="confirmConstDelete(header_index, constant_index)" data-toggle="modal" data-target="#confirmDeleteModal" style="padding-bottom: 5px; display: flex;">
                                         <span class="option">{{ constant }}</span>
                                         <span class="hide" style="padding-left: 10px;">x</span>
                                     </li>
                                 </ng-container>
-                            </ng-container>
-                        </td>
+                            </td>
+                        </ng-container>
+
                     </tbody>
                 </table>
             </div>

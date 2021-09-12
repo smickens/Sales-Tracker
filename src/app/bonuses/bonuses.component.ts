@@ -156,7 +156,7 @@ export class BonusesComponent implements OnInit {
 
   loadProductionBonuses() {
     // gets production bonuses
-    this.dataService.apps_ob.pipe(take(1)).subscribe(
+    this.dataService.getApplications(this.selected_year).pipe(take(1)).subscribe(
       (snapshot: any) => snapshot.map((snap, index) => {
         const app = snap.payload.val();
 

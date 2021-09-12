@@ -1,12 +1,9 @@
 @media print {
     table {
         font-size: small;
-        width: max-content;
+        width: fit-content;
     }
     .block {
         background-color: white !important;
     }
-}
-@page {
-    size: landscape;
 }

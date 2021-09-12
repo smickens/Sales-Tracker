@@ -1,10 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 
-import { Producer } from "../producer";
 import { AngularFireDatabase } from '@angular/fire/database';
 import { Router } from '@angular/router';
-import { environment } from 'src/environments/environment';
 import { AngularFireAuth } from '@angular/fire/auth';
 import { Subscription } from 'rxjs';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
@@ -71,7 +69,8 @@ export class SettingsComponent implements OnInit {
     this.headers = [];
     this.constants = [[]];
     if (this.active_page == 'producers') {
-      this.headers = ["Producers"];
+      this.headers = ["Producers", "Licensed"];
+      // this.constants.push([]);
       this.dataService.prod_ob.pipe(take(1)).subscribe(
         (snapshot: any) => snapshot.map((snap, index) => {
           let displayed = false;
@@ -80,8 +79,9 @@ export class SettingsComponent implements OnInit {
               displayed = true;
             }
           });
-          if (!displayed) {
-            this.constants[0].push([snap.key, snap.payload.val().name]);
+          if (!displayed && snap.payload.val().hired) {
+            this.constants[0].push([snap.key, snap.payload.val().name, snap.payload.val().licensed]);
+            // this.constants[1].push([snap.key, snap.payload.val().licensed]);
           }
         })
       );
@@ -111,12 +111,11 @@ export class SettingsComponent implements OnInit {
   delete() {
     let delete_type = (document.getElementById('type') as HTMLInputElement).value;
     let delete_data = (document.getElementById('data') as HTMLInputElement).value.split(",");
-    console.log(delete_data);
-    console.log(delete_type)
+
     if (delete_type == "constant") {
       this.deleteConstant(Number(delete_data[0]), Number(delete_data[1]))
     } else if (delete_type == "producer") {
-      this.deleteProducer(Number(delete_data[0]), Number(delete_data[1]));
+      this.deleteProducer(delete_data[0], Number(delete_data[1]));
     }
   }
 
@@ -133,7 +132,9 @@ export class SettingsComponent implements OnInit {
         pin: pin,
         color: color,
         hover_color: hover_color,
-        corp_color: corp_color
+        corp_color: corp_color,
+        hired: true,
+        licensed: false
       }
       this.db.list('producers').update(id, producer);
       // clears input field
@@ -162,7 +163,18 @@ export class SettingsComponent implements OnInit {
     return `#${rr}${gg}${bb}`
   }
 
-  confirmProducerDelete(id: number, constant_index: number) {
+  toggleLicensed(id: string, cur: boolean) {
+    for (let i = 0; i < this.constants[0].length; i++) {
+      const producer = this.constants[0][i];
+      if (producer[0] == id) {
+        producer[2] = !producer[2];
+        this.db.list('producers').update(id, { licensed: !cur });
+        break;
+      }
+    }
+  }
+
+  confirmProducerDelete(id: string, constant_index: number) {
     document.getElementById('modalDeleteMessage').innerHTML = "Press confirm to remove producer \"" + this.constants[0][constant_index][1] + "\".";
     let delete_type = document.getElementById('type') as HTMLInputElement;
     delete_type.value = "producer";
@@ -170,7 +182,7 @@ export class SettingsComponent implements OnInit {
     delete_data.value = id + ", " + constant_index;
   }
 
-  deleteProducer(id: number, constant_index: number) {
+  deleteProducer(id: string, constant_index: number) {
     this.db.list('producers/' + id).remove();
     this.constants[0].splice(constant_index, 1);
   }

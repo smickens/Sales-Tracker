@@ -101,7 +101,7 @@
                         </ng-container>
 
                         <td *ngIf="app.type != 'mutual-funds'">{{ getProducerName(app.co_producer_id) }}</td>
-                        <td *ngIf="app.type != 'auto' && app.type != 'fire' && app.type != 'mutual-funds'">{{ app.co_producer_bonus }}</td>
+                        <td *ngIf="app.type != 'auto' && app.type != 'fire' && app.type != 'mutual-funds'">{{ app.co_producer_bonus | currency }}</td>
                         
                       </tr>
                     </tbody>

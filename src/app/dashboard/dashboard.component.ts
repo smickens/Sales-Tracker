@@ -46,10 +46,17 @@ export class DashboardComponent implements OnInit {
   }
 
   loadApplications() {
-    this.dataService.apps_ob.pipe(take(1)).subscribe(
+    let today = new Date();
+    this.dataService.getApplications(today.getFullYear()).pipe(take(1)).subscribe(
       (snapshot: any) => snapshot.map((snap, index) => {
         const date = snap.payload.val().date as string;
         const month = parseInt(date.substring(5, 7));
+        const status = snap.payload.val().status as string;
+
+        if (status == "Cancelled" || status == "Declined") {
+          return;
+        }
+
         this.barChartData[0].data[month-1] += 1;
         if (snapshot.length == index+1) {
           this.apps_loaded = true;

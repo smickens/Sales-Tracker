@@ -43,12 +43,15 @@ export class AddMutualFundComponent implements OnInit {
         // loads producers
         this.dataService.prod_ob.pipe(take(1)).subscribe(
           (snapshot: any) => snapshot.map(snap => {
-            let producer: Producer = {
-              name: snap.payload.val().name,
-              id: snap.key
+            if (snap.payload.val().hired && snap.payload.val().licensed) {
+              let producer: Producer = {
+                name: snap.payload.val().name,
+                id: snap.key
+              }
+              this.producers.push(producer);
             }
-            this.producers.push(producer);
-        }));
+          })
+        );
 
         let sub2 = this.db.list('constants/mutual-funds').snapshotChanges().pipe(take(1)).subscribe(
           (snapshot: any) => snapshot.map(snap => {
@@ -60,11 +63,13 @@ export class AddMutualFundComponent implements OnInit {
         if (this.app_id != null) {
           this.form_title = "Edit Mutual Funds App";
           this.button_text = "UPDATE";
-          this.db.list('applications/' + this.app_id).snapshotChanges().pipe(take(1)).subscribe(
+          let app_year = this.route.snapshot.paramMap.get('year');
+          this.db.list('apps/' + app_year + '/' + this.app_id).snapshotChanges().pipe(take(1)).subscribe(
             (snapshot: any) => snapshot.map(snap => {
-            this.addMutualFundsForm.addControl(snap.payload.key, this.fb.control(snap.payload.val()));
-            this.app_loaded = true;
-          }));
+              this.addMutualFundsForm.addControl(snap.payload.key, this.fb.control(snap.payload.val()));
+              this.app_loaded = true;
+            })
+          );
         }
       } else {
         // if user is not logged in, reroute them to the login page
@@ -155,15 +160,15 @@ export class AddMutualFundComponent implements OnInit {
         marketing_source: this.get("marketing_source")
       }
       // console.log(app);
-  
+      
       if (this.app_id == null) {
         // adds new application
-        this.db.list('/applications').update(this.randomString(16), app).then(() => {
+        this.db.list('/apps/'+this.get("date").substring(0, 4)).update(this.randomString(16), app).then(() => {
           this.router.navigate(['mutual-funds']);
         });
       } else {
         // updates existing application
-        this.db.list('/applications').update(this.app_id, app).then(() => {
+        this.db.list('/apps/'+this.get("date").substring(0, 4)).update(this.app_id, app).then(() => {
           this.router.navigate(['mutual-funds']);
         });
       }

@@ -110,7 +110,8 @@ export class AppsListComponent implements OnInit {
   }
 
   loadApplications() {
-    this.dataService.apps_ob.pipe(take(1)).subscribe(
+    this.dataService.getApplications(this.year)
+    .pipe(take(1)).subscribe(
       (snapshot: any) => snapshot.map((snap, index) => {
         const app = snap.payload.val();
         const app_id = snap.key;
@@ -137,11 +138,13 @@ export class AppsListComponent implements OnInit {
   loadProducers() {
     this.dataService.prod_ob.pipe(take(1)).subscribe(
       (snapshot: any) => snapshot.map((snap, index) => {
-        let producer: Producer = {
-          name: snap.payload.val().name,
-          id: snap.key
+        if (snap.payload.val().hired && snap.payload.val().licensed) {
+          let producer: Producer = {
+            name: snap.payload.val().name,
+            id: snap.key
+          }
+          this.producers.push(producer);
         }
-        this.producers.push(producer);
         if (snapshot.length == index+1) {
           this.prod_loaded = true;
         }
@@ -190,7 +193,7 @@ export class AppsListComponent implements OnInit {
 
   editApp(id: string) {
     //console.log("edit" + id);
-    this.router.navigate([this.app_type + '/' + id]);
+    this.router.navigate([this.app_type + '/' + this.year + '/' + id]);
   }
 
   orderList(filter: string) {
@@ -222,7 +225,7 @@ export class AppsListComponent implements OnInit {
       "health": new Set(),
       "mutual-funds": new Set()
     }
-    this.dataService.apps_ob.pipe(take(1)).subscribe(
+    this.dataService.getApplications(this.year).pipe(take(1)).subscribe(
       (snapshot: any) => snapshot.map((snap, index) => {
         const app = snap.payload.val();
         const app_id = snap.key;
@@ -279,7 +282,7 @@ export class AppsListComponent implements OnInit {
         break;
       }
     }
-    this.db.list('applications/'+id).remove();
+    this.db.list('apps/'+this.year+'/'+id).remove();
   }
 
 }

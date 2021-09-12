@@ -1,13 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
-import { environment } from 'src/environments/environment';
 
 import { Producer } from "../producer";
 import { AngularFireDatabase } from '@angular/fire/database';
 import { Router } from '@angular/router';
 import { AngularFireAuth } from '@angular/fire/auth';
 import { Subscription } from 'rxjs';
-import { core } from '@angular/compiler';
 import { DataService } from '../data.service';
 import { take } from 'rxjs/operators';
 
@@ -21,14 +19,14 @@ export class MainViewComponent implements OnInit {
   // TODO: need for co-producer on certain app types (auto, fire, bank, and health) to get 0.5 of app count
 
   // # of apps submitted, # of apps taken
-  apps_this_year = {
-    "life": [0, 0],
-    "auto": [0, 0],
-    "bank": [0, 0],
-    "fire": [0, 0],
-    "health": [0, 0],
-    "mutual-funds": [0, 0]
-  };
+  // apps_this_year = {
+  //   "life": [0, 0],
+  //   "auto": [0, 0],
+  //   "bank": [0, 0],
+  //   "fire": [0, 0],
+  //   "health": [0, 0],
+  //   "mutual-funds": [0, 0]
+  // };
 
   app_types = ["life", "auto", "bank", "fire", "health", "mutual-funds"];
   app_totals_by_producer = {};
@@ -40,6 +38,7 @@ export class MainViewComponent implements OnInit {
   fire_dots = {};
   health_dots = {};
   mutual_funds_dots = {};
+  life_annuities = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
   life_totals = {"year": 0};
   auto_totals = {"year": 0};
@@ -70,9 +69,12 @@ export class MainViewComponent implements OnInit {
     note: []
   });
   notes = [];
-  notes_keys = {};
+  selected_note_id = "";
 
-  selected_note_id = 0
+  all_apps = {
+    2020: {},
+    2021: {}
+  };
 
   subscriptions: Subscription[] = [];
 
@@ -88,14 +90,16 @@ export class MainViewComponent implements OnInit {
         // loads producers
         this.dataService.prod_ob.pipe(take(1)).subscribe(
           (snapshot: any) => snapshot.map((snap, index) => {
-            let producer: Producer = {
-              name: snap.payload.val().name,
-              id: snap.key
+            if (snap.payload.val().hired && snap.payload.val().licensed) {
+              let producer: Producer = {
+                name: snap.payload.val().name,
+                id: snap.key
+              }
+              this.producers.push(producer);
+              this.app_totals_by_producer[producer["id"]] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+              this.app_totals_by_co_producer[producer["id"]] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+              this.app_totals[producer["id"]] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
             }
-            this.producers.push(producer);
-            this.app_totals_by_producer[producer["id"]] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-            this.app_totals_by_co_producer[producer["id"]] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-            this.app_totals[producer["id"]] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
             if (snapshot.length == index+1) {
               this.loadDots();
@@ -117,7 +121,7 @@ export class MainViewComponent implements OnInit {
 
   loadDots() {
     // loads in application totals for the year
-    this.dataService.apps_ob.pipe(take(1)).subscribe(
+    this.dataService.getApplications(this.current_year).pipe(take(1)).subscribe(
       (snapshot: any) => snapshot.map(snap => {
         const app = snap.payload.val();
         const app_date = app["date"] as string;
@@ -128,14 +132,18 @@ export class MainViewComponent implements OnInit {
 
         if (app_year == this.current_year) {
           const type = app["type"];
-          this.apps_this_year[type][0] += 1;
+          // this.apps_this_year[type][0] += 1;
 
           // bonus
           const issue_month = snap.payload.val().issue_month;
           const status = snap.payload.val().status as string;
           const month = Number((snap.payload.val().date as string).substring(5, 7));
-          if (status == "Issued" || status == "Taken") {
-            this.apps_this_year[type][1] += 1;
+          // if (status == "Issued" || status == "Taken") {
+          //   this.apps_this_year[type][1] += 1;
+          // }
+
+          if (status == "Cancelled" || status == "Declined") {
+            return;
           }
 
           if (type == "life") {
@@ -144,6 +152,8 @@ export class MainViewComponent implements OnInit {
               if (this.inCurrentWeek(app_date_obj)) {
                 this.life_totals["week"] = (this.life_totals["week"] || 0) + 1;
               }
+            } else {
+              this.life_annuities[month] += 1
             }
 
             this.life_dots[app["producer_id"]+"_"+month+"_total"] = (this.life_dots[app["producer_id"]+"_"+month+"_total"] || 0) + 1;
@@ -264,16 +274,24 @@ export class MainViewComponent implements OnInit {
 
           // app count
           if (type != "life" && "co_producer_id" in app && app["co_producer_id"] != "") {
-            // for non-life apps w/ co producer the app count is split
-            this.app_totals[app["producer_id"]][Number(month)-1] += 0.5;
-            this.app_totals[app["co_producer_id"]][Number(month)-1] += 0.5;
+            // always check that producer is in dictionary (that is they are still hired) before incrementing count
 
-            this.app_totals_by_producer[app["producer_id"]][Number(month)-1] += 1;
-            this.app_totals_by_co_producer[app["co_producer_id"]][Number(month)-1] += 1;
+            // for non-life apps w/ co producer the app count is split
+            if (Object.keys(this.app_totals_by_producer).includes(app["producer_id"])) { 
+              this.app_totals[app["producer_id"]][Number(month)-1] += 0.5;
+              this.app_totals_by_producer[app["producer_id"]][Number(month)-1] += 1;
+            }
+
+            if (Object.keys(this.app_totals_by_producer).includes(app["co_producer_id"])) {
+              this.app_totals[app["co_producer_id"]][Number(month)-1] += 0.5;
+              this.app_totals_by_co_producer[app["co_producer_id"]][Number(month)-1] += 1;
+            }
           } else {
             // full app count goes to main producer
-            this.app_totals_by_producer[app["producer_id"]][Number(month)-1] += 1;
-            this.app_totals[app["producer_id"]][Number(month)-1] += 1;
+            if (Object.keys(this.app_totals_by_producer).includes(app["producer_id"])) {
+              this.app_totals[app["producer_id"]][Number(month)-1] += 1;
+              this.app_totals_by_producer[app["producer_id"]][Number(month)-1] += 1;
+            }
           }
         }
       })
@@ -381,7 +399,7 @@ export class MainViewComponent implements OnInit {
 
   addNote() {
     // updates notes on screen
-    let note = this.addNoteForm.get('note').value;
+    let note_text = this.addNoteForm.get('note').value;
 
     // check id doesn't exist
     let id = "";
@@ -392,25 +410,45 @@ export class MainViewComponent implements OnInit {
     
     // updates database w/ new goal/note
     let time = new Date();
+    let cur_time = time.getTime();
     let note_object = {};
     note_object[id] = {
-      text: note,
-      date: time.getTime()
+      text: note_text,
+      date: cur_time
     };
+    this.notes.push({
+      id: id,
+      text: note_text,
+      date: cur_time
+    });
     this.db.list('notes').update('/', note_object);
 
     // clears note input
     this.addNoteForm.setValue({'note': ''});
   }
 
-  displayNotePopup(id: number) {
+  displayNotePopup(id: string) {
     document.getElementById('modalMessage').innerHTML = "";
     this.selected_note_id = id;
     (document.getElementById('note_to_edit') as HTMLInputElement).value = this.getNoteMessage(id);
   }
 
-  updateNote() {
+  editNote(id: string) {
+    document.getElementById("edit_"+id.toString()).classList.remove("hide");
+    document.getElementById("display_"+id.toString()).classList.add("hide");
+    (document.getElementById("edit_"+id.toString()).getElementsByTagName('INPUT')[0] as HTMLInputElement).value = this.getNoteMessage(id);
+  }
 
+  updateNote(id: string) {
+    document.getElementById("edit_"+id.toString()).classList.add("hide");
+    document.getElementById("display_"+id.toString()).classList.remove("hide");
+    for (let note of this.notes) {
+      if (note["id"] == id) {
+        note["text"] = (document.getElementById("edit_"+id.toString()).getElementsByTagName('INPUT')[0] as HTMLInputElement).value;
+        this.db.list('notes').update(id, { "text": note["text"] });
+        break;
+      }
+    }
   }
 
   deleteNote() {
@@ -424,12 +462,12 @@ export class MainViewComponent implements OnInit {
     }
   }
 
-  displayConfirmDelete(id: number) {
+  displayConfirmDelete(id: string) {
     document.getElementById('modalMessage').innerHTML = "Press confirm to remove note \"" + this.getNoteMessage(id) + "\".";
     this.selected_note_id = id;
   }
 
-  getNoteMessage(id: number) {
+  getNoteMessage(id: string) {
     for (let i = 0; i < this.notes.length; i++) {
       if (id == this.notes[i].id) {
         return this.notes[i].text
@@ -497,7 +535,9 @@ export class MainViewComponent implements OnInit {
     document.getElementById("bank").classList.add("noPrintPdf");
     this.filterProductionReportBySelectedMonth();
     window.print();
-    this.filterProductionReportBySelectedMonth();
+    window.setTimeout(() => {
+      this.filterProductionReportBySelectedMonth();
+    }, 50);
   }
 
   inCurrentWeek(date) {

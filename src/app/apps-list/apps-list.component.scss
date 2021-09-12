@@ -14,3 +14,16 @@
 .rowIndex:hover .show {
     display: none;
 }
+
+@media print {
+    table {
+        width: auto;
+        th {
+            padding-left: 0.4rem;
+            padding-right: 0.4rem;
+        }
+    }
+    .block {
+        background-color: white !important;
+    }
+}

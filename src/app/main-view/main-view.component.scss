@@ -2,7 +2,28 @@
     padding: 4px 16px;
 }
 
+.save_btn {
+    background-color: #63B7AF;
+    color: white;
+    border: none;
+    padding: 4px 10px;
+    border-radius: 10px;
+    margin-right: 10px;
+}
+
+.remove_btn {
+    background-color: #EE8572;
+    color: white;
+    border: none;
+    padding: 4px 10px;
+    border-radius: 10px;
+}
+
 .hide { 
+    display: none;
+}
+
+.hide-edit-icon { 
     display: none;
 }
 
@@ -10,7 +31,7 @@
     color: darkgray;
 }
 
-.note:hover .hide {
+.note:hover .hide-edit-icon {
     display: inline-block;
     color: red;
 }
@@ -22,14 +43,11 @@
 @media print {
     table {
         font-size: small;
-        width: max-content;
+        width: fit-content;
     }
     .block {
         background-color: white !important;
     }
-}
-@page {
-    size: portrait;
 }
 
 li {

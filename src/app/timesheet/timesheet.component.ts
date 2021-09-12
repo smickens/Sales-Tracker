@@ -129,7 +129,7 @@ export class TimesheetComponent implements OnInit {
     );
 
     // gets production bonuses
-    this.dataService.apps_ob.pipe(take(1)).subscribe(
+    this.dataService.getApplications(this.selected_year).pipe(take(1)).subscribe(
       (snapshot: any) => snapshot.map((snap) => {
         const app = snap.payload.val();
         const app_type = app["type"] as string;
@@ -545,8 +545,10 @@ export class TimesheetComponent implements OnInit {
   }
 
   downloadTimesheetsWithOverride() {
-    window.print();
-    this.prior_month_bonuses_override = {};
+    window.setTimeout(() => {
+      window.print();
+      this.prior_month_bonuses_override = {};
+    }, 400);
   }
 
   isSecondHalf() {

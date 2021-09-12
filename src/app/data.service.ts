@@ -26,7 +26,8 @@ export class DataService {
   subscriptions: Subscription[] = [];
 
   auth_state_ob: Observable<any>
-  apps_ob: Observable<any[]>;
+  application_obs = {};
+  // apps_ob: Observable<any[]>;
   prod_ob: Observable<any[]>;
   goals_ob: Observable<any[]>;
   notes_ob: Observable<any[]>;
@@ -44,31 +45,21 @@ export class DataService {
     });
     this.subscriptions.push(auth_sub);
 
+
     this.auth_state_ob = db_auth.authState;
-    this.apps_ob = db.list('applications').snapshotChanges();
+    // this.apps_ob = db.list('applications').snapshotChanges();
     this.prod_ob = db.list('producers').snapshotChanges();
     this.goals_ob = db.list('goals').snapshotChanges();
     this.notes_ob = db.list('notes').snapshotChanges();
+    
+    let today = new Date();
+    this.application_obs[today.getFullYear()] = db.list('apps/'+today.getFullYear()).snapshotChanges();
   }
   
   ngOnDestroy(): void {
     this.subscriptions.forEach(sub => {
       sub.unsubscribe();
     });
-  }
-
-  // async getAuthState() {
-  //   for (let i = 0; i < 10; i++) {
-  //     if (environment.logged_in) {
-  //       return true;
-  //     }
-  //     await this.delay(100);
-  //   }
-  //   return environment.logged_in;
-  // }
-
-  private delay(ms: number) {
-    return new Promise(resolve => setTimeout(resolve, ms));
   }
 
   loadProducers() {
@@ -87,9 +78,12 @@ export class DataService {
     ));
   }
 
-  // getApplications(): Observable<Application[]> {
-  //   return this.apps_ob;
-  // }
+  getApplications(year: number): Observable<Application[]> {
+    if (!(year in this.application_obs)) {
+      this.application_obs[year] = this.db.list('apps/'+year).snapshotChanges();
+    }
+    return this.application_obs[year];
+  }
 
   // getProducers(): Observable<Producer[]> {
   //   return this.prod_ob;

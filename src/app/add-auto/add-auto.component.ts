@@ -38,41 +38,6 @@ export class AddAutoComponent implements OnInit {
   constructor(private db: AngularFireDatabase, private fb: FormBuilder, private dataService: DataService, public  db_auth:  AngularFireAuth, private route: ActivatedRoute, private location: Location, private router: Router) { }
 
   ngOnInit(): void {
-    this.dataService.auth_state_ob.pipe(take(1)).subscribe(user => {
-      if (user) {
-        // loads producers
-        this.dataService.prod_ob.pipe(take(1)).subscribe(
-          (snapshot: any) => snapshot.map(snap => {
-            let producer: Producer = {
-              name: snap.payload.val().name,
-              id: snap.key
-            }
-            this.producers.push(producer);
-        }));
-    
-        let sub2 = this.db.list('constants/auto').snapshotChanges().pipe(take(1)).subscribe(
-          (snapshot: any) => snapshot.map(snap => {
-          this.constants[snap.payload.key] = snap.payload.val().split("_");
-        }));
-        this.subscriptions.push(sub2);
-
-        if (this.app_id != null) {
-          //console.log("edit form");
-          this.form_title = "Edit Auto App";
-          this.button_text = "UPDATE";
-          let app_sub = this.db.list('applications/' + this.app_id).snapshotChanges().pipe(take(1)).subscribe(
-            (snapshot: any) => snapshot.map(snap => {
-            this.addAutoAppForm.addControl(snap.payload.key, this.fb.control(snap.payload.val()));
-            this.app_loaded = true;
-          }));
-          this.subscriptions.push(app_sub);
-        }
-      } else {
-        // if user is not logged in, reroute them to the login page
-        this.router.navigate(['login']);
-      }
-    });
-
     this.app_id = this.route.snapshot.paramMap.get('id');
     let todays_date: string = this.today.getFullYear() + "-";
     if (this.today.getMonth() < 9) {
@@ -85,6 +50,45 @@ export class AddAutoComponent implements OnInit {
     } else {
       todays_date += "0" + this.today.getDate();
     }
+
+    this.dataService.auth_state_ob.pipe(take(1)).subscribe(user => {
+      if (user) {
+        // loads producers
+        this.dataService.prod_ob.pipe(take(1)).subscribe(
+          (snapshot: any) => snapshot.map(snap => {
+            if (snap.payload.val().hired && snap.payload.val().licensed) {
+              let producer: Producer = {
+                name: snap.payload.val().name,
+                id: snap.key
+              }
+              this.producers.push(producer);
+            }
+          })
+        );
+    
+        let sub2 = this.db.list('constants/auto').snapshotChanges().pipe(take(1)).subscribe(
+          (snapshot: any) => snapshot.map(snap => {
+          this.constants[snap.payload.key] = snap.payload.val().split("_");
+        }));
+        this.subscriptions.push(sub2);
+
+        if (this.app_id != null) {
+          //console.log("edit form");
+          this.form_title = "Edit Auto App";
+          this.button_text = "UPDATE";
+          let app_year = this.route.snapshot.paramMap.get('year');
+          let app_sub = this.db.list('apps/' + app_year + '/' + this.app_id).snapshotChanges().pipe(take(1)).subscribe(
+            (snapshot: any) => snapshot.map(snap => {
+            this.addAutoAppForm.addControl(snap.payload.key, this.fb.control(snap.payload.val()));
+            this.app_loaded = true;
+          }));
+          this.subscriptions.push(app_sub);
+        }
+      } else {
+        // if user is not logged in, reroute them to the login page
+        this.router.navigate(['login']);
+      }
+    });
 
     if (this.app_id == null) {
       //console.log("add form");
@@ -196,39 +200,42 @@ export class AddAutoComponent implements OnInit {
       co_producer_id: this.get("co_producer_id")
     }
     //console.log(app);
+    let year = this.get("date").substring(0, 4);
     if (this.get("auto_type") == "RN") {
-      this.getTier(this.get("producer_id"), app);
+      this.getTier(this.get("producer_id"), app, year);
     } else {
-      this.addAutoApp(app);
+      this.addAutoApp(app, year);
     }
   }
 
-  addAutoApp(app: AutoApp) {
+  addAutoApp(app: AutoApp, year: string) {
     if (this.app_id == null) {
       // adds new application
-      this.db.list('/applications').update(this.randomString(16), app).then(() => {
+      this.db.list('/apps/'+year).update(this.randomString(16), app).then(() => {
         this.router.navigate(['auto']);
       });
     } else {
       // updates existing application
-      this.db.list('/applications').update(this.app_id, app).then(() => {
+      this.db.list('/apps/'+year).update(this.app_id, app).then(() => {
         this.router.navigate(['auto']);
       });
     }
   }
 
-  getTier(producer_id: string, auto_app: AutoApp) {
+  getTier(producer_id: string, auto_app: AutoApp, year: string) {
     // calculates producer's tier based on number of auto raw new apps
     let count = 0;
     if (this.app_id == null && auto_app["status"] != "Declined") {
       // adding new RN app
       count = 1;
     }
-    let cur_month = this.today.getMonth()+1;
+    // cur month is the month of the app being added/edited
+    let cur_month = parseInt(auto_app['date'].substring(5, 7));
+    let cur_year = parseInt(auto_app['date'].substring(0, 4));
     let raw_new_app_ids = [];
     let calculated_tier = 1;
     let bonus_values = { 1: 5, 2: 8, 3: 12, 4: 14, 5: 16, 6: 20};
-    this.dataService.apps_ob.pipe(take(1)).subscribe(
+    this.dataService.getApplications(cur_year).pipe(take(1)).subscribe(
       (snapshot: any) => snapshot.map((snap, index) => {
         const app = snap.payload.val();
         const app_id = snap.key;
@@ -263,13 +270,13 @@ export class AddAutoComponent implements OnInit {
           } else {
             calculated_tier = 6; // tier 6 - 30+ ($20 each)
           }
-          console.log("count - " + count, "  tier - ", calculated_tier);
-          console.log(raw_new_app_ids.length);
+          // console.log("count - " + count, "  tier - ", calculated_tier);
+          // console.log(raw_new_app_ids.length);
           raw_new_app_ids.forEach(app_id => {
-            this.db.list('/applications').update(app_id, { 'tiers': "Tier " + calculated_tier, 'bonus': bonus_values[calculated_tier] });
+            this.db.list('/apps/'+year).update(app_id, { 'tiers': "Tier " + calculated_tier, 'bonus': bonus_values[calculated_tier] });
           });
           auto_app["tiers"] = "Tier " + calculated_tier;
-          this.addAutoApp(auto_app);
+          this.addAutoApp(auto_app, year);
         }
        })
     );
