@@ -32,22 +32,20 @@
                   <p class="noPrintPdf" style="margin: 0px; padding-right: 10px;">Year: </p>
                   <input class="noPrintPdf" type="number" id="year" (change)="updateYear($event.target.value)" placeholder="Enter Year" value="2020" style="width: 120px;" autocomplete="off">
                 </div>
-                <!-- TODO: add anniversary date: 12/06/19 -->
-                <!-- <p id="hours_left" style="margin: auto; display: none;">Sick/Vacation Used: {{ sick_vacation_hours_used }} hours</p> -->
               </div>
             </div>
 
             <ul class="noPrintPdf" id="producer_section">
-              <li class="noPrintPdf" *ngFor="let producer of producers">
-                {{ producer.name }}
-                <button *ngIf="!saved_timesheets.has(producer.id)" class="btn btn-link btn-sm" (click)="displayPinAuth(producer.id)" data-toggle="modal" data-target="#popupModal" type="button">Submit</button>
-                <button *ngIf="saved_timesheets.has(producer.id)" class="btn btn-link btn-sm" style="color: #6c757d;" (click)="displayPinAuth(producer.id)" data-toggle="modal" data-target="#popupModal" type="button">Edit</button>
+              <li class="noPrintPdf" *ngFor="let producer_id of getProducerList()">
+                {{ getProducerName(producer_id) }}
+                <button *ngIf="!saved_timesheets.has(producer_id)" class="btn btn-link btn-sm" (click)="displayPinAuth(producer_id)" data-toggle="modal" data-target="#popupModal" type="button">Submit</button>
+                <button *ngIf="saved_timesheets.has(producer_id)" class="btn btn-link btn-sm" style="color: #6c757d;" (click)="displayPinAuth(producer_id)" data-toggle="modal" data-target="#popupModal" type="button">Edit</button>
               </li>
               <form class="noPrintPdf" style="margin-top: 10px;" [formGroup]="producerForm">
                 <select class="custom-select" style="width: 150px; margin-right: 20px;" id="producer" formControlName="producer">
                   <option value="all" selected>All Producers</option>
-                  <ng-container *ngFor="let producer of producers">
-                    <option value="{{producer.id}}">{{ producer.name }}</option>
+                  <ng-container *ngFor="let producer_id of getProducerList()">
+                    <option value="{{producer_id}}">{{ getProducerName(producer_id) }}</option>
                   </ng-container>
                 </select>
                 <button class="btn btn-sm btn-secondary noPrintPdf" (click)="downloadTimesheets()">Download</button>

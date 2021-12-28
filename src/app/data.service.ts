@@ -8,11 +8,14 @@ import { Producer } from './producer';
 import { Observable, of } from 'rxjs';
 import { Router } from '@angular/router';
 import { environment } from 'src/environments/environment';
+import { take } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
 })
 export class DataService {
+
+  producers: Producer[] = [];
 
   applications = {
     'life': [],
@@ -22,21 +25,30 @@ export class DataService {
     'bank': [],
     'mutual-funds': []
   }
-  producers: Producer[] = [];
+
+  barChartData = [];
+  production_bonuses = {};
+  corporate_bonuses = {};
+
   subscriptions: Subscription[] = [];
 
   auth_state_ob: Observable<any>
   application_obs = {};
-  // apps_ob: Observable<any[]>;
   prod_ob: Observable<any[]>;
   goals_ob: Observable<any[]>;
   notes_ob: Observable<any[]>;
+
+  prod_loaded = false;
+  apps_loaded = false;
   
   constructor(private db: AngularFireDatabase, public  db_auth:  AngularFireAuth, private router: Router) {
     let auth_sub = db_auth.authState.subscribe(user => {
       if (user) {
         environment.logged_in = true;
         this.loadProducers();
+
+        let today = new Date();
+        this.loadApplications(today.getFullYear());
       } else {
         // if user is not logged in, then reroute them to the login page
         environment.logged_in = false;
@@ -45,15 +57,11 @@ export class DataService {
     });
     this.subscriptions.push(auth_sub);
 
-
     this.auth_state_ob = db_auth.authState;
-    // this.apps_ob = db.list('applications').snapshotChanges();
+
     this.prod_ob = db.list('producers').snapshotChanges();
     this.goals_ob = db.list('goals').snapshotChanges();
     this.notes_ob = db.list('notes').snapshotChanges();
-    
-    let today = new Date();
-    this.application_obs[today.getFullYear()] = db.list('apps/'+today.getFullYear()).snapshotChanges();
   }
   
   ngOnDestroy(): void {
@@ -63,19 +71,67 @@ export class DataService {
   }
 
   loadProducers() {
-    this.prod_ob.subscribe(
-      (snapshot: any) => snapshot.map(snap => {
-        let producer: Producer = {
-          name: snap.payload.val().name,
-          id: snap.key,
-          pin: snap.payload.val().pin,
-          color: snap.payload.val().color,
-          corp_color: snap.payload.val().corp_color,
-          hover_color: snap.payload.val().hover_color
-        }
-        this.producers.push(producer);
+    this.prod_ob.subscribe((snapshot: any) => snapshot.map((snap, index) => {
+      let producer: Producer = snap.payload.val() as Producer;
+      producer.id = snap.key;
+      producer.pin = snap.payload.val().pin;
+
+      this.producers.push(producer);
+
+      this.corporate_bonuses[producer.id] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+      this.production_bonuses[producer.id] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+
+      this.barChartData.push({
+        data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+        label: producer.name + " CB", 
+        stack: producer.id, 
+        backgroundColor: producer.corp_color, 
+        hoverBackgroundColor: producer.hover_color
+      });
+
+      this.barChartData.push({
+        data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+        label: producer.name + " PB", 
+        stack: producer.id, 
+        backgroundColor: producer.color, 
+        hoverBackgroundColor: producer.hover_color
+      }); 
+
+      if (snapshot.length == index+1) { 
+        this.prod_loaded = true;
+        console.log("done loading producers");
       }
-    ));
+    }));
+  }
+
+  loadApplications(year: number) {
+    // clear application list
+    this.applications = {
+      'life': [],
+      'auto': [],
+      'fire': [],
+      'health': [],
+      'bank': [],
+      'mutual-funds': []
+    }
+
+    // load all apps for inputed year
+    this.getApplications(year).pipe(take(1)).subscribe(
+      (snapshot: any) => snapshot.map((snap, index) => {
+        const app = snap.payload.val();
+        const app_id = snap.key;
+        app.id = app_id;
+
+        // TODO: see if this can be written as one line
+        let application: Application = app as Application;
+        this.applications[app["type"]].push(application);
+
+        if (snapshot.length == index+1) { 
+          this.apps_loaded = true;
+          console.log("done loading apps");
+        }
+      })
+    );
   }
 
   getApplications(year: number): Observable<Application[]> {
@@ -85,8 +141,126 @@ export class DataService {
     return this.application_obs[year];
   }
 
-  // getProducers(): Observable<Producer[]> {
-  //   return this.prod_ob;
-  // }
+  getAllApps() {
+    let all_apps: Application[] = [];
+    for (const app_type in this.applications) {
+      all_apps.push(...this.applications[app_type]);
+    }
+    return all_apps;
+  }
 
+  getAppsByMonth(type: string, month: number): Application[] {
+    if (month == 0) { return this.applications[type] }
+
+    return this.applications[type].filter(app => this.inMonth(app["date"], month))
+  }
+  
+  
+  getAppsByMonthAndProducer(type: string, month: number, producer_id: string): Application[] {
+    if (month == 0) { return this.applications[type] }
+
+    function producerFilter(value: string) {
+      return producer_id == "" || producer_id == value || producer_id == "All Producers"
+    }
+
+    return this.applications[type].filter(app => this.inMonth(app["date"], month) && producerFilter(app["producer_id"]))
+  }
+
+  private inMonth(value: string, month: number) {
+    return parseInt(value.substring(5, 7)) == month
+  }
+
+  async loadBonuses(year: number) {
+    await this.until(_ => this.prod_loaded && this.apps_loaded);
+
+    // clears out bar chart data values
+    for (let category of this.barChartData) {
+      category['data'] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    }
+
+    // * first, gets corporate bonuses
+    for (const producer of this.producers) {
+      let i: number = this.getProducerIndex(producer.id);
+
+      this.corporate_bonuses[producer.id] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+      this.production_bonuses[producer.id] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+      
+      if ("corporate_bonuses" in producer && year in producer.corporate_bonuses) {
+        const corporate_bonus = producer["corporate_bonuses"][year];
+        for (let month in corporate_bonus) {
+          this.corporate_bonuses[producer["id"]][parseInt(month)-1] += corporate_bonus[month];
+
+          let i: number = this.getProducerIndex(producer.id);
+          this.barChartData[i*2].data[month] += corporate_bonus[month];
+        }
+      } 
+    }
+
+    // * then, gets production bonuses
+    let all_apps: Application[] = this.getAllApps();
+    for (const app of all_apps) {
+      const app_date = app["date"] as string;
+      let app_month = parseInt(app_date.substring(5, 7));
+      const app_year = parseInt(app_date.substring(0, 4));
+      let bonus = app["bonus"];
+
+      let app_went_through = false;
+      if (app["status"] == "Taken" || app["status"] == "Issued") {
+        app_went_through = true;
+      }
+      if (app.type == "auto" && app["status"] != "Declined" && app["status"] != "Cancelled") {
+        app_went_through = true;
+      }
+      if (app.type == "life") {
+        app_month = app["issue_month"];
+        //console.log("changed month to issue month - " + app_month);
+        bonus = app["paid_bonus"];
+      }
+      
+      if (app_went_through == true && app_year == year && bonus > 0) {
+        const producer_id = app["producer_id"];
+        this.production_bonuses[producer_id][app_month-1] = ((this.production_bonuses[producer_id][app_month-1] * 100) + (bonus * 100)) / 100;
+        //console.log("Name: " + producer_id + "    Month: " + app_month + "   Bonus: " + bonus);
+        let i = this.getProducerIndex(producer_id);
+        this.barChartData[(i*2)+1].data[app_month-1] += bonus;
+      }
+
+      if (app_year == year && app["co_producer_bonus"] > 0) {
+        // co-production bonus
+        const co_producer_bonus = app["co_producer_bonus"];
+        if (co_producer_bonus > 0 && co_producer_bonus != null) {
+          const co_producer_id = app["co_producer_id"];
+          this.production_bonuses[co_producer_id][app_month-1] = ((this.production_bonuses[co_producer_id][app_month-1] * 100) + (co_producer_bonus * 100)) / 100;
+          let i = this.getProducerIndex(co_producer_id);
+          //console.log("Co- ID: " + co_producer_id + "   Bonus: " + co_producer_bonus + "  " + i);
+          this.barChartData[(i*2)+1].data[app_month-1] += co_producer_bonus;
+        }
+      }
+    }
+
+    console.log(this.production_bonuses)
+
+    console.log(this.barChartData);
+    return this.barChartData;
+  }
+
+  getProducerIndex(producer_id: string) {
+    let index = 0;
+    for (const producer of this.producers) {
+      if (producer.id == producer_id) {
+        return index;
+      }
+      index += 1;
+    }
+    return -1;
+  }
+
+  until(conditionFunction) {
+    const poll = resolve => {
+      if (conditionFunction()) resolve();
+      else setTimeout(_ => poll(resolve), 300);
+    }
+  
+    return new Promise(poll);
+  }
 }

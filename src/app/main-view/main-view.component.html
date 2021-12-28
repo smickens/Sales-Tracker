@@ -82,6 +82,7 @@
                         <tr>
                             <th></th>
                             <th *ngFor="let month of months" scope="col">{{month}}</th>
+                            <th>Total</th>
                         </tr>
                         </thead>
                         <tbody id="stats_table">
@@ -96,6 +97,7 @@
                                             {{ app_totals[producer.id][i-1] }}
                                         </ng-container>
                                     </td>
+                                    <td>{{ getTotalAppsForProducer(producer.id) }}</td>
                                 </tr>
                                 <tr id="{{producer.id}}_prod" class="hiddenRows d-none">
                                     <td style="text-align: right; padding-right: 10px;"><i>Main</i></td>
@@ -104,6 +106,7 @@
                                             {{ app_totals_by_producer[producer.id][i-1] }}
                                         </ng-container>
                                     </td>
+                                    <td></td>
                                 </tr>
                                 <tr id="{{producer.id}}_co" class="hiddenRows d-none">
                                     <td style="text-align: right; padding-right: 10px;"><i>Co</i></td>
@@ -112,6 +115,7 @@
                                             {{ app_totals_by_co_producer[producer.id][i-1] }}
                                         </ng-container>
                                     </td>
+                                    <td></td>
                                 </tr>
                             </ng-container>
                             <tr> <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]"><hr style="margin-top: 0.5rem; margin-bottom: 0.5rem;"/></td> </tr>
@@ -119,11 +123,10 @@
                                 <th>Totals</th>
                                 <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
                                     <ng-container *ngIf="i <= month_number">
-                                        {{ 
-                                            (life_totals[i+'_total'] ? life_totals[i+'_total'] : 0  * 1) + life_annuities[i] + (auto_totals[i+'_total'] ? auto_totals[i+'_total'] : 0 * 1) + (fire_totals[i+'_total'] ? fire_totals[i+'_total'] : 0 * 1) + (bank_totals[i+'_total'] ? bank_totals[i+'_total'] : 0 * 1) + (health_totals[i+'_total'] ? health_totals[i+'_total'] : 0 * 1) + (mutual_funds_totals[i+'_total'] ? mutual_funds_totals[i+'_total'] : 0 * 1)
-                                        }}
+                                        {{ getTotalAppsForMonth(i) }}
                                     </ng-container>
                                 </td>
+                                <td>{{ this.app_totals["year"] }}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -189,7 +192,7 @@
                                     <td style="text-align: right;">Life Bonus</td>
                                     <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
                                         <ng-container *ngIf="i <= month_number">
-                                            ${{ life_dots[producer.id+'_'+i+'_bonus'] ? life_dots[producer.id+'_'+i+'_bonus'] : 0 }}
+                                            {{ (life_dots[producer.id+'_'+i+'_bonus'] ? life_dots[producer.id+'_'+i+'_bonus'] : 0) | currency:'USD' }}
                                         </ng-container>
                                     </td>
                                 </tr>
@@ -245,7 +248,7 @@
                                     <td style="text-align: right;">Auto Bonus</td> 
                                     <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
                                         <ng-container *ngIf="i <= month_number">
-                                            ${{ auto_dots[producer.id+'_'+i+'_bonus'] ? auto_dots[producer.id+'_'+i+'_bonus'] : 0 }}
+                                            {{ (auto_dots[producer.id+'_'+i+'_bonus'] ? auto_dots[producer.id+'_'+i+'_bonus'] : 0) | currency:'USD' }}
                                         </ng-container>
                                     </td>
                                 </tr>
@@ -357,7 +360,7 @@
                                     <td style="text-align: right;">Bank Bonus</td> 
                                     <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
                                         <ng-container *ngIf="i <= month_number">
-                                            ${{ bank_dots[producer.id+'_'+i+'_bonus'] ? bank_dots[producer.id+'_'+i+'_bonus'] : 0 }}
+                                            {{ (bank_dots[producer.id+'_'+i+'_bonus'] ? bank_dots[producer.id+'_'+i+'_bonus'] : 0) | currency:'USD' }}
                                         </ng-container>
                                     </td>
                                 </tr>
@@ -405,7 +408,7 @@
                                     <td style="text-align: right;">Health Bonus</td> 
                                     <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
                                         <ng-container *ngIf="i <= month_number">
-                                            ${{ health_dots[producer.id+'_'+i+'_bonus'] ? health_dots[producer.id+'_'+i+'_bonus'] : 0 }}
+                                            {{ (health_dots[producer.id+'_'+i+'_bonus'] ? health_dots[producer.id+'_'+i+'_bonus'] : 0) | currency:'USD' }}
                                         </ng-container>
                                     </td>
                                 </tr>

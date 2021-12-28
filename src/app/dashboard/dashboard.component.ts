@@ -1,11 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { Producer } from "../producer";
 import { Color } from "ng2-charts";
-import { Subscription } from 'rxjs';
-import { environment } from 'src/environments/environment';
 import { AngularFireAuth } from '@angular/fire/auth';
 import { DataService } from '../data.service';
 import { take } from 'rxjs/operators';
+import { Application } from '../application';
 
 @Component({
   selector: 'app-dashboard',
@@ -33,8 +31,6 @@ export class DashboardComponent implements OnInit {
 
   apps_loaded = false;
   
-  subscriptions: Subscription[] = [];
-
   constructor(public db_auth:  AngularFireAuth, private dataService: DataService) { }
 
   ngOnInit(): void {
@@ -45,28 +41,23 @@ export class DashboardComponent implements OnInit {
     });
   }
 
-  loadApplications() {
-    let today = new Date();
-    this.dataService.getApplications(today.getFullYear()).pipe(take(1)).subscribe(
-      (snapshot: any) => snapshot.map((snap, index) => {
-        const date = snap.payload.val().date as string;
-        const month = parseInt(date.substring(5, 7));
-        const status = snap.payload.val().status as string;
-
-        if (status == "Cancelled" || status == "Declined") {
-          return;
-        }
-
-        this.barChartData[0].data[month-1] += 1;
-        if (snapshot.length == index+1) {
-          this.apps_loaded = true;
-        }
-      })
-    );
+  async loadApplications() {
+    await this.dataService.until(_ => this.dataService.apps_loaded == true);
+    this.updateChartData();
   }
 
-  toggleUser(producer: Producer): void {
-    //producer.showing = !producer.showing;
+  updateChartData() {
+    for (const app of this.dataService.getAllApps()) {
+      const status = app["status"] as string;
+      if (status == "Cancelled" || status == "Declined") {
+        continue;
+      }
+
+      const month = parseInt(app.date.substring(5, 7));
+      this.barChartData[0].data[month-1] += 1;
+    }
+
+    this.apps_loaded = true;
   }
 
   chartClicked(): void {
@@ -76,5 +67,4 @@ export class DashboardComponent implements OnInit {
   chartHovered(): void {
     //console.log("chart hovered");
   }
-
 }

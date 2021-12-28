@@ -4,7 +4,6 @@ import { FormBuilder, FormGroup } from '@angular/forms';
 import { AngularFireDatabase } from '@angular/fire/database';
 import { Router } from '@angular/router';
 import { AngularFireAuth } from '@angular/fire/auth';
-import { Subscription } from 'rxjs';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { DataService } from '../data.service';
 import { take } from 'rxjs/operators';
@@ -24,6 +23,7 @@ export class SettingsComponent implements OnInit {
     new_producer: [],
     pin: []
   });
+
   addConstantForm = this.fb.group({
     new_constant: [],
     header: ['default']
@@ -31,26 +31,12 @@ export class SettingsComponent implements OnInit {
 
   app_types = ["life", "auto", "bank", "fire", "health", "mutual-funds"];
 
-  subscriptions: Subscription[] = [];
-
-  movies = [
-    'Episode I - The Phantom Menace',
-    'Episode II - Attack of the Clones',
-    'Episode III - Revenge of the Sith',
-    'Episode IV - A New Hope',
-    'Episode V - The Empire Strikes Back',
-    'Episode VI - Return of the Jedi',
-    'Episode VII - The Force Awakens',
-    'Episode VIII - The Last Jedi',
-    'Episode IX – The Rise of Skywalker'
-  ];
-
   constructor(private db: AngularFireDatabase, private fb: FormBuilder, private dataService: DataService, public  db_auth:  AngularFireAuth, private router: Router) { }
 
   ngOnInit(): void {
     this.dataService.auth_state_ob.pipe(take(1)).subscribe(user => {
       if (user) {
-        this.setActive('producers');
+        this.loadProducerSettings();
       } else {
         // if user is not logged in, reroute them to the login page
         this.router.navigate(['login']);
@@ -58,10 +44,9 @@ export class SettingsComponent implements OnInit {
     });
   }
 
-  ngOnDestroy(): void {
-    this.subscriptions.forEach(sub => {
-      sub.unsubscribe();
-    });
+  async loadProducerSettings() {
+    await this.dataService.until(_ => this.dataService.prod_loaded == true);
+    this.setActive('producers');
   }
 
   setActive(page: string) {
@@ -70,21 +55,21 @@ export class SettingsComponent implements OnInit {
     this.constants = [[]];
     if (this.active_page == 'producers') {
       this.headers = ["Producers", "Licensed"];
-      // this.constants.push([]);
-      this.dataService.prod_ob.pipe(take(1)).subscribe(
-        (snapshot: any) => snapshot.map((snap, index) => {
-          let displayed = false;
-          this.constants[0].forEach(producer => {
-            if (producer[0] == snap.key) {
-              displayed = true;
-            }
-          });
-          if (!displayed && snap.payload.val().hired) {
-            this.constants[0].push([snap.key, snap.payload.val().name, snap.payload.val().licensed]);
-            // this.constants[1].push([snap.key, snap.payload.val().licensed]);
+
+      for (const producer of this.dataService.producers) {
+        let displayed = false;
+
+        this.constants[0].forEach(prod => {
+          if (prod[0] == producer.id) {
+            displayed = true;
           }
-        })
-      );
+        });
+
+        if (!displayed && producer.hired) {
+          this.constants[0].push([producer.id, producer.name, producer.licensed]);
+        }
+      }
+
       this.loadGoals();
     } else {
       this.db.list('constants/' + this.active_page).snapshotChanges().pipe(take(1)).subscribe(
@@ -279,9 +264,4 @@ export class SettingsComponent implements OnInit {
     }
     return randString;
   }
-
-  drop(event: CdkDragDrop<string[]>) {
-    moveItemInArray(this.movies, event.previousIndex, event.currentIndex);
-  }
-
 }
