@@ -67,6 +67,7 @@ export interface HealthApp extends Application {
 
 export interface MutualFundApp extends Application {
     product_type?: string;
-    amount?: string;
+    contribution_type?: string;
+    contribution_amount?: number;
     marketing_source?: string;
 }

@@ -32,21 +32,21 @@
                 <table class="table table-sm table-hover table-bordered">
                   <thead>
                     <tr>
-                      <th>{{ producer.name }}</th>
+                      <th>{{ getFirstName(producer.name) }}</th>
                       <th *ngFor="let month of months" scope="col">{{ month }}</th>
                       <th>Total</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr>
-                      <td scope="row">Production Bonus</td>
+                      <td scope="row">Production</td>
                       <ng-container *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
                         <td>{{ (getProducerProdBonus(producer.id, i-1)) | currency:'USD' }}</td>
                       </ng-container>
                       <td>{{ (getTotalProductionBonus(producer.id)) | currency:'USD' }}</td>
                     </tr>
                     <tr>
-                      <td scope="row">Corporate Bonus</td>
+                      <td scope="row">Corporate</td>
                       <ng-container *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
                         <td>
                           <input type="number" style="width: 65px;" [value]="getProducerCorpBonus(producer.id, i-1)" (change)="updateBonus($event, producer.id, i)">
@@ -55,7 +55,7 @@
                       <td>{{ (getTotalCorporateBonus(producer.id)) | currency:'USD' }}</td>
                     </tr>
                     <tr>
-                      <td scope="row"><i>Total Bonus</i></td>
+                      <td scope="row"><i>Total</i></td>
                       <ng-container *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
                         <td>{{ (getProducerProdBonus(producer.id, i-1) + getProducerCorpBonus(producer.id, i-1)) | currency:'USD' }}</td>
                       </ng-container>

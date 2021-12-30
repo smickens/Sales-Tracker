@@ -83,7 +83,7 @@ export class DataService {
 
       this.barChartData.push({
         data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
-        label: producer.name + " CB", 
+        label: this.getFirstName(producer.name) + " CB", 
         stack: producer.id, 
         backgroundColor: producer.corp_color, 
         hoverBackgroundColor: producer.hover_color
@@ -91,7 +91,7 @@ export class DataService {
 
       this.barChartData.push({
         data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
-        label: producer.name + " PB", 
+        label: this.getFirstName(producer.name) + " PB", 
         stack: producer.id, 
         backgroundColor: producer.color, 
         hoverBackgroundColor: producer.hover_color
@@ -262,5 +262,9 @@ export class DataService {
     }
   
     return new Promise(poll);
+  }
+
+  getFirstName(str) {
+    return str.split(" ", 1); 
   }
 }

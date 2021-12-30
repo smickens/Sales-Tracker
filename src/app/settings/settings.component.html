@@ -95,6 +95,8 @@
                     <input type="color" id="color" value="#ff0000" style="height: 30px; width: 30px; margin-right: 15px;">
                     <input class="submit_btn" type="submit" value="SUBMIT" (click)="addProducer()">
                 </form>
+
+                <h4>Goals</h4>
                 <table class="table table-sm table-hover" style="max-width: 500px;">
                     <thead>
                         <tr>
@@ -105,16 +107,19 @@
                     </thead>
                     <tbody>
                         <tr>
+                            <td>Week</td>
                             <td *ngFor="let type of app_types;">
                                 <input style="width: 120px;" type="number" placeholder="Weekly" id="{{type}}_weekly" autocomplete="off">
                             </td>
                         </tr>
                         <tr>
+                            <td>Month</td>
                             <td *ngFor="let type of app_types;">
                                 <input style="width: 120px;" type="number" placeholder="Monthly" id="{{type}}_monthly" autocomplete="off">
                             </td>
                         </tr>
                         <tr>
+                            <td>Year</td>
                             <td *ngFor="let type of app_types;">
                                 <input style="width: 120px;" type="number" placeholder="Yearly" id="{{type}}_yearly" autocomplete="off">
                             </td>

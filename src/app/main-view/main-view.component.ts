@@ -96,7 +96,6 @@ export class MainViewComponent implements OnInit {
 
     await this.dataService.until(_ => this.dataService.apps_loaded == true);
     this.loadDots();
-    this.loadGoals();
     this.loadNotes();
   }
 
@@ -271,64 +270,6 @@ export class MainViewComponent implements OnInit {
         }
       }
     }
-  }
-
-  loadGoals() {
-    this.dataService.goals_ob.pipe(take(1)).subscribe(
-      (snapshot: any) => snapshot.map(snap => {
-        this.goals[snap.key]["yearly"] = snap.payload.val()["yearly"];
-        if (snap.key != "mutual-funds") {
-          this.goals[snap.key]["weekly"] = snap.payload.val()["weekly"];
-          this.goals[snap.key]["monthly"] = snap.payload.val()["monthly"];
-        }
-
-        let week_total, month_total, year_total = 0;
-        let week_goal = snap.payload.val()["weekly"];
-        let month_goal = snap.payload.val()["monthly"];
-        let year_goal = snap.payload.val()["yearly"];
-        if (snap.key == "life") {
-          week_total =  this.life_totals["week"] || 0;
-          month_total = this.life_totals[this.month_number+"_total"] || 0;
-          year_total = this.life_totals["year"] || 0;
-        } else if (snap.key == "auto") {
-          week_total =  this.auto_totals["week"] || 0;
-          month_total = this.auto_totals[this.month_number+"_total"] || 0;
-          year_total = this.auto_totals["year"];
-        } else if (snap.key == "fire") {
-          week_total =  this.fire_totals["week"] || 0;
-          month_total = this.fire_totals[this.month_number+"_total"] || 0;
-          year_total = this.fire_totals["year"];
-        } else if (snap.key == "bank") {
-          week_total =  this.bank_totals["week"] || 0;
-          month_total = this.bank_totals[this.month_number+"_issued"] || 0;
-          year_total = this.bank_totals["year"];
-        } else if (snap.key == "health") {
-          week_total =  this.health_totals["week"] || 0;
-          month_total = this.health_totals[this.month_number+"_issued"] || 0;
-          year_total = this.health_totals["year"];
-        } else if (snap.key == "mutual-funds") {
-          (document.getElementById("mutual_funds_yearly") as HTMLInputElement).style.width = (this.mutual_funds_totals["premium"] / year_goal) * 100 + '%';
-        }
-
-        if (snap.key != "mutual-funds") {
-          // TODO: ERROR TypeError: Cannot read properties of null (reading 'setAttribute')
-          (document.getElementById(snap.key+"_weekly") as HTMLInputElement).setAttribute("aria-valuenow", week_total);
-          // (document.getElementById(snap.key+"_monthly") as HTMLInputElement).setAttribute("aria-valuenow", month_total);
-          // (document.getElementById(snap.key+"_yearly") as HTMLInputElement).setAttribute("aria-valuenow", year_total.toString());
-          (document.getElementById(snap.key+"_weekly") as HTMLInputElement).setAttribute("aria-valuemax", week_goal);
-          // (document.getElementById(snap.key+"_monthly") as HTMLInputElement).setAttribute("aria-valuemax", month_goal);
-          // (document.getElementById(snap.key+"_yearly") as HTMLInputElement).setAttribute("aria-valuemax", year_goal);
-          (document.getElementById(snap.key+"_weekly") as HTMLInputElement).style.width = (week_total / week_goal) * 100 + '%';
-          // (document.getElementById(snap.key+"_monthly") as HTMLInputElement).style.width = (month_total / month_goal) * 100 + '%';
-          // (document.getElementById(snap.key+"_yearly") as HTMLInputElement).style.width = (year_total / year_goal) * 100 + '%';
-          (document.getElementById(snap.key+"_weekly") as HTMLInputElement).innerHTML = week_total == 0 || null ? '' : week_total;
-          // (document.getElementById(snap.key+"_monthly") as HTMLInputElement).innerHTML = month_total == 0 || null ? '' : month_total;
-          // (document.getElementById(snap.key+"_yearly") as HTMLInputElement).innerHTML = year_total  == 0 ? '' : year_total.toString();
-          (document.getElementById(snap.key+"_monthly") as HTMLInputElement).innerHTML = "Month - " + (month_goal - month_total) + " to go";
-          (document.getElementById(snap.key+"_yearly") as HTMLInputElement).innerHTML = "Year - " + (year_goal - year_total) + " to go";
-        }
-      }
-    ));
   }
 
   getTotalAppsForProducer(id: string) {
@@ -542,5 +483,8 @@ export class MainViewComponent implements OnInit {
     return randString;
   }
 
+  getFirstName(str) {
+    return str.split(" ", 1); 
+  }
 }
 

@@ -98,7 +98,8 @@ export class AddMutualFundComponent implements OnInit {
         producer_id: [''],
         client_name: [''],
         product_type: ['Traditional IRA'],
-        amount: ['1-Time Contribution'],
+        contribution_type: ['1-Time Contribution'],
+        contribution_amount: [0],
         marketing_source: ['Current Client']
       });
       this.app_loaded = true;
@@ -156,7 +157,8 @@ export class AddMutualFundComponent implements OnInit {
         client_name: this.get("client_name"),
         producer_id: this.get("producer_id"),
         product_type: this.get("product_type"),
-        amount: this.get("amount"),
+        contribution_type: this.get("contribution_type"),
+        contribution_amount: this.get("contribution_amount"),
         marketing_source: this.get("marketing_source")
       }
       // console.log(app);

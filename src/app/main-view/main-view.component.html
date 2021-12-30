@@ -19,56 +19,8 @@
             </div>
 
             <div class="col-4" style="padding-right: 0px;">
-                <div class="block noPrintPdf">
-                    <h4 class="header">Goals</h4>
-                    <ul>
-                        <li>
-                            <span style="padding-right: 10px;">Life:</span>
-                            <span id="life_monthly" style="padding-right: 15px;">Month - ___ to go</span>
-                            <span id="life_yearly">Year - ___ to go</span>
-                            <div id="life-progress-bar-week" class="progress mb-2">
-                                <div class="progress-bar bg-success" id="life_weekly" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="20"></div>
-                            </div>
-                        </li>
-                        <li>
-                            <span style="padding-right: 10px;">Auto:</span>
-                            <span id="auto_monthly" style="padding-right: 15px;">Month - ___ to go</span>
-                            <span id="auto_yearly">Year - ___ to go</span>
-                            <div id="auto-progress-bar-week" class="progress mb-2">
-                                <div class="progress-bar bg-info" id="auto_weekly" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="20"></div>
-                            </div>
-                        </li>
-                        <li>
-                            <span style="padding-right: 10px;">Fire:</span>
-                            <span id="fire_monthly" style="padding-right: 15px;">Month - ___ to go</span>
-                            <span id="fire_yearly">Year - ___ to go</span>
-                            <div id="fire-progress-bar-week" class="progress mb-2">
-                                <div class="progress-bar bg-warning" role="progressbar" id="fire_weekly" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
-                            </div>
-                        </li>
-                        <li>
-                            <span style="padding-right: 10px;">Bank:</span>
-                            <span id="bank_monthly" style="padding-right: 15px;">Month - ___ to go</span>
-                            <span id="bank_yearly">Year - ___ to go</span>
-                            <div id="bank-progress-bar-week" class="progress mb-2">
-                                <div class="progress-bar bg-danger" id="bank_weekly" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
-                            </div>
-                        </li>
-                        <li>
-                            <span style="padding-right: 10px;">Health:</span>
-                            <span id="health_monthly" style="padding-right: 15px;">Month - ___ to go</span>
-                            <span id="health_yearly">Year - ___ to go</span>
-                            <div id="health-progress-bar-week" class="progress mb-2">
-                                <div class="progress-bar" id="health_weekly" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
-                            </div>
-                        </li>
-                        <li>
-                            <span>Mutual Funds:</span>
-                            <div id="mutual-funds-progress-bar-year" class="progress mb-2">
-                                <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" id="mutual_funds_yearly" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
-                            </div>
-                        </li>
-                    </ul>
+                <div class="block noPrintPdf" style="width: 100%; height: 100%;">
+                    <app-progress></app-progress>
                 </div>
             </div>
         </div>
@@ -76,7 +28,7 @@
         <div class="row spacing" id="stats" style="padding-bottom: 0px;">
             <div class="col-8" style="padding-left: 0px;">
                 <div class="block" style="width: 100%; height: 100%; overflow: auto;">
-                    <h4 class="header">Stats for Year</h4>
+                    <h4 class="header">Stats by Producer</h4>
                     <table class="table table-sm table-hover table-bordered">
                         <thead>
                         <tr>
@@ -89,7 +41,7 @@
                             <ng-container *ngFor="let producer of producers">
                                 <tr>
                                     <th style="display: flex;">
-                                        <span style="font-size: 14px; padding-left: 0px; padding-right: 0px;" class="col">{{ producer.name }}</span>
+                                        <span style="font-size: 14px; padding-left: 0px; padding-right: 0px;" class="col">{{ getFirstName(producer.name) }}</span>
                                         <span class="col-auto" type="button" (click)="toggleRow($event.target, producer.id)">+</span>
                                     </th>
                                     <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
@@ -120,7 +72,7 @@
                             </ng-container>
                             <tr> <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]"><hr style="margin-top: 0.5rem; margin-bottom: 0.5rem;"/></td> </tr>
                             <tr>
-                                <th>Totals</th>
+                                <th>Month Total</th>
                                 <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
                                     <ng-container *ngIf="i <= month_number">
                                         {{ getTotalAppsForMonth(i) }}
@@ -156,6 +108,72 @@
                 </div>
             </div>
         </div>
+
+        <!-- <div class="row spacing" id="life" style="padding-bottom: 0px;">
+            <div class="block" style="width: 100%; height: 100%;">
+                <h4 class="header">Summary by Producer</h4>
+                <table class="table table-sm table-hover table-bordered" style="font-size: smaller;">
+                    <thead>
+                      <tr>
+                        <th></th>
+                        <th *ngFor="let app_type of app_types" scope="col">{{app_type}}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                    
+                        <ng-container *ngFor="let producer of producers">
+                            <ng-container *ngIf="producer.id != 'napD'">
+                                <tr> 
+                                    <th>{{ producer.name }}</th> 
+                                    <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]"><hr style="margin-top: 0.5rem; margin-bottom: 0.5rem;"/></td> </tr>
+                                <tr>
+                                    <td style="text-align: right;">Life Apps</td>
+                                    <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
+                                        <ng-container *ngIf="i <= month_number">
+                                            {{ life_dots[producer.id+'_'+i+'_total'] ? life_dots[producer.id+'_'+i+'_total'] : 0 }}
+                                        </ng-container>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="text-align: right;">Life Apps Issued</td> 
+                                    <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
+                                        <ng-container *ngIf="i <= month_number">
+                                            {{ life_dots[producer.id+'_'+i+'_issued'] ? life_dots[producer.id+'_'+i+'_issued'] : 0 }}
+                                        </ng-container>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="text-align: right;">Life Bonus</td>
+                                    <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
+                                        <ng-container *ngIf="i <= month_number">
+                                            {{ (life_dots[producer.id+'_'+i+'_bonus'] ? life_dots[producer.id+'_'+i+'_bonus'] : 0) | currency:'USD' }}
+                                        </ng-container>
+                                    </td>
+                                </tr>
+                            </ng-container>
+                        </ng-container>
+                        <tr> <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]"><hr style="margin-top: 0.5rem; margin-bottom: 0.5rem;"/></td> </tr>
+                        <tr>
+                            <th>Total Life</th>
+                            <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
+                                <ng-container *ngIf="i <= month_number">
+                                    {{ life_totals[i+'_total'] ? life_totals[i+'_total'] : 0 }}
+                                </ng-container>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Total Life Issued</th>
+                            <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
+                                <ng-container *ngIf="i <= month_number">
+                                    {{ life_totals[i+'_issued'] ? life_totals[i+'_issued'] : 0 }}
+                                </ng-container>
+                            </td>
+                        </tr>
+                        
+                    </tbody>
+                </table>
+            </div>
+        </div> -->
 
         <div class="row spacing" id="life" style="padding-bottom: 0px;">
             <div class="block" style="width: 100%; height: 100%;">

@@ -33,17 +33,27 @@
                         </select>
                     </div> 
 
-                    <div class="col-auto form-group">
-                        <label for="amount">AMOUNT</label>
-                        <select class="custom-select" formControlName="amount" id="amount" (focus)="setValid($event)">
+                    <div class="col form-group">
+                        <label for="amount">CONTRIBUTION TYPE</label>
+                        <select class="custom-select" formControlName="contribution_type" id="contribution_type" (focus)="setValid($event)">
                             <option value="" selected>Select Amount</option>
-                            <option *ngFor="let option of constants['amount']" value="{{option}}"> {{ option }} </option>
+                            <option *ngFor="let option of constants['contribution_type']" value="{{option}}"> {{ option }} </option>
                         </select>
                     </div>
                 </div>
         
                 <div class="form-row mb-2">
                     <div class="col form-group">
+                        <label for="amount">AMOUNT</label>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">$</span>
+                            </div>
+                            <input type="number" min="0" class="form-control" formControlName="contribution_amount" id="contribution_amount" autocomplete="off" style="max-width: 170px;">
+                        </div>
+                    </div>
+
+                    <div class="col-auto form-group">
                         <label for="marketing_source">MARKETING SOURCE</label>
                         <select class="custom-select" formControlName="marketing_source" id="marketing_source">
                             <option value=""  selected>Select Marketing Source</option>

@@ -3,7 +3,6 @@ import { Color } from "ng2-charts";
 import { AngularFireAuth } from '@angular/fire/auth';
 import { DataService } from '../data.service';
 import { take } from 'rxjs/operators';
-import { Application } from '../application';
 
 @Component({
   selector: 'app-dashboard',
@@ -12,24 +11,23 @@ import { Application } from '../application';
 })
 export class DashboardComponent implements OnInit {
 
-  public barChartOptions = {
+  public allYearTotalChartOptions = {
     scaleShowVerticalLines: false,
-    responsive: true
+    responsive: true,
+    maintainAspectRatio: false
   };
+  public allYearTotalChartLabels = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  public allYearTotalChartType = 'bar';
+  public allYearTotalChartLegend = false;
+  public allYearTotalChartData = [{
+    data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
+    label: ''
+  }];
+  public allYearTotalChartColors: Color[] = [{ 
+    backgroundColor: '#E8AA9F' 
+  }];
 
-  public barChartLabels = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-  public barChartType = 'bar';
-  public barChartLegend = false;
-
-  public barChartData = [
-    {data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], label: ''}
-  ];
-
-  public barChartColors: Color[] = [
-    { backgroundColor: '#E8AA9F' }
-  ]
-
-  apps_loaded = false;
+  chart_loaded = false;
   
   constructor(public db_auth:  AngularFireAuth, private dataService: DataService) { }
 
@@ -54,10 +52,10 @@ export class DashboardComponent implements OnInit {
       }
 
       const month = parseInt(app.date.substring(5, 7));
-      this.barChartData[0].data[month-1] += 1;
+      this.allYearTotalChartData[0].data[month-1] += 1;
     }
 
-    this.apps_loaded = true;
+    this.chart_loaded = true;
   }
 
   chartClicked(): void {

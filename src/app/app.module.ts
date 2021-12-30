@@ -24,6 +24,7 @@ import { BonusesComponent } from './bonuses/bonuses.component';
 import { LoginComponent } from './login/login.component';
 import { TimesheetComponent } from './timesheet/timesheet.component';
 import { AddMutualFundComponent } from './add-mutual-fund/add-mutual-fund.component';
+import { ProgressComponent } from './progress/progress.component';
 
 @NgModule({
   declarations: [
@@ -41,7 +42,8 @@ import { AddMutualFundComponent } from './add-mutual-fund/add-mutual-fund.compon
     BonusesComponent,
     LoginComponent,
     TimesheetComponent,
-    AddMutualFundComponent
+    AddMutualFundComponent,
+    ProgressComponent
   ],
   imports: [
     BrowserModule,
