@@ -19,6 +19,22 @@
     border-radius: 10px;
 }
 
+.block {
+    padding: 15px;
+}
+
+.nav_header {
+    font-size: 20px;
+    font-weight: 500;
+    margin: 0px;
+    color: black;
+}
+
+.active {
+    font-weight: 600;
+    border-bottom: 2px solid black;
+}
+
 .hide { 
     display: none;
 }

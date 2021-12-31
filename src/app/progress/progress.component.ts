@@ -71,7 +71,7 @@ export class ProgressComponent implements OnInit {
       }
     }
 
-    console.log("loading goals");
+    // console.log("loading goals");
     this.dataService.goals_ob.pipe(take(1)).subscribe(
       (snapshot: any) => snapshot.map(snap => {
         let week_goal = snap.payload.val()["weekly"];

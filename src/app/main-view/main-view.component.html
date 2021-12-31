@@ -1,6 +1,44 @@
 <div class="row" style="height: 100%;">
     <div class="col" style="display: flex; flex-flow: column;">
-        <div class="row spacing" style="padding-bottom: 0px;">
+        <div class="row" style="min-height: 70px;">
+            <div class="col-auto" style="padding: 10px; margin-left: 16px;">
+                <div class="block" (click)="setActive('summary')">
+                    <h5 class="nav_header" [ngClass]="{'active': active_page == 'summary'}">SUMMARY</h5>
+                </div>
+            </div>
+            <div class="col-auto" style="padding: 10px;">
+                <div class="block" (click)="setActive('life')">
+                    <h5 class="nav_header" [ngClass]="{'active': active_page == 'life'}">LIFE</h5>
+                </div>
+            </div>
+            <div class="col-auto" style="padding: 10px;">
+                <div class="block" (click)="setActive('auto')">
+                    <h5 class="nav_header" [ngClass]="{'active': active_page == 'auto'}">AUTO</h5>
+                </div>
+            </div>
+            <div class="col-auto" style="padding: 10px">
+                <div class="block" (click)="setActive('bank')">
+                    <h5 class="nav_header" [ngClass]="{'active': active_page == 'bank'}">BANK</h5>
+                </div>
+            </div>
+            <div class="col-auto" style="padding: 10px;">
+                <div class="block" (click)="setActive('fire')">
+                    <h5 class="nav_header" [ngClass]="{'active': active_page == 'fire'}">FIRE</h5>
+                </div>
+            </div>
+            <div class="col-auto" style="padding: 10px;">
+                <div class="block" (click)="setActive('health')">
+                    <h5 class="nav_header" [ngClass]="{'active': active_page == 'health'}">HEALTH</h5>
+                </div>
+            </div>
+            <!-- <div class="col-auto" style="padding: 10px;">
+                <div class="block" (click)="setActive('mutual-funds')">
+                    <h5 class="nav_header" [ngClass]="{'active': active_page == 'mutual-funds'}">MUTUAL FUNDS</h5>
+                </div>
+            </div> -->
+        </div>
+
+        <div *ngIf="active_page == 'summary'" class="row spacing" style="padding-bottom: 0px;">
             <div class="col-8" style="padding-left: 0px;">
                 <div class="block noPrintPdf" style="width: 100%; height: 100%;">
                     <h4 class="header">Dashboard {{ current_year }}</h4>
@@ -25,7 +63,7 @@
             </div>
         </div>
 
-        <div class="row spacing" id="stats" style="padding-bottom: 0px;">
+        <div *ngIf="active_page == 'summary'" class="row spacing" id="stats" style="padding-bottom: 0px;">
             <div class="col-8" style="padding-left: 0px;">
                 <div class="block" style="width: 100%; height: 100%; overflow: auto;">
                     <h4 class="header">Stats by Producer</h4>
@@ -109,73 +147,7 @@
             </div>
         </div>
 
-        <!-- <div class="row spacing" id="life" style="padding-bottom: 0px;">
-            <div class="block" style="width: 100%; height: 100%;">
-                <h4 class="header">Summary by Producer</h4>
-                <table class="table table-sm table-hover table-bordered" style="font-size: smaller;">
-                    <thead>
-                      <tr>
-                        <th></th>
-                        <th *ngFor="let app_type of app_types" scope="col">{{app_type}}</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                    
-                        <ng-container *ngFor="let producer of producers">
-                            <ng-container *ngIf="producer.id != 'napD'">
-                                <tr> 
-                                    <th>{{ producer.name }}</th> 
-                                    <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]"><hr style="margin-top: 0.5rem; margin-bottom: 0.5rem;"/></td> </tr>
-                                <tr>
-                                    <td style="text-align: right;">Life Apps</td>
-                                    <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
-                                        <ng-container *ngIf="i <= month_number">
-                                            {{ life_dots[producer.id+'_'+i+'_total'] ? life_dots[producer.id+'_'+i+'_total'] : 0 }}
-                                        </ng-container>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td style="text-align: right;">Life Apps Issued</td> 
-                                    <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
-                                        <ng-container *ngIf="i <= month_number">
-                                            {{ life_dots[producer.id+'_'+i+'_issued'] ? life_dots[producer.id+'_'+i+'_issued'] : 0 }}
-                                        </ng-container>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td style="text-align: right;">Life Bonus</td>
-                                    <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
-                                        <ng-container *ngIf="i <= month_number">
-                                            {{ (life_dots[producer.id+'_'+i+'_bonus'] ? life_dots[producer.id+'_'+i+'_bonus'] : 0) | currency:'USD' }}
-                                        </ng-container>
-                                    </td>
-                                </tr>
-                            </ng-container>
-                        </ng-container>
-                        <tr> <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]"><hr style="margin-top: 0.5rem; margin-bottom: 0.5rem;"/></td> </tr>
-                        <tr>
-                            <th>Total Life</th>
-                            <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
-                                <ng-container *ngIf="i <= month_number">
-                                    {{ life_totals[i+'_total'] ? life_totals[i+'_total'] : 0 }}
-                                </ng-container>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Total Life Issued</th>
-                            <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
-                                <ng-container *ngIf="i <= month_number">
-                                    {{ life_totals[i+'_issued'] ? life_totals[i+'_issued'] : 0 }}
-                                </ng-container>
-                            </td>
-                        </tr>
-                        
-                    </tbody>
-                </table>
-            </div>
-        </div> -->
-
-        <div class="row spacing" id="life" style="padding-bottom: 0px;">
+        <div *ngIf="active_page == 'life'" class="row spacing" id="life" style="padding-bottom: 0px;">
             <div class="block" style="width: 100%; height: 100%;">
                 <h4 class="header">Life</h4>
                 <table class="table table-sm table-hover table-bordered" style="font-size: smaller;">
@@ -183,10 +155,10 @@
                       <tr>
                         <th></th>
                         <th *ngFor="let month of months" scope="col">{{month}}</th>
+                        <th>Total</th>
                       </tr>
                     </thead>
                     <tbody>
-                    
                         <ng-container *ngFor="let producer of producers">
                             <ng-container *ngIf="producer.id != 'napD'">
                                 <tr> <th>{{ producer.name }}</th> <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]"><hr style="margin-top: 0.5rem; margin-bottom: 0.5rem;"/></td> </tr>
@@ -197,6 +169,7 @@
                                             {{ life_dots[producer.id+'_'+i+'_total'] ? life_dots[producer.id+'_'+i+'_total'] : 0 }}
                                         </ng-container>
                                     </td>
+                                    <td>{{ getTotalAppsByProducer(life_dots, producer.id) }}</td>
                                 </tr>
                                 <tr>
                                     <td style="text-align: right;">Life Apps Issued</td> 
@@ -205,6 +178,7 @@
                                             {{ life_dots[producer.id+'_'+i+'_issued'] ? life_dots[producer.id+'_'+i+'_issued'] : 0 }}
                                         </ng-container>
                                     </td>
+                                    <td>{{ getTotalIssuedLifeApps(producer.id) }}</td>
                                 </tr>
                                 <tr>
                                     <td style="text-align: right;">Life Bonus</td>
@@ -213,6 +187,7 @@
                                             {{ (life_dots[producer.id+'_'+i+'_bonus'] ? life_dots[producer.id+'_'+i+'_bonus'] : 0) | currency:'USD' }}
                                         </ng-container>
                                     </td>
+                                    <td></td>
                                 </tr>
                             </ng-container>
                         </ng-container>
@@ -224,6 +199,7 @@
                                     {{ life_totals[i+'_total'] ? life_totals[i+'_total'] : 0 }}
                                 </ng-container>
                             </td>
+                            <td>{{ getYearTotal(life_totals) }}</td>
                         </tr>
                         <tr>
                             <th>Total Life Issued</th>
@@ -232,6 +208,7 @@
                                     {{ life_totals[i+'_issued'] ? life_totals[i+'_issued'] : 0 }}
                                 </ng-container>
                             </td>
+                            <td>{{ getYearTotalLifeIssued() }}</td>
                         </tr>
                         
                     </tbody>
@@ -239,7 +216,7 @@
             </div>
         </div>
 
-        <div class="row spacing" id="auto" style="padding-bottom: 0px;">
+        <div *ngIf="active_page == 'auto'" class="row spacing" id="auto" style="padding-bottom: 0px;">
             <div class="block" style="width: 100%; height: 100%;">
                 <h4 class="header">Auto</h4>
                 <table class="table table-sm table-hover table-bordered" style="font-size: smaller;">
@@ -247,6 +224,7 @@
                       <tr>
                         <th></th>
                         <th *ngFor="let month of months" scope="col">{{month}}</th>
+                        <th>Total</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -261,6 +239,7 @@
                                             {{ auto_dots[producer.id+'_'+i+'_total'] ? auto_dots[producer.id+'_'+i+'_total'] : 0 }}
                                         </ng-container>
                                     </td>
+                                    <td>{{ getTotalAppsByProducer(auto_dots, producer.id) }}</td>
                                 </tr>
                                 <tr>
                                     <td style="text-align: right;">Auto Bonus</td> 
@@ -269,6 +248,7 @@
                                             {{ (auto_dots[producer.id+'_'+i+'_bonus'] ? auto_dots[producer.id+'_'+i+'_bonus'] : 0) | currency:'USD' }}
                                         </ng-container>
                                     </td>
+                                    <td></td>
                                 </tr>
                                 <tr style="border-collapse: separate; border-spacing: 0 15px; ">
                                     <td style="text-align: right;">Auto R/N</td>
@@ -277,6 +257,7 @@
                                             {{ auto_dots[producer.id+'_'+i+'_RN'] ? auto_dots[producer.id+'_'+i+'_RN'] : 0 }}
                                         </ng-container>
                                     </td>
+                                    <td>{{ getTotalRawNewAutoApps(producer.id) }}</td>
                                 </tr>
                             </ng-container>
                         </ng-container>
@@ -288,6 +269,7 @@
                                     {{ auto_totals[i+'_RN'] ? auto_totals[i+'_RN'] : 0 }}
                                 </ng-container>
                             </td>
+                            <td>{{ getRawNewAutoYearTotal() }}</td>
                         </tr>
                         <tr>
                             <th>Total Other</th>
@@ -296,6 +278,7 @@
                                     {{ auto_totals[i+'_other'] ? auto_totals[i+'_other'] : 0 }}
                                 </ng-container>
                             </td>
+                            <td>{{ getAutoOtherYearTotal() }}</td>
                         </tr>
                         <tr>
                             <th>Total Auto</th>
@@ -304,6 +287,7 @@
                                     {{ auto_totals[i+'_total'] ? auto_totals[i+'_total'] : 0 }}
                                 </ng-container>
                             </td>
+                            <td>{{ getYearTotal(auto_totals) }}</td>
                         </tr>
                         
                     </tbody>
@@ -311,7 +295,7 @@
             </div>
         </div>
 
-        <div class="row spacing" id="fire" style="padding-bottom: 0px;">
+        <div *ngIf="active_page == 'fire'" class="row spacing" id="fire" style="padding-bottom: 0px;">
             <div class="block" style="width: 100%; height: 100%;">
                 <h4 class="header">Fire</h4>
                 <table class="table table-sm table-hover table-bordered" style="font-size: smaller;">
@@ -351,7 +335,7 @@
             </div>
         </div>
 
-        <div class="row spacing" id="bank">
+        <div *ngIf="active_page == 'bank'" class="row spacing" id="bank" style="padding-bottom: 0px;">
             <div class="block" style="width: 100%; height: 100%;">
                 <h4 class="header">Bank</h4>
                 <table class="table table-sm table-hover table-bordered" style="font-size: smaller;">
@@ -399,7 +383,7 @@
             </div>
         </div>
 
-        <div class="row spacing" id="health" style="flex: 1; overflow: auto; padding-top: 0px;">
+        <div *ngIf="active_page == 'health'" class="row spacing" id="health" style="flex: 1; overflow: auto;">
             <div class="block" style="width: 100%; height: 100%;">
                 <h4 class="header">Health</h4>
                 <table class="table table-sm table-hover table-bordered" style="font-size: smaller;">
@@ -447,7 +431,7 @@
             </div>
         </div>
 
-        <div class="modal fade" id="popupModal" tabindex="-1" role="dialog" aria-labelledby="popupModalTitle" aria-hidden="true">
+        <div *ngIf="active_page == 'mutual-funds'" class="modal fade" id="popupModal" tabindex="-1" role="dialog" aria-labelledby="popupModalTitle" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered" role="document">
                 <div class="modal-content">
                     <div class="modal-header">

@@ -17,6 +17,7 @@ import { take } from 'rxjs/operators';
 export class BonusesComponent implements OnInit {
 
   producers: Producer[] = [];
+  one_producer_selected = false;
   months = ['Jan.', 'Feb.', 'March', 'April', 'May', 'June', 'July', 'Aug.', 'Sept.', 'Oct.', 'Nov.', 'Dec.'];
   
   selected_year: number = 0;
@@ -26,8 +27,8 @@ export class BonusesComponent implements OnInit {
   production_bonuses = {};
   corporate_bonuses = {};
 
-  bonus_chart: any;
   public barChartData = [];
+  bonus_chart: any;
   bonuses_loaded = false;
 
   constructor(private db: AngularFireDatabase, private fb: FormBuilder, private dataService: DataService, public db_auth:  AngularFireAuth, private router: Router) { }
@@ -76,8 +77,20 @@ export class BonusesComponent implements OnInit {
   }
 
   // TODO: see about how we want to hide people not hired anymore
-  loadProducers() {
-    this.producers = this.dataService.producers;
+  // async loadProducers() {
+  //   await this.dataService.until(_ => this.dataService.prod_loaded == true);
+
+  //   this.producers = this.dataService.producers;
+  //   this.num_selected_producers = this.dataService.producers.length;
+  // }
+
+  async loadProducers() {
+    await this.dataService.until(_ => this.dataService.prod_loaded == true);
+    for (const producer of this.dataService.producers) {
+      if (producer.hired) {
+        this.producers.push(producer);
+      }
+    }
   }
 
   async loadBonuses() {
@@ -121,7 +134,7 @@ export class BonusesComponent implements OnInit {
   }
 
   showData(id: string) {
-    for (let category of this.bonus_chart.data.datasets ) {
+    for (let category of this.bonus_chart.data.datasets) {
       if (category['stack'] == id) {
         category['hidden'] = false;
       } 
@@ -129,14 +142,14 @@ export class BonusesComponent implements OnInit {
   }
 
   hideData(id: string) {
-    for (let category of this.bonus_chart.data.datasets ) {
+    for (let category of this.bonus_chart.data.datasets) {
       if (category['stack'] == id) {
         category['hidden'] = true;
       } 
     }
   }
 
-  updateList(filter: string) {    
+  updateList(filter: string) { 
     for (const producer of this.dataService.producers) {
       if (producer["name"] == filter || filter == "All Producers") {
         this.showData(producer["id"]);
@@ -144,6 +157,7 @@ export class BonusesComponent implements OnInit {
         this.hideData(producer["id"]);
       }
     }
+    this.one_producer_selected = filter != "All Producers";
 
     this.bonus_chart.update();
   }
@@ -157,5 +171,17 @@ export class BonusesComponent implements OnInit {
   filterByYear(year: number) {
     this.selected_year = year;
     this.loadBonuses();
+  }
+
+  getFirstName(str) {
+    return str.split(" ", 1); 
+  }
+
+  chartClicked(): void {
+    //console.log("chart clicked");
+  }
+
+  chartHovered(): void {
+    //console.log("chart hovered");
   }
 }

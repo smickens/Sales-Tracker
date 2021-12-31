@@ -59,6 +59,8 @@ export class MainViewComponent implements OnInit {
   notes = [];
   selected_note_id = "";
 
+  active_page = 'summary';
+
   constructor(private db: AngularFireDatabase, private fb: FormBuilder, private dataService: DataService, public db_auth:  AngularFireAuth, private router: Router) { }
 
   ngOnInit(): void {
@@ -272,6 +274,10 @@ export class MainViewComponent implements OnInit {
     }
   }
 
+  setActive(page: string) {
+    this.active_page = page;
+  }
+
   getTotalAppsForProducer(id: string) {
     return this.app_totals[id].reduce((a, b) => a + b, 0);
   }
@@ -284,6 +290,62 @@ export class MainViewComponent implements OnInit {
     let health = Number(this.health_totals[month+'_total'] ? this.health_totals[month+'_total'] : 0);
     let mutual = Number(this.mutual_funds_totals[month+'_total'] ? this.mutual_funds_totals[month+'_total'] : 0);
     return Number(life + auto + fire + bank + health + mutual);
+  }
+
+  getTotalAppsByProducer(dots, id) {
+    let total = 0;
+    for (let i = 1; i <= 12; i++) {
+      total += dots[id+'_'+i+'_total'] ? dots[id+'_'+i+'_total'] : 0;
+    }
+    return total;
+  }
+
+  getTotalIssuedLifeApps(id: string) {
+    let total = 0;
+    for (let i = 1; i <= 12; i++) {
+      total += this.life_dots[id+'_'+i+'_issued'] ? this.life_dots[id+'_'+i+'_issued'] : 0;
+    }
+    return total;
+  }
+
+  getYearTotal(totals) {
+    let total = 0;
+    for (let i = 1; i <= 12; i++) {
+      total += totals[i+'_total'] ? totals[i+'_total'] : 0;
+    }
+    return total;
+  }
+
+  getYearTotalLifeIssued() {
+    let total = 0;
+    for (let i = 1; i <= 12; i++) {
+      total += this.life_totals[i+'_issued'] ? this.life_totals[i+'_issued'] : 0;
+    }
+    return total;
+  }
+
+  getTotalRawNewAutoApps(id: string) {
+    let total = 0;
+    for (let i = 1; i <= 12; i++) {
+      total += this.auto_dots[id+'_'+i+'_RN'] ? this.auto_dots[id+'_'+i+'_RN'] : 0
+    }
+    return total;
+  }
+
+  getRawNewAutoYearTotal() {
+    let total = 0;
+    for (let i = 1; i <= 12; i++) {
+      total += this.auto_totals[i+'_RN'] ? this.auto_totals[i+'_RN'] : 0
+    }
+    return total;
+  }
+
+  getAutoOtherYearTotal() {
+    let total = 0;
+    for (let i = 1; i <= 12; i++) {
+      total += this.auto_totals[i+'_other'] ? this.auto_totals[i+'_other'] : 0
+    }
+    return total;
   }
 
   loadNotes() {

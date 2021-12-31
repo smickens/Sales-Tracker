@@ -202,10 +202,10 @@ export class SettingsComponent implements OnInit {
     // brings up modal, confirming deletion of producer or constant
     let app_type = this.active_page;
     let header = this.headers[header_index];
-    console.log(header);
+    // console.log(header);
     // removes constant from array
     this.constants[header_index].splice(constant_index, 1);
-    console.log(this.constants[header_index]);
+    // console.log(this.constants[header_index]);
 
     // updates database with removed
     let constant = {};
@@ -221,7 +221,7 @@ export class SettingsComponent implements OnInit {
       let ref = this.db.database.ref("producers");
       id_taken = false; 
       ref.orderByKey().on("child_added", function(snapshot) {
-        console.log(snapshot.key);
+        // console.log(snapshot.key);
         if (snapshot.key == random_id) {
           id_taken = true;
         }
