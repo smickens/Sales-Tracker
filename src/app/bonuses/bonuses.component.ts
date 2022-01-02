@@ -1,9 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { Producer } from '../producer';
 import { FormBuilder } from '@angular/forms';
 
 import { AngularFireDatabase } from '@angular/fire/database';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AngularFireAuth } from '@angular/fire/auth';
 import * as Chart from 'chart.js';
 import { DataService } from '../data.service';
@@ -16,6 +16,7 @@ import { take } from 'rxjs/operators';
 })
 export class BonusesComponent implements OnInit {
 
+  @Input() display_all: string = "";
   producers: Producer[] = [];
   one_producer_selected = false;
   months = ['Jan.', 'Feb.', 'March', 'April', 'May', 'June', 'July', 'Aug.', 'Sept.', 'Oct.', 'Nov.', 'Dec.'];
@@ -31,13 +32,14 @@ export class BonusesComponent implements OnInit {
   bonus_chart: any;
   bonuses_loaded = false;
 
-  constructor(private db: AngularFireDatabase, private fb: FormBuilder, private dataService: DataService, public db_auth:  AngularFireAuth, private router: Router) { }
+  constructor(private db: AngularFireDatabase, private fb: FormBuilder, private dataService: DataService, public db_auth:  AngularFireAuth, private route: ActivatedRoute, private router: Router) { }
 
   ngOnInit(): void {
     this.dataService.auth_state_ob.pipe(take(1)).subscribe(user => {
       if (user) {
-        this.selected_year = this.today.getFullYear();
+        this.selected_year = parseInt(this.route.snapshot.paramMap.get('year'));
         this.loadProducers();
+        this.loadApplications();
         this.loadBonuses();
       } else {
         // if user is not logged in, reroute them to the login page
@@ -76,18 +78,15 @@ export class BonusesComponent implements OnInit {
     });
   }
 
-  // TODO: see about how we want to hide people not hired anymore
-  // async loadProducers() {
-  //   await this.dataService.until(_ => this.dataService.prod_loaded == true);
-
-  //   this.producers = this.dataService.producers;
-  //   this.num_selected_producers = this.dataService.producers.length;
-  // }
+  async loadApplications() {
+    this.dataService.loadApplications(this.selected_year);
+    await this.dataService.until(_ => this.dataService.apps_loaded == true);
+  }
 
   async loadProducers() {
     await this.dataService.until(_ => this.dataService.prod_loaded == true);
     for (const producer of this.dataService.producers) {
-      if (producer.hired) {
+      if (producer.hired || this.display_all == "true") {
         this.producers.push(producer);
       }
     }
@@ -157,7 +156,11 @@ export class BonusesComponent implements OnInit {
         this.hideData(producer["id"]);
       }
     }
-    this.one_producer_selected = filter != "All Producers";
+    
+    document.getElementById("canvas").style.display = 'none';
+    if (filter != "All Producers") {
+      document.getElementById("canvas").style.display = 'flex';
+    }
 
     this.bonus_chart.update();
   }
@@ -170,6 +173,7 @@ export class BonusesComponent implements OnInit {
 
   filterByYear(year: number) {
     this.selected_year = year;
+    this.loadApplications();
     this.loadBonuses();
   }
 

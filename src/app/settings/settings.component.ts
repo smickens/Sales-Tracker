@@ -168,7 +168,7 @@ export class SettingsComponent implements OnInit {
   }
 
   deleteProducer(id: string, constant_index: number) {
-    this.db.list('producers/' + id).remove();
+    this.db.list('producers/' + id + '/').update('/', { hired: false });
     this.constants[0].splice(constant_index, 1);
   }
 

@@ -3,6 +3,7 @@ import { Color } from "ng2-charts";
 import { AngularFireAuth } from '@angular/fire/auth';
 import { DataService } from '../data.service';
 import { take } from 'rxjs/operators';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-dashboard',
@@ -28,13 +29,16 @@ export class DashboardComponent implements OnInit {
   }];
 
   chart_loaded = false;
+
+  year: number;
   
-  constructor(public db_auth:  AngularFireAuth, private dataService: DataService) { }
+  constructor(public db_auth:  AngularFireAuth, private dataService: DataService, private route: ActivatedRoute) { }
 
   ngOnInit(): void {
     this.dataService.auth_state_ob.pipe(take(1)).subscribe(user => {
       if (user) {
         this.loadApplications();
+        this.year = parseInt(this.route.snapshot.paramMap.get('year'));
       }
     });
   }
@@ -44,8 +48,9 @@ export class DashboardComponent implements OnInit {
     this.updateChartData();
   }
 
-  updateChartData() {
-    for (const app of this.dataService.getAllApps()) {
+  async updateChartData() {
+    let all_apps = await this.dataService.getAllApps(this.year);
+    for (const app of all_apps) {
       const status = app["status"] as string;
       if (status == "Cancelled" || status == "Declined") {
         continue;

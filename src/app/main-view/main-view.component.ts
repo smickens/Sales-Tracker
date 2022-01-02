@@ -3,7 +3,7 @@ import { FormBuilder, FormGroup } from '@angular/forms';
 
 import { Producer } from "../producer";
 import { AngularFireDatabase } from '@angular/fire/database';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AngularFireAuth } from '@angular/fire/auth';
 import { DataService } from '../data.service';
 import { take } from 'rxjs/operators';
@@ -47,7 +47,7 @@ export class MainViewComponent implements OnInit {
   producers: Producer[] = [];
 
   month_number = 0;
-  current_year = 0;
+  year = 0;
   current_month = "";
   monthForm: FormGroup = this.fb.group({ });
   months = ['Jan.', 'Feb.', 'March', 'April', 'May', 'June', 'July', 'Aug.', 'Sept.', 'Oct.', 'Nov.', 'Dec.'];
@@ -61,13 +61,22 @@ export class MainViewComponent implements OnInit {
 
   active_page = 'summary';
 
-  constructor(private db: AngularFireDatabase, private fb: FormBuilder, private dataService: DataService, public db_auth:  AngularFireAuth, private router: Router) { }
+  printing_report = false;
+
+  constructor(private db: AngularFireDatabase, private fb: FormBuilder, private dataService: DataService, public db_auth:  AngularFireAuth, private route: ActivatedRoute, private router: Router) { }
 
   ngOnInit(): void {
     let today = new Date();
+
+    if (!this.route.snapshot.paramMap.get('year')) {
+      // reroute to home page url with year in it
+      this.router.navigate(['home/' + today.getFullYear()]);
+    }
+    this.year = parseInt(this.route.snapshot.paramMap.get('year'));
+
     this.dataService.auth_state_ob.pipe(take(1)).subscribe(user => {
       if (user) {
-        this.current_year = today.getFullYear();
+        // this.year = today.getFullYear();
         this.selected_month = today.getMonth() + 1;
 
         this.loadProducers();
@@ -76,8 +85,16 @@ export class MainViewComponent implements OnInit {
         this.router.navigate(['login']);
       }
     });
-    this.current_month = this.months[today.getMonth()];
-    this.month_number = today.getMonth() + 1;
+    
+    if (this.year < today.getFullYear()) {
+      // user is viewing past year
+      this.current_month = this.months[11];
+      this.month_number = 12;
+    } else {
+      this.current_month = this.months[today.getMonth()];
+      this.month_number = today.getMonth() + 1;
+    }
+    
     this.monthForm = this.fb.group({
       month: [this.month_number]
     });
@@ -105,12 +122,12 @@ export class MainViewComponent implements OnInit {
     this.app_totals["year"] = 0;
 
     // loads in application totals for the year
-    for (const app_type in this.dataService.applications) {
-      let apps: Application[] = this.dataService.applications[app_type];
+    for (const app_type in this.dataService.applications[this.year]) {
+      let apps: Application[] = this.dataService.applications[this.year][app_type];
       this.app_totals["year"] += apps.length;
 
       for (const app of apps) {
-        if (parseInt(app.date.substring(0, 4)) != this.current_year || app["status"] == "Cancelled" || app["status"] == "Declined") {
+        if (parseInt(app.date.substring(0, 4)) != this.year || app["status"] == "Cancelled" || app["status"] == "Declined") {
           continue;
         }
 
@@ -219,6 +236,7 @@ export class MainViewComponent implements OnInit {
         }
         // console.log("Bank");
         // console.log(this.bank_dots);
+        
         if (type == "health") {
           this.health_totals[month+"_total"] = (this.health_totals[month+"_total"] || 0) + 1;
           if (this.inCurrentWeek(app_date_obj)) {
@@ -463,28 +481,32 @@ export class MainViewComponent implements OnInit {
   }
 
   downloadReport() {
-    document.getElementById("bonuses").classList.add("printPdf");
-    document.getElementById("bonuses").classList.remove("noPrintPdf");
-    document.getElementById("stats").classList.remove("noPrintPdf");
-    document.getElementById("life").classList.remove("noPrintPdf");
-    document.getElementById("auto").classList.remove("noPrintPdf");
-    document.getElementById("health").classList.remove("noPrintPdf");
-    document.getElementById("fire").classList.remove("noPrintPdf");
-    document.getElementById("bank").classList.remove("noPrintPdf");
-    let rows = document.getElementsByClassName("hiddenRows");
-    let hiddenRows = [];
-    for (let i = 0; i < rows.length; i++) {
-      const row = rows[i];
-      if (row.classList.contains("d-none")) {
-        row.classList.remove("d-none");
-        hiddenRows.push(row);
+    this.printing_report = true;
+    window.setTimeout(() => {
+      document.getElementById("bonuses").classList.add("printPdf");
+      document.getElementById("bonuses").classList.remove("noPrintPdf");
+      document.getElementById("stats").classList.remove("noPrintPdf");
+      document.getElementById("life").classList.remove("noPrintPdf");
+      document.getElementById("auto").classList.remove("noPrintPdf");
+      document.getElementById("health").classList.remove("noPrintPdf");
+      document.getElementById("fire").classList.remove("noPrintPdf");
+      document.getElementById("bank").classList.remove("noPrintPdf");
+      let rows = document.getElementsByClassName("hiddenRows");
+      let hiddenRows = [];
+      for (let i = 0; i < rows.length; i++) {
+        const row = rows[i];
+        if (row.classList.contains("d-none")) {
+          row.classList.remove("d-none");
+          hiddenRows.push(row);
+        }
       }
-    }
-    window.print();
-    for (let i = 0; i < hiddenRows.length; i++) {
-      const row = hiddenRows[i];
-      row.classList.add("d-none");
-    }
+      window.print();
+      for (let i = 0; i < hiddenRows.length; i++) {
+        const row = hiddenRows[i];
+        row.classList.add("d-none");
+      }
+      this.printing_report = false;
+    }, 50);
   }
 
   // called on month change for production report
@@ -512,18 +534,22 @@ export class MainViewComponent implements OnInit {
   }
 
   downloadProductionReport() {
-    document.getElementById("bonuses").classList.remove("printPdf");
-    document.getElementById("bonuses").classList.add("noPrintPdf");
-    document.getElementById("stats").classList.add("noPrintPdf");
-    document.getElementById("life").classList.add("noPrintPdf");
-    document.getElementById("auto").classList.add("noPrintPdf");
-    document.getElementById("health").classList.add("noPrintPdf");
-    document.getElementById("fire").classList.add("noPrintPdf");
-    document.getElementById("bank").classList.add("noPrintPdf");
-    this.filterProductionReportBySelectedMonth();
-    window.print();
+    this.printing_report = true;
     window.setTimeout(() => {
+      document.getElementById("bonuses").classList.remove("printPdf");
+      document.getElementById("bonuses").classList.add("noPrintPdf");
+      document.getElementById("stats").classList.add("noPrintPdf");
+      document.getElementById("life").classList.add("noPrintPdf");
+      document.getElementById("auto").classList.add("noPrintPdf");
+      document.getElementById("health").classList.add("noPrintPdf");
+      document.getElementById("fire").classList.add("noPrintPdf");
+      document.getElementById("bank").classList.add("noPrintPdf");
       this.filterProductionReportBySelectedMonth();
+      window.print();
+      window.setTimeout(() => {
+        this.filterProductionReportBySelectedMonth();
+      }, 50);
+      this.printing_report = false;
     }, 50);
   }
 

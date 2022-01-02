@@ -37,7 +37,6 @@
                       </tr>
                     </thead>
                     <tbody>
-                      <!-- routerLink="/{{ this.app_type }}/{{app.id}}" -->
                       <tr *ngFor="let app of apps; index as i;" (click)="!isHoveringDelete ? editApp(app.id) : confirmDelete(app)">
                         <th class="rowIndex" scope="row" (click)="confirmDelete(app)" (mouseenter)="isHoveringDelete = true" (mouseleave)="isHoveringDelete = false" data-toggle="modal" data-target="#confirmDeleteModal"><span class="hide">x</span> <span class="show">{{ i+1 }}</span></th>
                        

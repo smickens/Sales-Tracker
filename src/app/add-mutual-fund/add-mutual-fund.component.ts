@@ -3,12 +3,11 @@ import { FormBuilder, FormGroup } from '@angular/forms';
 
 import { Producer } from "../producer";
 import { AngularFireDatabase } from '@angular/fire/database';
-import { BankApp, MutualFundApp } from '../application';
+import { MutualFundApp } from '../application';
 
 import { ActivatedRoute } from "@angular/router";  //  holds information about the route to this instance of the HeroDetailComponent
 import { Location } from "@angular/common"; // Angular service for interacting with the browser
 import { Router } from '@angular/router';
-import { environment } from 'src/environments/environment';
 import { AngularFireAuth } from '@angular/fire/auth';
 import { Subscription } from 'rxjs';
 import { DataService } from '../data.service';
@@ -35,7 +34,7 @@ export class AddMutualFundComponent implements OnInit {
 
   subscriptions: Subscription[] = [];
   
-  constructor(private db: AngularFireDatabase, private fb: FormBuilder, private dataService: DataService, public  db_auth:  AngularFireAuth, private route: ActivatedRoute, private location: Location, private router: Router) { }
+  constructor(private db: AngularFireDatabase, private fb: FormBuilder, private dataService: DataService, public  db_auth:  AngularFireAuth, private route: ActivatedRoute, private router: Router) { }
   
   ngOnInit(): void {
     this.dataService.auth_state_ob.pipe(take(1)).subscribe(user => {

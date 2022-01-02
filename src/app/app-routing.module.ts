@@ -19,7 +19,8 @@ import { AddMutualFundComponent } from './add-mutual-fund/add-mutual-fund.compon
 const routes: Routes = [
   // main pages
   { path: 'home', component: MainViewComponent },
-  { path: 'bonuses', component: BonusesComponent },
+  { path: 'home/:year', component: MainViewComponent },
+  { path: 'bonuses/:year', component: BonusesComponent },
   { path: 'settings', component: SettingsComponent },
   { path: 'login', component: LoginComponent },
   { path: 'timesheet', component: TimesheetComponent },
@@ -41,12 +42,12 @@ const routes: Routes = [
   { path: 'mutual-funds/:year/:id', component: AddMutualFundComponent },
 
   // app list pages
-  { path: 'life', component: AppsListComponent },
-  { path: 'auto', component: AppsListComponent },
-  { path: 'bank', component: AppsListComponent },
-  { path: 'fire', component: AppsListComponent },
-  { path: 'health', component: AppsListComponent },
-  { path: 'mutual-funds', component: AppsListComponent },
+  { path: 'life/:year', component: AppsListComponent },
+  { path: 'auto/:year', component: AppsListComponent },
+  { path: 'bank/:year', component: AppsListComponent },
+  { path: 'fire/:year', component: AppsListComponent },
+  { path: 'health/:year', component: AppsListComponent },
+  { path: 'mutual-funds/:year', component: AppsListComponent },
 
   // redirects anything that doesn't match any of above to home page
   { path: '**', redirectTo: 'home', pathMatch: 'full' }

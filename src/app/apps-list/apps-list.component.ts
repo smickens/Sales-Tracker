@@ -3,7 +3,7 @@ import { Producer } from "../producer";
 import { Application } from '../application';
 import { AngularFireDatabase } from '@angular/fire/database';
 
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AngularFireAuth } from '@angular/fire/auth';
 import { FormBuilder, FormGroup } from '@angular/forms';
 
@@ -24,9 +24,7 @@ export class AppsListComponent implements OnInit {
   monthForm: FormGroup = this.fb.group({ });
   months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
-  // TODO: are apps_loaded and prod_loaded necessary ??
-  apps_loaded = false;
-  prod_loaded = false;
+  all_producers: Producer[] = [];
   producers: Producer[] = [];
 
   life_headers: string[] = ["Premium", "Mode", "Annual Premium", "Policy Type", "Product", "Client Type", "Bonus", "Status", "Paid Bonus", "Issue / Bonus Month", "Life Pivot Bonus"];
@@ -43,13 +41,14 @@ export class AppsListComponent implements OnInit {
   selected_app_id = "";
   isHoveringDelete = false;
 
-  constructor(private db: AngularFireDatabase, private fb: FormBuilder, public  db_auth:  AngularFireAuth, private dataService: DataService, private router: Router) { }
+  constructor(private db: AngularFireDatabase, private fb: FormBuilder, public  db_auth:  AngularFireAuth, private dataService: DataService, private route: ActivatedRoute, private router: Router) { }
 
   ngOnInit(): void {    
     let date: Date = new Date(); 
-    this.year = date.getFullYear();
+    // this.year = date.getFullYear();
+    this.year = parseInt(this.route.snapshot.paramMap.get('year'));
     if (this.app_type == "") {
-      this.app_type = this.router.url.substring(1);
+      this.app_type = this.router.url.split("/")[1];
       this.isViewingAppList = true;
     } else {
       // if app type was passed in, then it makes the tables smaller since it is being used to print the production report
@@ -65,33 +64,31 @@ export class AppsListComponent implements OnInit {
 
     this.dataService.auth_state_ob.pipe(take(1)).subscribe(user => {
       if (user) {
-        if (!this.apps_loaded) {
-          this.loadApplications();
-        }
-        if (!this.prod_loaded) {
-          this.loadProducers();
-        }
+        this.loadApplications(this.year);
+        this.loadProducers();
       }
     });
   }
 
-  loadApplications() {
+  async loadApplications(year: number) {
     this.getHeaders();
 
+    this.dataService.loadApplications(year);
+    await this.dataService.until(_ => this.dataService.apps_loaded == true);
+
     // by default it sorts the apps by most recent
-    this.apps = this.dataService.getAppsByMonth(this.app_type, this.month);
+    this.apps = this.dataService.getAppsByMonth(this.app_type, this.month, this.year);
     this.apps.sort((a, b) => b.date.localeCompare(a.date));
-    this.apps_loaded = true;
   }
 
-  loadProducers() {
+  async loadProducers() {
+    await this.dataService.until(_ => this.dataService.prod_loaded == true);
     for (const producer of this.dataService.producers) {
       if (producer.hired && producer.licensed) {
         this.producers.push(producer);
       }
+      this.all_producers.push(producer);
     }
-
-    this.prod_loaded = true;
   }
 
   getHeaders() {
@@ -153,7 +150,7 @@ export class AppsListComponent implements OnInit {
     }
 
     // by default it sorts the apps by most recent
-    this.apps = this.dataService.getAppsByMonthAndProducer(this.app_type, this.month, producer_id);
+    this.apps = this.dataService.getAppsByMonthAndProducer(this.app_type, this.month, this.year, producer_id);
     this.apps.sort((a, b) => b.date.localeCompare(a.date));
     
     // TODO: see if this is needed
@@ -161,7 +158,7 @@ export class AppsListComponent implements OnInit {
   }
 
   getProducerName(id: string) {
-    for (const producer of this.producers) {
+    for (const producer of this.all_producers) {
       if (producer.id == id) {
         return producer.name;
       }

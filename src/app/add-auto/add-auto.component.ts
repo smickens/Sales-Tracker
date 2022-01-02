@@ -8,7 +8,6 @@ import { AutoApp } from '../application';
 import { ActivatedRoute } from "@angular/router";  //  holds information about the route to this instance of the HeroDetailComponent
 import { Location } from "@angular/common"; // Angular service for interacting with the browser
 import { Router } from '@angular/router';
-import { environment } from 'src/environments/environment';
 import { AngularFireAuth } from '@angular/fire/auth';
 import { Subscription } from 'rxjs';
 import { DataService } from '../data.service';
