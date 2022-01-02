@@ -41,17 +41,7 @@ export class AddHealthComponent implements OnInit {
     this.dataService.auth_state_ob.pipe(take(1)).subscribe(user => {
       if (user) {
         // loads producers
-        this.dataService.prod_ob.pipe(take(1)).subscribe(
-          (snapshot: any) => snapshot.map(snap => {
-            if (snap.payload.val().hired && snap.payload.val().licensed) {
-              let producer: Producer = {
-                name: snap.payload.val().name,
-                id: snap.key
-              }
-              this.producers.push(producer);
-            }
-          })
-        );
+        this.loadProducers();
     
         let sub2 = this.db.list('constants/health').snapshotChanges().pipe(take(1)).subscribe(
           (snapshot: any) => snapshot.map(snap => {
@@ -114,6 +104,15 @@ export class AddHealthComponent implements OnInit {
     this.subscriptions.forEach(sub => {
       sub.unsubscribe();
     });
+  }
+
+  async loadProducers() {
+    await this.dataService.until(_ => this.dataService.prod_loaded == true);
+    for (const producer of this.dataService.producers) {
+      if (producer.hired && producer.licensed) {
+        this.producers.push(producer);
+      }
+    }
   }
 
   updateAnnualPremium() {
