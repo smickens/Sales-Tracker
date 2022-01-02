@@ -94,13 +94,12 @@ export class DataService {
 
       if (snapshot.length == index+1) { 
         this.prod_loaded = true;
-        console.log("done loading producers");
+        // console.log("done loading producers");
       }
     }));
   }
 
   loadApplications(year: number) {
-    console.log("load apps")
     if (year in this.applications) {
       return;
     }
@@ -117,8 +116,6 @@ export class DataService {
       'mutual-funds': []
     }
 
-    console.log(year)
-
     // load all apps for inputed year
     this.getApplications(year).pipe(take(1)).subscribe(
       (snapshot: any) => snapshot.map((snap, index) => {
@@ -132,7 +129,7 @@ export class DataService {
 
         if (snapshot.length == index+1) { 
           this.apps_loaded = true;
-          console.log("done loading apps for year " + year);
+          // console.log("done loading apps for year " + year);
         }
       })
     );
@@ -174,11 +171,18 @@ export class DataService {
     return parseInt(value.substring(5, 7)) == month;
   }
 
+  // used for bonuses page
   async loadBonuses(year: number) {
-    console.log("loading bonuses");
-    await this.until(_ => this.prod_loaded && this.apps_loaded);
-    // TODO: see why this is ran twice ??
-    console.log("here");
+    if (year in this.corporate_bonuses) {
+      // console.log("already loaded bonuses for year " + year);
+      this.fillInBarChartData(year);
+      return this.barChartData;
+    }
+    // console.log("loading bonuses for year " + year);
+    await this.until(_ => this.prod_loaded);
+
+    this.corporate_bonuses[year] = {};
+    this.production_bonuses[year] = {};
 
     // clears out bar chart data values
     for (let category of this.barChartData) {
@@ -187,15 +191,13 @@ export class DataService {
 
     // * first, gets corporate bonuses
     for (const producer of this.producers) {
-      let i: number = this.getProducerIndex(producer.id);
-
-      this.corporate_bonuses[producer.id] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-      this.production_bonuses[producer.id] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+      this.corporate_bonuses[year][producer.id] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+      this.production_bonuses[year][producer.id] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
       
       if ("corporate_bonuses" in producer && year in producer.corporate_bonuses) {
         const corporate_bonus = producer["corporate_bonuses"][year];
         for (let month in corporate_bonus) {
-          this.corporate_bonuses[producer["id"]][parseInt(month)-1] += corporate_bonus[month];
+          this.corporate_bonuses[year][producer["id"]][parseInt(month)-1] += corporate_bonus[month];
 
           let i: number = this.getProducerIndex(producer.id);
           if (producer.hired) {
@@ -205,6 +207,7 @@ export class DataService {
       } 
     }
 
+    await this.until(_ => this.apps_loaded);
     // * then, gets production bonuses
     let all_apps: Application[] = await this.getAllApps(year);
     for (const app of all_apps) {
@@ -228,7 +231,7 @@ export class DataService {
       
       if (app_went_through == true && app_year == year && bonus > 0) {
         const producer_id = app["producer_id"];
-        this.production_bonuses[producer_id][app_month-1] = ((this.production_bonuses[producer_id][app_month-1] * 100) + (bonus * 100)) / 100;
+        this.production_bonuses[year][producer_id][app_month-1] = ((this.production_bonuses[year][producer_id][app_month-1] * 100) + (bonus * 100)) / 100;
         //console.log("Name: " + producer_id + "    Month: " + app_month + "   Bonus: " + bonus);
         let i = this.getProducerIndex(producer_id);
         if (this.isHired(producer_id)) {
@@ -241,7 +244,7 @@ export class DataService {
         const co_producer_bonus = app["co_producer_bonus"];
         if (co_producer_bonus > 0 && co_producer_bonus != null) {
           const co_producer_id = app["co_producer_id"];
-          this.production_bonuses[co_producer_id][app_month-1] = ((this.production_bonuses[co_producer_id][app_month-1] * 100) + (co_producer_bonus * 100)) / 100;
+          this.production_bonuses[year][co_producer_id][app_month-1] = ((this.production_bonuses[year][co_producer_id][app_month-1] * 100) + (co_producer_bonus * 100)) / 100;
           let i = this.getProducerIndex(co_producer_id);
           if (this.isHired(co_producer_id)) {
             //console.log("Co- ID: " + co_producer_id + "   Bonus: " + co_producer_bonus + "  " + i);
@@ -250,8 +253,89 @@ export class DataService {
         }
       }
     }
-    console.log(this.barChartData);
+
     return this.barChartData;
+  }
+
+  fillInBarChartData(year: number) {
+    // clears out bar chart data values
+    for (let category of this.barChartData) {
+      category['data'] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    }
+
+    // grabs data for inputed year
+    for (const producer of this.producers) {
+      let i: number = this.getProducerIndex(producer.id);
+      if (producer.hired) {
+        for (let month = 0; month < 12; month++) {
+          this.barChartData[i*2].data[month] = this.corporate_bonuses[year][month];
+          this.barChartData[(i*2)+1].data[month] = this.production_bonuses[year][month];
+        }
+      }
+    }
+  }
+
+  // used for timesheet prior month bonus
+  async loadBonusesForTimesheet(year: number) {
+    if (year in this.corporate_bonuses) {
+      // console.log("already loaded bonuses for year " + year);
+      return;
+    }
+    // console.log("loading bonuses for year " + year);
+    await this.until(_ => this.prod_loaded);
+
+    this.corporate_bonuses[year] = {};
+    this.production_bonuses[year] = {};
+
+    // * first, gets corporate bonuses
+    for (const producer of this.producers) {
+      this.corporate_bonuses[year][producer.id] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+      this.production_bonuses[year][producer.id] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+      
+      if ("corporate_bonuses" in producer && year in producer.corporate_bonuses) {
+        const corporate_bonus = producer["corporate_bonuses"][year];
+        for (let month in corporate_bonus) {
+          this.corporate_bonuses[year][producer["id"]][parseInt(month)-1] += corporate_bonus[month];
+        }
+      } 
+    }
+
+    await this.until(_ => this.apps_loaded);
+    // * then, gets production bonuses
+    let all_apps: Application[] = await this.getAllApps(year);
+    for (const app of all_apps) {
+      const app_date = app["date"] as string;
+      let app_month = parseInt(app_date.substring(5, 7));
+      const app_year = parseInt(app_date.substring(0, 4));
+      let bonus = app["bonus"];
+
+      let app_went_through = false;
+      if (app["status"] == "Taken" || app["status"] == "Issued") {
+        app_went_through = true;
+      }
+      if (app.type == "auto" && app["status"] != "Declined" && app["status"] != "Cancelled") {
+        app_went_through = true;
+      }
+      if (app.type == "life") {
+        app_month = app["issue_month"];
+        //console.log("changed month to issue month - " + app_month);
+        bonus = app["paid_bonus"];
+      }
+      
+      if (app_went_through == true && app_year == year && bonus > 0) {
+        const producer_id = app["producer_id"];
+        this.production_bonuses[year][producer_id][app_month-1] = ((this.production_bonuses[year][producer_id][app_month-1] * 100) + (bonus * 100)) / 100;
+      }
+
+      if (app_year == year && app["co_producer_bonus"] > 0) {
+        // co-production bonus
+        const co_producer_bonus = app["co_producer_bonus"];
+        if (co_producer_bonus > 0 && co_producer_bonus != null) {
+          const co_producer_id = app["co_producer_id"];
+          this.production_bonuses[year][co_producer_id][app_month-1] = ((this.production_bonuses[year][co_producer_id][app_month-1] * 100) + (co_producer_bonus * 100)) / 100;
+        }
+      }
+    }
   }
 
   isHired(id: string) {

@@ -9,10 +9,10 @@
                     <option *ngFor="let producer of producers" value="{{producer.name}}">{{ producer.name }}</option>
                 </select>
               </div>
-              <div style="display: flex; align-items: center;">
+              <!-- <div style="display: flex; align-items: center;">
                 <p class="noPrintPdf" style="margin: 0px; padding-right: 10px;">Year: </p>
                 <input class="noPrintPdf" type="number" id="year" (change)="filterByYear($event.target.value)" placeholder="Enter Year" [value]="selected_year" style="width: 120px;" autocomplete="off">
-              </div>
+              </div> -->
             </div>
             
             <div style="overflow-x: auto; overflow-y: auto; margin-top: 15px;">
@@ -32,30 +32,30 @@
                 <table class="table table-sm table-hover table-bordered">
                   <thead>
                     <tr>
-                      <th>{{ getFirstName(producer.name) }}</th>
-                      <th *ngFor="let month of months" scope="col">{{ month }}</th>
+                      <th style="font-size: 14px;">{{ getFirstName(producer.name) }}</th>
+                      <th *ngFor="let month of months" scope="col" style="font-size: 14px;">{{ month }}</th>
                       <th>Total</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr>
-                      <td scope="row">Production</td>
+                      <td scope="row" style="font-size: 14px;">Production</td>
                       <ng-container *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
-                        <td>{{ (getProducerProdBonus(producer.id, i-1)) | currency:'USD' }}</td>
+                        <td style="font-size: 14px;">{{ (getProducerProdBonus(producer.id, i-1)) | currency:'USD' }}</td>
                       </ng-container>
-                      <td>{{ (getTotalProductionBonus(producer.id)) | currency:'USD' }}</td>
+                      <td style="font-size: 14px;">{{ (getTotalProductionBonus(producer.id)) | currency:'USD' }}</td>
                     </tr>
                     <tr>
-                      <td scope="row">Corporate</td>
+                      <td scope="row" style="font-size: 14px;">Corporate</td>
                       <ng-container *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
                         <td>
-                          <input type="number" style="width: 65px;" [value]="getProducerCorpBonus(producer.id, i-1)" (change)="updateBonus($event, producer.id, i)">
+                          <input type="number" style="width: 60px; font-size: 14px;" [value]="getProducerCorpBonus(producer.id, i-1)" (change)="updateBonus($event, producer.id, i)">
                         </td>
                       </ng-container>
-                      <td>{{ (getTotalCorporateBonus(producer.id)) | currency:'USD' }}</td>
+                      <td style="font-size: 14px;">{{ (getTotalCorporateBonus(producer.id)) | currency:'USD' }}</td>
                     </tr>
                     <tr>
-                      <td scope="row"><i>Total</i></td>
+                      <td scope="row" style="font-size: 14px;"><i>Total</i></td>
                       <ng-container *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
                         <td>{{ (getProducerProdBonus(producer.id, i-1) + getProducerCorpBonus(producer.id, i-1)) | currency:'USD' }}</td>
                       </ng-container>

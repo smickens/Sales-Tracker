@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { AngularFireDatabase } from '@angular/fire/database';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AngularFireAuth } from '@angular/fire/auth';
 import { Subscription } from 'rxjs';
 import { Producer } from '../producer';
@@ -38,7 +38,7 @@ export class TimesheetComponent implements OnInit {
 
   subscriptions: Subscription[] = [];
 
-  constructor(private db: AngularFireDatabase, private fb: FormBuilder, private dataService: DataService, public  db_auth:  AngularFireAuth, private router: Router) { }
+  constructor(private db: AngularFireDatabase, private fb: FormBuilder, private dataService: DataService, public  db_auth:  AngularFireAuth, private route: ActivatedRoute, private router: Router) { }
 
   ngOnInit(): void {
     let date: Date = new Date(); 
@@ -61,8 +61,9 @@ export class TimesheetComponent implements OnInit {
     });
 
     // gets current month and updates sheet to last timesheet
-    this.selected_year = date.getFullYear();
-    (document.getElementById("year") as HTMLInputElement).value = this.selected_year.toString();
+    this.selected_year = parseInt(this.route.snapshot.paramMap.get('year'));
+    // TODO: delete
+    // (document.getElementById("year") as HTMLInputElement).value = this.selected_year.toString();
     let current_month = date.getMonth();
     if (date.getDate() <= 14) {
       // current date is in second half of the month, so selects timesheet #1 from current month
@@ -91,6 +92,7 @@ export class TimesheetComponent implements OnInit {
       if (producer.hired) {
         this.hiredProducers.add(producer.id);
       }
+      this.prior_month_bonuses[producer.id] = 0;
     }
   }
 
@@ -103,10 +105,12 @@ export class TimesheetComponent implements OnInit {
       year -= 1;
     }
 
-    await this.dataService.loadBonuses(year);
+    this.dataService.loadApplications(year);
+    await this.dataService.loadBonusesForTimesheet(year);
     for (const producer of this.dataService.producers) {
-      let corp_bonus = this.dataService.corporate_bonuses[producer.id][last_month-1];
-      let prod_bonus = this.dataService.production_bonuses[producer.id][last_month-1];
+      this.prior_month_bonuses[producer.id] = 0;
+      let corp_bonus = this.dataService.corporate_bonuses[year][producer.id][last_month-1];
+      let prod_bonus = this.dataService.production_bonuses[year][producer.id][last_month-1];
       this.prior_month_bonuses[producer.id] = ((this.prior_month_bonuses[producer.id] * 100) + (corp_bonus * 100)) / 100;
       this.prior_month_bonuses[producer.id] = ((this.prior_month_bonuses[producer.id] * 100) + (prod_bonus * 100)) / 100;
     }
@@ -398,6 +402,7 @@ export class TimesheetComponent implements OnInit {
     }
   }
 
+  // TODO: remove
   // called on selected year change
   updateYear(year: number) {
     this.selected_year = year;

@@ -95,8 +95,8 @@ export class BonusesComponent implements OnInit {
   async loadBonuses() {
     this.bonus_chart.data.datasets = await this.dataService.loadBonuses(this.selected_year);
 
-    this.production_bonuses = this.dataService.production_bonuses;
-    this.corporate_bonuses = this.dataService.corporate_bonuses;
+    this.production_bonuses = this.dataService.production_bonuses[this.selected_year];
+    this.corporate_bonuses = this.dataService.corporate_bonuses[this.selected_year];
 
     this.bonus_chart.update();
 

@@ -23,7 +23,7 @@ const routes: Routes = [
   { path: 'bonuses/:year', component: BonusesComponent },
   { path: 'settings', component: SettingsComponent },
   { path: 'login', component: LoginComponent },
-  { path: 'timesheet', component: TimesheetComponent },
+  { path: 'timesheet/:year', component: TimesheetComponent },
 
   // add app forms
   { path: 'add-life', component: AddLifeComponent },

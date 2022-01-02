@@ -48,6 +48,7 @@ export class MainViewComponent implements OnInit {
 
   month_number = 0;
   year = 0;
+  current_year = 0;
   current_month = "";
   monthForm: FormGroup = this.fb.group({ });
   months = ['Jan.', 'Feb.', 'March', 'April', 'May', 'June', 'July', 'Aug.', 'Sept.', 'Oct.', 'Nov.', 'Dec.'];
@@ -67,10 +68,10 @@ export class MainViewComponent implements OnInit {
 
   ngOnInit(): void {
     let today = new Date();
-
+    this.current_year = today.getFullYear();
     if (!this.route.snapshot.paramMap.get('year')) {
       // reroute to home page url with year in it
-      this.router.navigate(['home/' + today.getFullYear()]);
+      this.router.navigate(['home/' + this.current_year]);
     }
     this.year = parseInt(this.route.snapshot.paramMap.get('year'));
 
@@ -573,6 +574,11 @@ export class MainViewComponent implements OnInit {
 
   getFirstName(str) {
     return str.split(" ", 1); 
+  }
+
+  changeTrackerTo(year: number) {
+    this.router.navigateByUrl('/', {skipLocationChange: true}).then(()=>
+    this.router.navigate(['home/'+year]));
   }
 }
 
