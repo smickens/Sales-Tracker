@@ -147,7 +147,7 @@
             </div>
         </div>
 
-        <div *ngIf="active_page == 'summary'" class="row spacing" style="padding-bottom: 0px;">
+        <div *ngIf="active_page == 'summary'" class="row" style="padding: 10px; padding-right: 30px; padding-bottom: 0px;">
             <div class="noPrintPdf" style="width: 100%; height: 100%; text-align: right; padding-bottom: 10px;">
                 <a *ngIf="year == current_year" style="color: #63b7af;" (click)="changeTrackerTo(year-1)">
                     Go to {{year-1}} Tracker

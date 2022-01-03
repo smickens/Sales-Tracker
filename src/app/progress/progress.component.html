@@ -1,5 +1,13 @@
 <div>
-    <h4 class="header">Year Progress</h4>
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h4 class="header">Progress for</h4>
+        <select class="custom-select noPrintPdf" style="width: 100px;" id="timeframe" (change)="updateProgressChart($event.target.value)">
+            <option value="week">Week</option>
+            <option value="month" selected>Month</option>
+            <option value="quarter">Quarter</option>
+            <option value="year">Year</option>
+        </select>
+    </div>
     <!-- applications by category totals for the month and the year -->
     <!-- <ul>
         <li>
@@ -76,9 +84,9 @@
                     <ng-container *ngFor="let app_type of app_types">
                         <tr>
                             <th style="font-size: 14px;">{{ getTitle(app_type) }}</th>
-                            <td>{{ goals[app_type][2] }}</td>
-                            <td>{{ totals[app_type][2] }}</td>
-                            <td>{{ goals[app_type][2] - totals[app_type][2] > 0 ? goals[app_type][2] - totals[app_type][2] : 0 }}</td>
+                            <td>{{ goals[app_type][timeframe] }}</td>
+                            <td>{{ totals[app_type][timeframe] }}</td>
+                            <td>{{ goals[app_type][timeframe] - totals[app_type][timeframe] > 0 ? goals[app_type][timeframe] - totals[app_type][timeframe] : 0 }}</td>
                         </tr>
                     </ng-container>
                 </tbody>

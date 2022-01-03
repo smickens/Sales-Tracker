@@ -14,23 +14,25 @@ export class ProgressComponent implements OnInit {
 
   app_types = ["life", "auto", "fire", "health", "bank", "mutual-funds"];
 
+  // week, month, quarter, year
   goals = {
-    'life': [0, 0, 0],
-    'auto': [0, 0, 0],
-    'fire': [0, 0, 0],
-    'health': [0, 0, 0],
-    'bank': [0, 0, 0],
-    'mutual-funds': [0, 0, 0]
+    'life': { 'week': 0, 'month': 0, 'year': 0 },
+    'auto': { 'week': 0, 'month': 0, 'year': 0 },
+    'fire': { 'week': 0, 'month': 0, 'year': 0 },
+    'health': { 'week': 0, 'month': 0, 'year': 0 },
+    'bank': { 'week': 0, 'month': 0, 'year': 0 },
+    'mutual-funds': { 'week': 0, 'month': 0, 'year': 0 }
+  };
+  totals = {
+    'life': { 'week': 0, 'month': 0, 'year': 0 },
+    'auto': { 'week': 0, 'month': 0, 'year': 0 },
+    'fire': { 'week': 0, 'month': 0, 'year': 0 },
+    'health': { 'week': 0, 'month': 0, 'year': 0 },
+    'bank': { 'week': 0, 'month': 0, 'year': 0 },
+    'mutual-funds': { 'week': 0, 'month': 0, 'year': 0 }
   };
 
-  totals = {
-    'life': [0, 0, 0],
-    'auto': [0, 0, 0],
-    'fire': [0, 0, 0],
-    'health': [0, 0, 0],
-    'bank': [0, 0, 0],
-    'mutual-funds': [0, 0, 0]
-  };
+  timeframe = 'month';
 
   year: number;
 
@@ -51,28 +53,52 @@ export class ProgressComponent implements OnInit {
   }
 
   async loadGoals() {
-    let all_apps = await this.dataService.getAllApps(this.year);
-    for (const app of all_apps) {
+    let all_apps_this_year = await this.dataService.getAllApps(this.year);
+
+    // clear goals and totals
+    for (const app_type of this.app_types) {
+      this.goals[app_type] = {
+        'week': 0,
+        'month': 0,
+        'year': 0
+      };
+
+      this.totals[app_type] = {
+        'week': 0,
+        'month': 0,
+        'year': 0
+      };
+    }
+
+    for (const app of all_apps_this_year) {
       const status = app["status"] as string;
       if (status == "Cancelled" || status == "Declined") {
         continue;
       }
 
-      // const month = parseInt(app.date.substring(5, 7));
-
       let app_type = app.type;
 
+
+      const app_year = parseInt(app.date.substring(0, 4));
+      const app_month: number = Number(app.date.substring(5, 7)) - 1;
+      const app_day: number = Number(app.date.substring(8, 10));
+      let app_date_obj = new Date(app_year, app_month, app_day);
+      let in_week = this.inWeek(app_date_obj);
+
+      let today = new Date();
+      let in_month = this.inMonth(app.date, today.getMonth());
+
       // TODO: see if more of these should have check for "issued" or "taken"
-      if (app_type == "life") {
-        if (status == "Taken") {
-          this.totals[app_type][2] += 1;
-        }
-      } else if (app_type == "mutual-funds") {
+      if (app_type == "mutual-funds") {
         if ("contribution_amount" in app) {
-          this.totals[app_type][2] += parseInt(app["contribution_amount"]);
+          this.totals[app_type]['week'] += in_week ? parseInt(app["contribution_amount"]) : 0;
+          this.totals[app_type]['month'] += in_month ? parseInt(app["contribution_amount"]) : 0;
+          this.totals[app_type]['year'] += parseInt(app["contribution_amount"]);
         }
-      } else {
-        this.totals[app_type][2] += 1;
+      } else if (app_type != "life" || status == "Taken") {
+        this.totals[app_type]['week'] += in_week ? 1 : 0;
+        this.totals[app_type]['month'] += in_month ? 1 : 0;
+        this.totals[app_type]['year'] += 1;
       }
     }
 
@@ -83,11 +109,11 @@ export class ProgressComponent implements OnInit {
         let month_goal = snap.payload.val()["monthly"];
         let year_goal = snap.payload.val()["yearly"];
 
-        let year_total = this.totals[snap.key][2];
+        // let year_total = this.totals[snap.key]['year'];
 
-        this.goals[snap.key][0] = week_goal;
-        this.goals[snap.key][1] = month_goal;
-        this.goals[snap.key][2] = year_goal;
+        this.goals[snap.key]['week'] = week_goal;
+        this.goals[snap.key]['month'] = month_goal;
+        this.goals[snap.key]['year'] = year_goal;
 
         // if (snap.key != "mutual-funds") {
           // TODO: ERROR TypeError: Cannot read properties of null (reading 'setAttribute')
@@ -112,6 +138,30 @@ export class ProgressComponent implements OnInit {
         // }
       }
     ));
+  }
+
+  private inWeek(date) {
+    const todayObj = new Date();
+    const todayDate = todayObj.getDate();
+    const todayDay = todayObj.getDay();
+  
+    // get first date of week
+    const firstDayOfWeek = new Date(todayObj.setDate(todayDate - todayDay));
+  
+    // get last date of week
+    const lastDayOfWeek = new Date(firstDayOfWeek);
+    lastDayOfWeek.setDate(lastDayOfWeek.getDate() + 6);
+  
+    // if date is equal or within the first and last dates of the week
+    return date >= firstDayOfWeek && date <= lastDayOfWeek;
+  }
+
+  private inMonth(value: string, month: number) {
+    return parseInt(value.substring(5, 7)) == month;
+  }
+
+  updateProgressChart(timeframe: string) {
+    this.timeframe = timeframe;
   }
 
   getTitle(str) {

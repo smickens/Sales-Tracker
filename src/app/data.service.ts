@@ -34,7 +34,7 @@ export class DataService {
   prod_loaded = false;
   apps_loaded = false;
   
-  constructor(private db: AngularFireDatabase, public  db_auth:  AngularFireAuth, private route: ActivatedRoute, private router: Router) {
+  constructor(private db: AngularFireDatabase, public  db_auth:  AngularFireAuth, private router: Router) {
     let auth_sub = db_auth.authState.subscribe(user => {
       if (user) {
         environment.logged_in = true;
@@ -118,7 +118,7 @@ export class DataService {
 
     // load all apps for inputed year
     this.getApplications(year).pipe(take(1)).subscribe(
-      (snapshot: any) => snapshot.map((snap, index) => {
+      (snapshot: any) => snapshot.map((snap) => {
         const app = snap.payload.val();
         const app_id = snap.key;
         app.id = app_id;
@@ -126,12 +126,12 @@ export class DataService {
         // TODO: see if this can be written as one line
         let application: Application = app as Application;
         this.applications[year][app["type"]].push(application);
-
-        if (snapshot.length == index+1) { 
-          this.apps_loaded = true;
-          // console.log("done loading apps for year " + year);
-        }
-      })
+      }),
+      (error: any) => { console.log(error); },
+      () => { 
+        this.apps_loaded = true;
+        // console.log("done loading apps for year " + year);
+      } 
     );
   }
 
@@ -152,7 +152,6 @@ export class DataService {
 
   getAppsByMonth(type: string, month: number, year: number) {
     if (month == 0) { return this.applications[year][type] }
-
     return this.applications[year][type].filter(app => this.inMonth(app["date"], month))
   }
   

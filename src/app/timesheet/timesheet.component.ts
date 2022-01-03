@@ -126,7 +126,7 @@ export class TimesheetComponent implements OnInit {
 
   checkPin() {
     let pin = Number((document.getElementById("producer_pin") as HTMLInputElement).value);
-    for (const producer_id of this.hiredProducers) {
+    for (const producer_id of this.getProducerList()) {
       if (producer_id == this.selected_producer_id) {
         if (this.getProducerPin(String(producer_id)) == pin) {
           // displays timesheet
@@ -196,7 +196,6 @@ export class TimesheetComponent implements OnInit {
     document.getElementById("auth_section").style.display = 'none';
     document.getElementById("producer_section").style.display = 'none';
     document.getElementById("timesheet_section").style.display = 'block';
-    document.getElementById("year_section").style.display = 'none';
     this.updateTimes();
   }
 
@@ -207,7 +206,6 @@ export class TimesheetComponent implements OnInit {
     document.getElementById("date_section").style.display = 'flex';
     document.getElementById("producer_section").style.display = 'block';
     document.getElementById("timesheet_section").style.display = 'none';
-    document.getElementById("year_section").style.display = 'block';
   }
 
   // called on month change

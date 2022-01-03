@@ -1,6 +1,6 @@
 
 <div *ngIf="env.logged_in" class="container" style="color: white; display: flex; flex-flow: column; height: 92%;">
-    <h3 style="font-weight: 525; padding-top: 25px; padding-bottom: 10px;">SALES TRACKER</h3>
+    <h3 style="font-weight: 525; padding-top: 25px; padding-bottom: 10px;">SALES TRACKER {{year}}</h3>
     <div class="menu">
         <a routerLink="/home/{{year}}"><span></span> Home</a>
         <a routerLink="/life/{{year}}"><span></span> Life</a>
