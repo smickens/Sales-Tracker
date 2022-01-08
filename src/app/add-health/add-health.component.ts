@@ -194,14 +194,21 @@ export class AddHealthComponent implements OnInit {
     }
     //console.log(app);
 
+    let app_with_id = app;
+
     if (this.app_id == null) {
       // adds new application
-      this.db.list('/apps/'+this.get("date").substring(0, 4)).update(this.randomString(16), app).then(() => {
+      let new_app_id = this.randomString(16);
+      app_with_id.id = new_app_id;
+      this.db.list('/apps/'+this.get("date").substring(0, 4)).update(new_app_id, app).then(() => {
+        this.dataService.addApplication('health', this.get("date").substring(0, 4), app_with_id);
         this.router.navigate(['health']);
       });
     } else {
       // updates existing application
       this.db.list('/apps/'+this.get("date").substring(0, 4)).update(this.app_id, app).then(() => {
+        app_with_id.id = this.app_id;
+        this.dataService.updateApplication('health', this.get("date").substring(0, 4), app_with_id);
         this.router.navigate(['health']);
       });
     }

@@ -157,7 +157,7 @@ export class ProgressComponent implements OnInit {
   }
 
   private inMonth(value: string, month: number) {
-    return parseInt(value.substring(5, 7)) == month;
+    return parseInt(value.substring(5, 7)) == month+1;
   }
 
   updateProgressChart(timeframe: string) {

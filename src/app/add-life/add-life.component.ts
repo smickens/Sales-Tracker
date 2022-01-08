@@ -245,14 +245,21 @@ export class AddLifeComponent implements OnInit {
       co_producer_bonus: this.get("co_producer_bonus")
     }
 
+    let app_with_id = app;
+
     if (this.app_id == null) {
       // adds new application
-      this.db.list('/apps/'+this.get("date").substring(0, 4)).update(this.randomString(16), app).then(() => {
+      let new_app_id = this.randomString(16);
+      app_with_id.id = new_app_id;
+      this.db.list('/apps/'+this.get("date").substring(0, 4)).update(new_app_id, app).then(() => {
+        this.dataService.addApplication('life', this.get("date").substring(0, 4), app_with_id);
         this.router.navigate(['life']);
       });
     } else {
       // updates existing application
       this.db.list('/apps/'+this.get("date").substring(0, 4)).update(this.app_id, app).then(() => {
+        app_with_id.id = this.app_id;
+        this.dataService.updateApplication('life', this.get("date").substring(0, 4), app_with_id);
         this.router.navigate(['life']);
       });
     }

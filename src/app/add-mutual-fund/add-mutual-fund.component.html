@@ -14,8 +14,9 @@
                     <div class="col form-group">
                         <label for="producer_id">PRODUCER</label>
                         <select class="custom-select" formControlName="producer_id" id="producer_id" (focus)="setValid($event)">
-                            <option value="" selected>Select Producer</option>
-                            <option *ngFor="let producer of producers" value="{{producer.id}}"> {{ producer.name }} </option>
+                            <!-- <option value="" selected>Select Producer</option> -->
+                            <!-- <option *ngFor="let producer of producers" value="{{producer.id}}"> {{ producer.name }} </option> -->
+                            <option value="napD">Shauna Mickens</option>
                         </select>
                     </div>
                     <div class="col form-group">
@@ -34,7 +35,7 @@
                     </div> 
 
                     <div class="col form-group">
-                        <label for="amount">CONTRIBUTION TYPE</label>
+                        <label for="contribution_type">CONTRIBUTION TYPE</label>
                         <select class="custom-select" formControlName="contribution_type" id="contribution_type" (focus)="setValid($event)">
                             <option value="" selected>Select Amount</option>
                             <option *ngFor="let option of constants['contribution_type']" value="{{option}}"> {{ option }} </option>
@@ -43,8 +44,8 @@
                 </div>
         
                 <div class="form-row mb-2">
-                    <div class="col form-group">
-                        <label for="amount">AMOUNT</label>
+                    <div class="col-auto form-group">
+                        <label for="contribution_amount">AMOUNT</label>
                         <div class="input-group">
                             <div class="input-group-prepend">
                                 <span class="input-group-text">$</span>
@@ -53,7 +54,7 @@
                         </div>
                     </div>
 
-                    <div class="col-auto form-group">
+                    <div class="col form-group">
                         <label for="marketing_source">MARKETING SOURCE</label>
                         <select class="custom-select" formControlName="marketing_source" id="marketing_source">
                             <option value=""  selected>Select Marketing Source</option>

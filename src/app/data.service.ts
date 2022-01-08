@@ -166,6 +166,27 @@ export class DataService {
     return this.applications[year][type].filter(app => this.inMonth(app["date"], month) && producerFilter(app["producer_id"]));
   }
 
+  addApplication(app_type: string, year: number, app: Application) {
+    if (year in this.applications) {
+      if (app_type in this.applications[year]) {
+        this.applications[year][app_type].push(app);
+      }
+    }
+  }
+
+  updateApplication(app_type: string, year: number, updated_app: Application) {
+    if (year in this.applications) {
+      if (app_type in this.applications[year]) {
+        for (let i = 0; i < this.applications[year][app_type].length; i++) {
+          const app = this.applications[year][app_type][i] as Application;
+          if (app.id == updated_app.id) {
+            this.applications[year][app_type][i] = updated_app;
+          }
+        }
+      }
+    }
+  }
+
   private inMonth(value: string, month: number) {
     return parseInt(value.substring(5, 7)) == month;
   }

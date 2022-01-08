@@ -6,7 +6,6 @@ import { AngularFireDatabase } from '@angular/fire/database';
 import { MutualFundApp } from '../application';
 
 import { ActivatedRoute } from "@angular/router";  //  holds information about the route to this instance of the HeroDetailComponent
-import { Location } from "@angular/common"; // Angular service for interacting with the browser
 import { Router } from '@angular/router';
 import { AngularFireAuth } from '@angular/fire/auth';
 import { Subscription } from 'rxjs';
@@ -84,7 +83,7 @@ export class AddMutualFundComponent implements OnInit {
       this.button_text = "SUBMIT";
       this.addMutualFundsForm = this.fb.group({
         date: [todays_date],
-        producer_id: [''],
+        producer_id: ['napD'],
         client_name: [''],
         product_type: ['Traditional IRA'],
         contribution_type: ['1-Time Contribution'],
@@ -138,7 +137,7 @@ export class AddMutualFundComponent implements OnInit {
     if (!this.checkIfValid("product_type", this.get("product_type"))) {
       isValid = false;
     }
-    if (!this.checkIfValid("amount", this.get("amount"))) {
+    if (!this.checkIfValid("contribution_amount", this.get("contribution_amount"))) {
       isValid = false;
     }
 
@@ -160,16 +159,23 @@ export class AddMutualFundComponent implements OnInit {
         marketing_source: this.get("marketing_source")
       }
       // console.log(app);
+
+      let app_with_id = app;
       
       if (this.app_id == null) {
         // adds new application
-        this.db.list('/apps/'+this.get("date").substring(0, 4)).update(this.randomString(16), app).then(() => {
-          this.router.navigate(['mutual-funds']);
+        let new_app_id = this.randomString(16);
+        app_with_id.id = new_app_id;
+        this.db.list('/apps/'+this.get("date").substring(0, 4)).update(new_app_id, app).then(() => {
+          this.dataService.addApplication('mutual-funds', this.get("date").substring(0, 4), app_with_id);
+          this.router.navigate(['mutual-funds/'+this.get("date").substring(0, 4)]);
         });
       } else {
         // updates existing application
         this.db.list('/apps/'+this.get("date").substring(0, 4)).update(this.app_id, app).then(() => {
-          this.router.navigate(['mutual-funds']);
+          app_with_id.id = this.app_id;
+          this.dataService.updateApplication('mutual-funds', this.get("date").substring(0, 4), app_with_id);
+          this.router.navigate(['mutual-funds/'+this.get("date").substring(0, 4)]);
         });
       }
     } else {
