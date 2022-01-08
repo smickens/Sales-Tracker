@@ -84,9 +84,26 @@
                     <ng-container *ngFor="let app_type of app_types">
                         <tr>
                             <th style="font-size: 14px;">{{ getTitle(app_type) }}</th>
-                            <td>{{ goals[app_type][timeframe] }}</td>
-                            <td>{{ totals[app_type][timeframe] }}</td>
-                            <td>{{ goals[app_type][timeframe] - totals[app_type][timeframe] > 0 ? goals[app_type][timeframe] - totals[app_type][timeframe] : 0 }}</td>
+
+                            <ng-container *ngIf="timeframe != 'quarter'">
+                                <td>{{ goals[app_type][timeframe] }}</td>
+                                <td>{{ totals[app_type][timeframe] }}</td>
+                                <td>{{ goals[app_type][timeframe] - totals[app_type][timeframe] > 0 ? goals[app_type][timeframe] - totals[app_type][timeframe] : 0 }}</td>
+                            </ng-container>
+
+                            <ng-container *ngIf="timeframe == 'quarter'">
+                                <ng-container *ngIf="app_type == 'life'">
+                                    <td>{{ 35 }}</td>
+                                    <td>{{ life_quarter_1 }}</td>
+                                    <td>{{ 35 - life_quarter_1 }}</td>
+                                </ng-container>
+    
+                                <ng-container *ngIf="app_type == 'auto'">
+                                    <td>{{ 175 }}</td>
+                                    <td>{{ auto_rn_quarter_1 }}</td>
+                                    <td>{{ 175 - auto_rn_quarter_1 }}</td>
+                                </ng-container>
+                            </ng-container>
                         </tr>
                     </ng-container>
                 </tbody>

@@ -34,6 +34,9 @@ export class ProgressComponent implements OnInit {
 
   timeframe = 'month';
 
+  auto_rn_quarter_1 = 0;
+  life_quarter_1 = 0;
+
   year: number;
 
   constructor(public db_auth:  AngularFireAuth, private dataService: DataService, private route: ActivatedRoute) { }
@@ -78,7 +81,6 @@ export class ProgressComponent implements OnInit {
 
       let app_type = app.type;
 
-
       const app_year = parseInt(app.date.substring(0, 4));
       const app_month: number = Number(app.date.substring(5, 7)) - 1;
       const app_day: number = Number(app.date.substring(8, 10));
@@ -99,6 +101,17 @@ export class ProgressComponent implements OnInit {
         this.totals[app_type]['week'] += in_week ? 1 : 0;
         this.totals[app_type]['month'] += in_month ? 1 : 0;
         this.totals[app_type]['year'] += 1;
+      }
+
+      let is_raw_new = app_type == "auto" && app["auto_type"] == "RN";
+      let in_first_quarter = this.inFirstQuarter(app.date);
+      let is_issued = app["status"] == "Issued";
+      if (is_raw_new && in_first_quarter && is_issued) {
+        this.auto_rn_quarter_1 += 1;
+      }
+
+      if (app_type == "life" && app["status"] == "Taken") {
+        this.life_quarter_1 += 1;
       }
     }
 
@@ -158,6 +171,10 @@ export class ProgressComponent implements OnInit {
 
   private inMonth(value: string, month: number) {
     return parseInt(value.substring(5, 7)) == month+1;
+  }
+
+  private inFirstQuarter(value: string) {
+    return parseInt(value.substring(5, 7)) in [1, 2, 3];
   }
 
   updateProgressChart(timeframe: string) {
