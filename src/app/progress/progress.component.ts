@@ -97,7 +97,7 @@ export class ProgressComponent implements OnInit {
           this.totals[app_type]['month'] += in_month ? parseInt(app["contribution_amount"]) : 0;
           this.totals[app_type]['year'] += parseInt(app["contribution_amount"]);
         }
-      } else if (app_type != "life" || status == "Taken") {
+      } else {
         this.totals[app_type]['week'] += in_week ? 1 : 0;
         this.totals[app_type]['month'] += in_month ? 1 : 0;
         this.totals[app_type]['year'] += 1;

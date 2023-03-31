@@ -26,6 +26,7 @@ export class MainViewComponent implements OnInit {
   fire_dots = {};
   health_dots = {};
   mutual_funds_dots = {};
+  life_premiums = {};
   life_annuities = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
   life_totals = {"year": 0};
@@ -152,12 +153,14 @@ export class MainViewComponent implements OnInit {
           }
 
           this.life_dots[app["producer_id"]+"_"+month+"_total"] = (this.life_dots[app["producer_id"]+"_"+month+"_total"] || 0) + 1;
+          this.life_premiums[month+"_total"] = (this.life_premiums[month+"_total"] || 0) + app["premium"];
           if (app["status"] == "Taken") {
             if (app["policy_type"] != "Annuity") {
               this.life_totals["year"] += 1;
               this.life_totals[month+"_issued"] = (this.life_totals[month+"_issued"] || 0) + 1;
             }
             this.life_dots[app["producer_id"]+"_"+month+"_issued"] = (this.life_dots[app["producer_id"]+"_"+month+"_issued"] || 0) + 1;
+            this.life_premiums[month+"_issued"] = (this.life_premiums[month+"_issued"] || 0) + app["premium"];
             if (app["issue_month"] != "") {
               this.life_dots[app["producer_id"]+"_"+issue_month+"_bonus"] = ((this.life_dots[app["producer_id"]+"_"+issue_month+"_bonus"] * 100 || 0) + app["paid_bonus"] * 100) / 100;
               if (app["co_producer_id"] != "") {
@@ -339,6 +342,14 @@ export class MainViewComponent implements OnInit {
     let total = 0;
     for (let i = 1; i <= 12; i++) {
       total += this.life_totals[i+'_issued'] ? this.life_totals[i+'_issued'] : 0;
+    }
+    return total;
+  }
+
+  getYearTotalLifePremiumIssued() {
+    let total = 0;
+    for (let i = 1; i <= 12; i++) {
+      total += this.life_premiums[i+'_issued'] ? this.life_premiums[i+'_issued'] : 0;
     }
     return total;
   }

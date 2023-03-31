@@ -222,6 +222,25 @@
                             <td>{{ getYearTotalLifeIssued() }}</td>
                         </tr>
                         
+                        <tr>
+                            <th>Total Premium</th>
+                            <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
+                                <ng-container *ngIf="i <= month_number">
+                                    {{ (life_premiums[i+'_total'] ? life_premiums[i+'_total'] : 0) | currency:'USD' }}
+                                </ng-container>
+                            </td>
+                            <td>{{ getYearTotal(life_premiums) | currency:'USD' }}</td>
+                        </tr>
+                        <tr>
+                            <th>Total Premium Issued</th>
+                            <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
+                                <ng-container *ngIf="i <= month_number">
+                                    {{ (life_premiums[i+'_issued'] ? life_premiums[i+'_issued'] : 0) | currency:'USD' }}
+                                </ng-container>
+                            </td>
+                            <td>{{ getYearTotalLifePremiumIssued() | currency:'USD' }}</td>
+                        </tr>
+
                     </tbody>
                 </table>
             </div>
@@ -314,6 +333,7 @@
                       <tr>
                         <th></th>
                         <th *ngFor="let month of months" scope="col">{{month}}</th>
+                        <th>Total</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -328,6 +348,7 @@
                                             {{ fire_dots[producer.id+'_'+i+'_total'] ? fire_dots[producer.id+'_'+i+'_total'] : 0 }}
                                         </ng-container>
                                     </td>
+                                    <td>{{ getTotalAppsByProducer(fire_dots, producer.id) }}</td>
                                 </tr>
                             </ng-container>
                         </ng-container>
@@ -339,6 +360,7 @@
                                     {{ fire_totals[i+'_total'] ? fire_totals[i+'_total'] : 0 }}
                                 </ng-container>
                             </td>
+                            <td>{{ getYearTotal(fire_totals) }}</td>
                         </tr>
                         
                     </tbody>

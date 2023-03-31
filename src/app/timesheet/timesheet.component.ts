@@ -494,7 +494,7 @@ export class TimesheetComponent implements OnInit {
 
   to12HourTime(time) {
     var b = time.split(/\D/);
-    return (b[0]%12 || 12) + ':' + b[1] + (b[0]<11? ' AM' : ' PM');
+    return (b[0]%12 || 12) + ':' + b[1] + (b[0]<=11? ' AM' : ' PM');
   }
 
   getProducerList() {

@@ -280,6 +280,7 @@ export class AddAutoComponent implements OnInit {
             this.db.list('/apps/'+year).update(app_id, { 'tiers': "Tier " + calculated_tier, 'bonus': bonus_values[calculated_tier] });
           });
           auto_app["tiers"] = "Tier " + calculated_tier;
+          auto_app["bonus"] = bonus_values[calculated_tier];
           this.addAutoApp(auto_app, year);
         }
        })
