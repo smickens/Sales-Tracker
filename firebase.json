@@ -1,5 +1,6 @@
 {
   "hosting": {
+    "site": "sales-tracker-1993",
     "public": "dist/sales-tracker",
     "ignore": [
       "firebase.json",
