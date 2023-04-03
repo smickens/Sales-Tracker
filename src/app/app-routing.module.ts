@@ -18,6 +18,7 @@ import { AddMutualFundComponent } from './add-mutual-fund/add-mutual-fund.compon
 
 const routes: Routes = [
   // main pages
+  { path: '', component: MainViewComponent },
   { path: 'home', component: MainViewComponent },
   { path: 'home/:year', component: MainViewComponent },
   { path: 'bonuses/:year', component: BonusesComponent },
