@@ -1,6 +1,6 @@
 <div class="row" style="height: 100%;">
     <div class="col" style="display: flex; flex-flow: column;">
-        <div class="row noPrintPdf" style="min-height: 70px;">
+        <div class="row noPrintPdf" style="min-height: 70px; margin-top: 10px;">
             <div class="col-auto" style="padding: 10px; margin-left: 16px;">
                 <div class="block" (click)="setActive('summary')">
                     <h5 class="nav_header" [ngClass]="{'active': active_page == 'summary'}">SUMMARY</h5>
@@ -39,20 +39,32 @@
         </div>
 
         <div *ngIf="active_page == 'summary'" class="row spacing" style="padding-bottom: 0px;">
+            <!-- <div class="col-8" style="padding-left: 0px;"> -->
+                <div class="block noPrintPdf" style="width: 100%; height: 100%; text-align: right;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                      <h4 class="header" style="text-align: left;">Dashboard {{ year }}</h4>
+                      <div>
+                        <button class="btn btn-sm btn-secondary noPrintPdf" (click)="downloadReport()">Download Report</button>
+                        <button class="btn btn-sm btn-secondary noPrintPdf" style="margin-left: 20px;" (click)="downloadProductionReport()">Download Production Report</button>
+                        <form style="display: inline-flex; margin-top: 10px;" class="noPrintPdf" [formGroup]="monthForm">
+                            <select class="custom-select" style="width: 100px; margin-left: 20px;" id="month" formControlName="month" (change)="updateSelectedMonth($event.target.value)">
+                            <option value="all" selected>Show All Apps</option>
+                            <ng-container *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
+                                <option value="{{i}}">{{ months[i-1] }}</option>
+                            </ng-container>
+                            </select>
+                        </form>
+                      </div>
+                    </div>
+                    <app-dashboard></app-dashboard>
+                </div>
+            <!-- </div> -->
+        </div>
+
+        <div *ngIf="active_page == 'summary' || printing_report" class="row spacing" id="stats" style="padding-bottom: 0px;">
             <div class="col-8" style="padding-left: 0px;">
                 <div class="block noPrintPdf" style="width: 100%; height: 100%;">
-                    <h4 class="header">Dashboard {{ year }}</h4>
-                    <app-dashboard></app-dashboard>
-                    <button class="btn btn-sm btn-secondary noPrintPdf" (click)="downloadReport()">Download Report</button>
-                    <button class="btn btn-sm btn-secondary noPrintPdf" style="margin-left: 20px;" (click)="downloadProductionReport()">Download Production Report</button>
-                    <form style="display: inline-flex; margin-top: 10px;" class="noPrintPdf" [formGroup]="monthForm">
-                        <select class="custom-select" style="width: 100px; margin-left: 20px;" id="month" formControlName="month" (change)="updateSelectedMonth($event.target.value)">
-                        <option value="all" selected>Show All Apps</option>
-                        <ng-container *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
-                            <option value="{{i}}">{{ months[i-1] }}</option>
-                        </ng-container>
-                        </select>
-                    </form>
+                    <app-producer-progress></app-producer-progress>
                 </div>
             </div>
 
@@ -122,29 +134,30 @@
                     </table>
                 </div>
             </div>
+
             <div class="col-4" style="padding-right: 0px;">
-                <div class="block noPrintPdf">
-                    <h4 class="header">Notes</h4>
-                    <ul>
-                        <li class="note" *ngFor="let note of notes">
-                            <div id="display_{{note.id}}" (click)="editNote(note.id)">   
-                                {{ note.text }}<span class="hide-edit-icon">✎</span>
-                            </div>
-                            <div class="hide" id="edit_{{note.id}}">
-                                <input type="text" class="form-control mb-2" autocomplete="off">
-                                <input class="save_btn" type="button" value="Save" (click)="updateNote(note.id)">
-                                <input class="remove_btn" type="button" value="Remove" (click)="displayConfirmDelete(note.id)" data-toggle="modal" data-target="#popupModal">
-                            </div>
-                        </li>
-                    </ul>
-                    <form [formGroup]="addNoteForm">
-                        <div class="col form-group">
-                            <input type="text" class="form-control mb-2" formControlName="note" id="note" placeholder="Enter new note" autocomplete="off">
-                            <input class="submit_btn" type="submit" value="Add" (click)="addNote()">
-                        </div>
-                    </form>
-                </div>
-            </div>
+              <div class="block noPrintPdf">
+                  <h4 class="header">Notes</h4>
+                  <ul>
+                      <li class="note" *ngFor="let note of notes">
+                          <div id="display_{{note.id}}" (click)="editNote(note.id)">   
+                              {{ note.text }}<span class="hide-edit-icon">✎</span>
+                          </div>
+                          <div class="hide" id="edit_{{note.id}}">
+                              <input type="text" class="form-control mb-2" autocomplete="off">
+                              <input class="save_btn" type="button" value="Save" (click)="updateNote(note.id)">
+                              <input class="remove_btn" type="button" value="Remove" (click)="displayConfirmDelete(note.id)" data-toggle="modal" data-target="#popupModal">
+                          </div>
+                      </li>
+                  </ul>
+                  <form [formGroup]="addNoteForm">
+                      <div class="col form-group">
+                          <input type="text" class="form-control mb-2" formControlName="note" id="note" placeholder="Enter new note" autocomplete="off">
+                          <input class="submit_btn" type="submit" value="Add" (click)="addNote()">
+                      </div>
+                  </form>
+              </div>
+          </div>
         </div>
 
         <div *ngIf="active_page == 'summary'" class="row" style="padding: 10px; padding-right: 30px; padding-bottom: 0px;">
@@ -416,7 +429,7 @@
             </div>
         </div>
 
-        <div *ngIf="active_page == 'health' || printing_report" class="row spacing" id="health" style="flex: 1; overflow: auto;">
+        <div *ngIf="active_page == 'health' || printing_report" class="row spacing" id="health" style="padding-bottom: 0px;">
             <div class="block" style="width: 100%; height: 100%;">
                 <h4 class="header">Health</h4>
                 <table class="table table-sm table-hover table-bordered" style="font-size: smaller;">
@@ -464,7 +477,7 @@
             </div>
         </div>
 
-        <div *ngIf="active_page == 'mutual-funds' || printing_report" class="modal fade" id="popupModal" tabindex="-1" role="dialog" aria-labelledby="popupModalTitle" aria-hidden="true">
+        <div class="modal fade" id="popupModal" tabindex="-1" role="dialog" aria-labelledby="popupModalTitle" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered" role="document">
                 <div class="modal-content">
                     <div class="modal-header">

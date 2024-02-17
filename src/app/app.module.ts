@@ -1,3 +1,4 @@
+import { CommonModule } from '@angular/common';  
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import { ChartsModule } from 'ng2-charts';
@@ -25,6 +26,7 @@ import { LoginComponent } from './login/login.component';
 import { TimesheetComponent } from './timesheet/timesheet.component';
 import { AddMutualFundComponent } from './add-mutual-fund/add-mutual-fund.component';
 import { ProgressComponent } from './progress/progress.component';
+import { ProducerProgressComponent } from './producer-progress/producer-progress.component';
 
 @NgModule({
   declarations: [
@@ -43,9 +45,11 @@ import { ProgressComponent } from './progress/progress.component';
     LoginComponent,
     TimesheetComponent,
     AddMutualFundComponent,
-    ProgressComponent
+    ProgressComponent,
+    ProducerProgressComponent
   ],
   imports: [
+    CommonModule,
     BrowserModule,
     AppRoutingModule,
     ChartsModule,

@@ -1,0 +1,39 @@
+<div>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <h4 class="header">Month Goals by Producer</h4>
+        <form [formGroup]="monthForm">
+          <select class="custom-select" style="width: 150px; margin-left: 20px;" id="month" formControlName="month" (change)="updateProducerProgressChart($event.target.value)">
+            <ng-container *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
+                <option value="{{i}}">{{ months[i-1] }}</option>
+            </ng-container>
+        </select>
+        </form>
+    </div>
+    <table class="table table-sm table-hover table-bordered">
+        <thead>
+        <tr>
+            <th></th>
+            <th>Auto (Other)</th>
+            <th>Auto (RN)</th>
+            <th>Fire</th>
+            <th>Life</th>
+            <th>Total Apps</th>
+            <th>Still Need</th>
+        </tr>
+        </thead>
+        <tbody id="stats_table">
+            <ng-container *ngFor="let producer of producers">
+                <tr>
+                    <th style="font-size: 14px;">{{ getFirstName(producer.name) }}</th>
+
+                    <ng-container *ngFor="let app_type of app_types">
+                      <td [ngClass]="producer_totals[producer.id][app_type][selected_month] >= producer_goals[producer.id][app_type] && producer_goals[producer.id][app_type] != 0 ? 'completed' : 'not_completed'">{{ producer_totals[producer.id][app_type][selected_month] }} <span style="font-weight: bolder; padding: 0px 8px;">/</span> {{ producer_goals[producer.id][app_type] }}</td>
+                    </ng-container>
+
+                    <td [ngClass]="producer_totals[producer.id]['total'][selected_month] >= producer_goals[producer.id]['total'] && producer_goals[producer.id]['total'] != 0 ? 'completed' : 'not_completed'">{{ producer_totals[producer.id]['total'][selected_month] }} <span style="font-weight: bolder; padding: 0px 8px;">/</span> {{ producer_goals[producer.id]['total'] }}</td>
+                    <td>{{ producer_goals[producer.id]['total'] - producer_totals[producer.id]['total'][selected_month] > 0 ? producer_goals[producer.id]['total'] - producer_totals[producer.id]['total'][selected_month] : 0 }}</td>
+                </tr>
+            </ng-container>
+        </tbody>
+    </table>
+</div>

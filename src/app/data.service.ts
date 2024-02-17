@@ -29,6 +29,7 @@ export class DataService {
   application_obs = {};
   prod_ob: Observable<any[]>;
   goals_ob: Observable<any[]>;
+  producer_goals_ob: Observable<any[]>;
   notes_ob: Observable<any[]>;
 
   prod_loaded = false;
@@ -54,6 +55,7 @@ export class DataService {
 
     this.prod_ob = db.list('producers').snapshotChanges();
     this.goals_ob = db.list('goals').snapshotChanges();
+    this.producer_goals_ob = db.list('producer-goals').snapshotChanges();
     this.notes_ob = db.list('notes').snapshotChanges();
   }
   

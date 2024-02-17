@@ -96,7 +96,7 @@
                     <input class="submit_btn" type="submit" value="SUBMIT" (click)="addProducer()">
                 </form>
 
-                <h4>Goals</h4>
+                <h3 style="font-size: 18px;">Goals</h3>
                 <table class="table table-sm table-hover" style="max-width: 500px;">
                     <thead>
                         <tr>
@@ -127,6 +127,40 @@
                     </tbody>
                 </table>
                 <input class="submit_btn" type="button" value="UPDATE" (click)="updateGoals()">
+
+                <h3 style="margin-top: 20px; font-size: 18px;">Producer Goals</h3>
+                <table class="table table-sm table-hover" style="max-width: 500px;">
+                    <thead>
+                        <tr>
+                          <th></th>
+                          <th>Auto (Other)</th>
+                          <th>Auto (RN)</th>
+                          <th>Fire</th>
+                          <th>Life</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                      <ng-container *ngFor="let producer of producers">
+                        <tr>
+                            <th style="font-size: 14px;">{{ producer.name }}</th>
+
+                            <td>
+                              <input style="width: 120px;" type="number" placeholder="Auto (other)" id="{{producer.id}}_auto_other" autocomplete="off">
+                            </td>
+                            <td>
+                              <input style="width: 120px;" type="number" placeholder="Auto (RN)" id="{{producer.id}}_auto_rn" autocomplete="off">
+                            </td>
+                            <td>
+                              <input style="width: 120px;" type="number" placeholder="Fire" id="{{producer.id}}_fire" autocomplete="off">
+                            </td>
+                            <td>
+                              <input style="width: 120px;" type="number" placeholder="Life" id="{{producer.id}}_life" autocomplete="off">
+                            </td>
+                        </tr>
+                    </ng-container>
+                    </tbody>
+                </table>
+                <input class="submit_btn" type="button" value="UPDATE" (click)="updateProducerGoals()">
             </div>
             <div *ngIf="active_page != 'producers'" class="col form-group">
                 <form [formGroup]="addConstantForm" style="display: flex; align-items: center;">

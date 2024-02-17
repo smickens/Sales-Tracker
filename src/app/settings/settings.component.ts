@@ -7,6 +7,7 @@ import { AngularFireAuth } from '@angular/fire/auth';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { DataService } from '../data.service';
 import { take } from 'rxjs/operators';
+import { Producer } from '../producer';
 
 @Component({
   selector: 'app-settings',
@@ -19,6 +20,7 @@ export class SettingsComponent implements OnInit {
   headers = [];
   constants = [];
 
+  producers: Producer[] = [];
   addProducerForm = this.fb.group({
     new_producer: [],
     pin: []
@@ -67,6 +69,10 @@ export class SettingsComponent implements OnInit {
 
         if (!displayed && producer.hired) {
           this.constants[0].push([producer.id, producer.name, producer.licensed]);
+        }
+
+        if (producer.hired && producer.licensed) {
+          this.producers.push(producer);
         }
       }
 
@@ -238,6 +244,15 @@ export class SettingsComponent implements OnInit {
         (document.getElementById(snap.key+"_yearly") as HTMLInputElement).value = snap.payload.val()["yearly"];
       }
     ));
+
+    this.dataService.producer_goals_ob.pipe(take(1)).subscribe(
+      (snapshot: any) => snapshot.map(snap => {
+        (document.getElementById(snap.key+"_auto_other") as HTMLInputElement).value = snap.payload.val()["auto_other"];
+        (document.getElementById(snap.key+"_auto_rn") as HTMLInputElement).value = snap.payload.val()["auto_rn"];
+        (document.getElementById(snap.key+"_fire") as HTMLInputElement).value = snap.payload.val()["fire"];
+        (document.getElementById(snap.key+"_life") as HTMLInputElement).value = snap.payload.val()["life"];
+      }
+    ));
   }
 
   getGoal(id: string) {
@@ -252,6 +267,18 @@ export class SettingsComponent implements OnInit {
         "yearly": Number(this.getGoal(type+"_yearly"))
       };
       this.db.list('goals').update(type, goals);
+    });
+  }
+
+  updateProducerGoals() {
+    this.producers.forEach(producer => {
+      let producer_goals = {
+        'auto_other': Number(this.getGoal(producer.id+"_auto_other")),
+        'auto_rn': Number(this.getGoal(producer.id+"_auto_rn")),
+        'fire': Number(this.getGoal(producer.id+"_fire")),
+        'life': Number(this.getGoal(producer.id+"_life")),
+      };
+      this.db.list('producer-goals').update(producer.id, producer_goals);
     });
   }
 
