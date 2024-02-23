@@ -247,10 +247,12 @@ export class SettingsComponent implements OnInit {
 
     this.dataService.producer_goals_ob.pipe(take(1)).subscribe(
       (snapshot: any) => snapshot.map(snap => {
-        (document.getElementById(snap.key+"_auto_other") as HTMLInputElement).value = snap.payload.val()["auto_other"];
-        (document.getElementById(snap.key+"_auto_rn") as HTMLInputElement).value = snap.payload.val()["auto_rn"];
-        (document.getElementById(snap.key+"_fire") as HTMLInputElement).value = snap.payload.val()["fire"];
-        (document.getElementById(snap.key+"_life") as HTMLInputElement).value = snap.payload.val()["life"];
+        if (document.getElementById(snap.key+"_auto_other") as HTMLInputElement) {
+          (document.getElementById(snap.key+"_auto_other") as HTMLInputElement).value = snap.payload.val()["auto_other"];
+          (document.getElementById(snap.key+"_auto_rn") as HTMLInputElement).value = snap.payload.val()["auto_rn"];
+          (document.getElementById(snap.key+"_fire") as HTMLInputElement).value = snap.payload.val()["fire"];
+          (document.getElementById(snap.key+"_life") as HTMLInputElement).value = snap.payload.val()["life"];
+        }
       }
     ));
   }

@@ -108,6 +108,11 @@ export class ProducerProgressComponent implements OnInit {
       let producer_id = app["producer_id"];
       var counted = false;
 
+      // in case producer isn't licensed anymore or was given credit but not licensed, then continue
+      if (!(producer_id in this.producer_goals)) {
+        continue;
+      }
+
       if (app_type == "auto") {
         let is_raw_new = app["auto_type"] == "RN";
 
@@ -133,17 +138,20 @@ export class ProducerProgressComponent implements OnInit {
     // console.log("loading goals");
     this.dataService.producer_goals_ob.pipe(take(1)).subscribe(
       (snapshot: any) => snapshot.map(snap => {
-        let auto_other_goal = snap.payload.val()["auto_other"];
-        let auto_rn_goal = snap.payload.val()["auto_rn"];
-        let fire_goal = snap.payload.val()["fire"];
-        let life_goal = snap.payload.val()["life"];
+        // in case producer isn't licensed anymore but used to have goals
+        if (snap.key in this.producer_goals) {
+          let auto_other_goal = snap.payload.val()["auto_other"];
+          let auto_rn_goal = snap.payload.val()["auto_rn"];
+          let fire_goal = snap.payload.val()["fire"];
+          let life_goal = snap.payload.val()["life"];
 
-        this.producer_goals[snap.key]['auto_other'] = auto_other_goal;
-        this.producer_goals[snap.key]['auto_rn'] = auto_rn_goal;
-        this.producer_goals[snap.key]['fire'] = fire_goal;
-        this.producer_goals[snap.key]['life'] = life_goal;
+          this.producer_goals[snap.key]['auto_other'] = auto_other_goal;
+          this.producer_goals[snap.key]['auto_rn'] = auto_rn_goal;
+          this.producer_goals[snap.key]['fire'] = fire_goal;
+          this.producer_goals[snap.key]['life'] = life_goal;
 
-        this.producer_goals[snap.key]['total'] = auto_other_goal + auto_rn_goal + fire_goal + life_goal;
+          this.producer_goals[snap.key]['total'] = auto_other_goal + auto_rn_goal + fire_goal + life_goal;
+        }
       }
     ));
   }
