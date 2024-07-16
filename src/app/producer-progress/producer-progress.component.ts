@@ -81,6 +81,7 @@ export class ProducerProgressComponent implements OnInit {
 
     // clear goals and totals
     for (const producer of this.producers) {
+      // producer goals don't include health
       this.producer_goals[producer["id"]] = {
         'auto_other': 0,
         'auto_rn': 0,
@@ -88,11 +89,13 @@ export class ProducerProgressComponent implements OnInit {
         'life': 0,
         'total': 0
       };
+      // but, still want health apps to count towards their monthly totals
       this.producer_totals[producer["id"]] = {
         'auto_other': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         'auto_rn': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         'fire': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         'life': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        'health': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         'total': [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
       };
     }
@@ -127,6 +130,9 @@ export class ProducerProgressComponent implements OnInit {
         counted = true;
       } else if (app_type == "life") {
         this.producer_totals[producer_id]['life'][app_month] += 1;
+        counted = true;
+      } else if (app_type == "health") {
+        this.producer_totals[producer_id]['health'][app_month] += 1;
         counted = true;
       }
 

@@ -250,11 +250,19 @@ export class DataService {
         //console.log("changed month to issue month - " + app_month);
         bonus = app["paid_bonus"];
       }
+
+      // console.log("here");
       
       if (app_went_through == true && app_year == year && bonus > 0) {
         const producer_id = app["producer_id"];
         this.production_bonuses[year][producer_id][app_month-1] = ((this.production_bonuses[year][producer_id][app_month-1] * 100) + (bonus * 100)) / 100;
-        //console.log("Name: " + producer_id + "    Month: " + app_month + "   Bonus: " + bonus);
+        if (app_month == 3 && producer_id == "mSn9") {
+          if (bonus > 100) {
+            console.log("large one");
+            console.log(app.type);
+          }
+          console.log("Name: " + producer_id + "    Month: " + app_month + "   Bonus: " + bonus + " cur total = $" + this.production_bonuses[year][producer_id][3-1]);
+        }
         let i = this.getProducerIndex(producer_id);
         if (this.isHired(producer_id)) {
           this.barChartData[(i*2)+1].data[app_month-1] += bonus;
@@ -269,7 +277,9 @@ export class DataService {
           this.production_bonuses[year][co_producer_id][app_month-1] = ((this.production_bonuses[year][co_producer_id][app_month-1] * 100) + (co_producer_bonus * 100)) / 100;
           let i = this.getProducerIndex(co_producer_id);
           if (this.isHired(co_producer_id)) {
-            //console.log("Co- ID: " + co_producer_id + "   Bonus: " + co_producer_bonus + "  " + i);
+            if (app_month == 3 && co_producer_id == "mSn9") {
+              console.log("Co- ID: " + co_producer_id + "   Bonus: " + co_producer_bonus + "  " + i  + " cur total = $" + this.production_bonuses[year][co_producer_id][3-1]);
+            }
             this.barChartData[(i*2)+1].data[app_month-1] += co_producer_bonus;
           }
         }
