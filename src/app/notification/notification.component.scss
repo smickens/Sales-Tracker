@@ -1,0 +1,49 @@
+body {
+  font-family: Arial, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+  background-color: #f0f0f0;
+}
+
+.message-box {
+  background-color: #63B7AF;
+  color: white;
+  border-radius: 10px;
+  padding: 15px;
+  position: relative;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column; /* Stack content vertically */
+  margin: 10px;
+}
+
+.message-title {
+  font-size: 1.2em;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.message-text {
+  font-size: 1em;
+  margin-right: 25px;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.5em;
+  font-weight: normal;
+  cursor: pointer;
+  position: absolute; /* Position it in the top right */
+  top: 10px;
+  right: 10px;
+  transition: color 0.3s; /* Smooth color transition */
+}
+
+.close-btn:hover {
+  color: #d1e7dd; /* Lighter shade on hover */
+}

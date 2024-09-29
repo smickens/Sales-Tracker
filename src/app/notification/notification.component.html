@@ -1,0 +1,14 @@
+<div *ngIf="shouldDisplay">
+  <div class="message-box" id="messageBox" *ngIf="isSuccess">
+    <button class="close-btn" (click)="closeMessage()">×</button>
+    <div class="message-title">Success</div>
+    <div class="message-text">Added new application for {{name}}, view all <a href="{{returnToLink}}">here</a>.</div>
+  </div>
+
+  <div class="message-box" id="messageBox" *ngIf="!isSuccess">
+    <button class="close-btn" (click)="closeMessage()">×</button>
+    <div class="message-title">Error</div>
+    <div class="message-text">Missing fields, could not add application</div>
+  </div>
+</div>
+

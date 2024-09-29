@@ -1,5 +1,7 @@
 {
   "projects": {
-    "default": "state-farm-app-tracker"
-  }
+    "default": "state-farm-app-tracker",
+    "staging": "state-farm-app-tracker"
+  },
+  "targets": {}
 }

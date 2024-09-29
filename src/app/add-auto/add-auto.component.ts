@@ -24,6 +24,11 @@ export class AddAutoComponent implements OnInit {
   button_text: string = "";
   app_id: string = ""; // if page is in edit mode, then app_id is set to app's id in database
 
+  showMessage: Boolean = false;
+  didAddApplication: Boolean = true;
+  clientName = "";
+  allAppRoute = "";
+
   producers: Producer[] = [];
   constants = {};
 
@@ -37,6 +42,8 @@ export class AddAutoComponent implements OnInit {
   constructor(private db: AngularFireDatabase, private fb: FormBuilder, private dataService: DataService, public  db_auth:  AngularFireAuth, private route: ActivatedRoute, private location: Location, private router: Router) { }
 
   ngOnInit(): void {
+    this.allAppRoute = 'auto/' + this.today.getFullYear();
+
     this.app_id = this.route.snapshot.paramMap.get('id');
     let todays_date: string = this.today.getFullYear() + "-";
     if (this.today.getMonth() < 9) {
@@ -179,8 +186,11 @@ export class AddAutoComponent implements OnInit {
 
     // if form is invalid, it breaks out of function and displays a popup with the missing values
     if (!isValid) {
+      this.showNotification(false);
       return;
     }
+
+    this.clientName = this.get("client_name");
     
     // otherwise it submits the form
     let app: AutoApp = {
@@ -214,16 +224,25 @@ export class AddAutoComponent implements OnInit {
       app_with_id.id = new_app_id;
       this.db.list('/apps/'+year).update(new_app_id, app).then(() => {
         this.dataService.addApplication('auto', this.get("date").substring(0, 4), app_with_id);
-        this.router.navigate(['auto']);
+        this.showNotification(true);
       });
     } else {
       // updates existing application
       this.db.list('/apps/'+year).update(this.app_id, app).then(() => {
         app_with_id.id = this.app_id;
         this.dataService.updateApplication('auto', this.get("date").substring(0, 4), app_with_id);
-        this.router.navigate(['auto']);
+        this.showNotification(true);
       });
     }
+  }
+
+  showNotification(success: Boolean) {
+    this.didAddApplication = success;
+    this.showMessage = true;
+  }
+
+  hideNotification() {
+    this.showMessage = false;
   }
 
   getTier(producer_id: string, auto_app: AutoApp, year: string) {

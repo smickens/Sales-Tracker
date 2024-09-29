@@ -27,6 +27,7 @@ import { TimesheetComponent } from './timesheet/timesheet.component';
 import { AddMutualFundComponent } from './add-mutual-fund/add-mutual-fund.component';
 import { ProgressComponent } from './progress/progress.component';
 import { ProducerProgressComponent } from './producer-progress/producer-progress.component';
+import { NotificationComponent } from './notification/notification.component';
 
 @NgModule({
   declarations: [
@@ -46,7 +47,8 @@ import { ProducerProgressComponent } from './producer-progress/producer-progress
     TimesheetComponent,
     AddMutualFundComponent,
     ProgressComponent,
-    ProducerProgressComponent
+    ProducerProgressComponent,
+    NotificationComponent
   ],
   imports: [
     CommonModule,

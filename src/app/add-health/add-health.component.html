@@ -1,4 +1,12 @@
 <div class="container center">
+    <app-notification id="message"
+      [isSuccess]="didAddApplication"
+      [shouldDisplay]="showMessage"
+      [name]="clientName"
+      [returnToLink]="allAppRoute"
+      (dismissedEvent)="hideNotification()"
+    ></app-notification>
+
     <div class="block_bg">
         <div class="block">
             <div class="form-row">
