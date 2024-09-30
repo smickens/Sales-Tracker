@@ -42,8 +42,6 @@ export class AddAutoComponent implements OnInit {
   constructor(private db: AngularFireDatabase, private fb: FormBuilder, private dataService: DataService, public  db_auth:  AngularFireAuth, private route: ActivatedRoute, private location: Location, private router: Router) { }
 
   ngOnInit(): void {
-    this.allAppRoute = 'auto/' + this.today.getFullYear();
-
     this.app_id = this.route.snapshot.paramMap.get('id');
     let todays_date: string = this.today.getFullYear() + "-";
     if (this.today.getMonth() < 9) {
@@ -105,7 +103,7 @@ export class AddAutoComponent implements OnInit {
       });
       this.app_loaded = true;
     }
-  }
+}
 
   ngOnDestroy(): void {
     this.subscriptions.forEach(sub => {
@@ -238,6 +236,7 @@ export class AddAutoComponent implements OnInit {
 
   showNotification(success: Boolean) {
     this.didAddApplication = success;
+    this.clientName = this.get("client_name");
     this.showMessage = true;
   }
 

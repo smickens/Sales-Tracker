@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, Output, EventEmitter } from '@angular/core';
 import { Producer } from "../producer";
 import { Application } from '../application';
 import { AngularFireDatabase } from '@angular/fire/database';
@@ -19,6 +19,8 @@ export class AppsListComponent implements OnInit {
 
   @Input() app_type: string = "";
   @Input() month: number = 0;
+  @Output() changedMonth = new EventEmitter();
+
   headers: string[] = ["#", "Date", "Producer", "Client"];
   apps = [];
   monthForm: FormGroup = this.fb.group({ });
@@ -45,8 +47,24 @@ export class AppsListComponent implements OnInit {
 
   ngOnInit(): void {    
     let date: Date = new Date(); 
-    // this.year = date.getFullYear();
+
+    this.route.queryParams.subscribe(params => {
+      console.log(params);
+      if (params['cur_month']) {
+        this.month = params['cur_month'];
+        this.monthForm = this.fb.group({
+          month: [this.month]
+        });
+      } else if (this.month == 0) {
+        this.month = date.getMonth() + 1;
+        this.monthForm = this.fb.group({
+          month: [this.month]
+        });
+      }
+    });
+
     this.year = parseInt(this.route.snapshot.paramMap.get('year'));
+
     if (this.app_type == "") {
       this.app_type = this.router.url.split("/")[1];
       this.isViewingAppList = true;
@@ -55,12 +73,6 @@ export class AppsListComponent implements OnInit {
       document.getElementById("appTable").classList.add("table-sm");
     }
 
-    if (this.month == 0) {
-      this.month = date.getMonth() + 1;
-      this.monthForm = this.fb.group({
-        month: [this.month]
-      });
-    }
 
     this.dataService.auth_state_ob.pipe(take(1)).subscribe(user => {
       if (user) {
@@ -144,6 +156,8 @@ export class AppsListComponent implements OnInit {
     } else {
       this.month = month;
     }
+  
+    this.changedMonth.emit(this.month);
 
     if (producer_id == "") {
       producer_id = (document.getElementById("producer") as HTMLInputElement).value;
@@ -155,6 +169,10 @@ export class AppsListComponent implements OnInit {
     
     // TODO: see if this is needed
     this.getHeaders();
+  
+    this.router.navigate(['/'+this.app_type+'/'+this.year], {
+      queryParams: { cur_month: this.month }
+    });
   }
 
   getProducerName(id: string) {

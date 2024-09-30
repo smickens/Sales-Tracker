@@ -3,10 +3,10 @@
     <div id="sidebar" class="col noPrintPdf" style="position: fixed; height: 100%; background-color:#EE8572; flex-grow: 0; width: 50px; transition: all .5s ease-in-out; -webkit-transition: all 0.5s ease-in-out;">
       <span id="closeBtn" (click)="closeSidebar()">&times;</span>
       <span id="openBtn" (click)="openSidebar()">&#9776;</span>
-      <app-sidebar *ngIf="display_sidebar"></app-sidebar>
+      <app-sidebar *ngIf="display_sidebar" [curMonth]="cur_month"></app-sidebar>
     </div>
     <div class="col" id="main-view" style="margin-left: 50px; transition: all .5s ease-in-out; -webkit-transition: all 0.5s ease-in-out;">
-      <router-outlet></router-outlet>
+      <router-outlet (activate)="onActivate($event)"></router-outlet>
     </div>
   </div>
 </div>

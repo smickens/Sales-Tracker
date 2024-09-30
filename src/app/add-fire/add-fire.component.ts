@@ -42,8 +42,6 @@ export class AddFireComponent implements OnInit {
   constructor(private db: AngularFireDatabase, private fb: FormBuilder, private dataService: DataService, public  db_auth:  AngularFireAuth, private route: ActivatedRoute, private location: Location, private router: Router) { }
 
   ngOnInit(): void {
-    this.allAppRoute = 'fire/' + this.today.getFullYear();
-
     this.dataService.auth_state_ob.pipe(take(1)).subscribe(user => {
       if (user) {
         // loads producers
@@ -198,10 +196,11 @@ export class AddFireComponent implements OnInit {
         this.showNotification(true);
       });
     }
-  }
+}
 
   showNotification(success: Boolean) {
     this.didAddApplication = success;
+    this.clientName = this.get("client_name");
     this.showMessage = true;
   }
 

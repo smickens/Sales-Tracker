@@ -3,12 +3,12 @@
     <h3 style="font-weight: 525; padding-top: 25px; padding-bottom: 10px;">SALES TRACKER {{year}}</h3>
     <div class="menu">
         <a routerLink="/home/{{year}}"><span></span> Home</a>
-        <a routerLink="/life/{{year}}"><span></span> Life</a>
-        <a routerLink="/auto/{{year}}"><span></span> Auto</a>
-        <a routerLink="/bank/{{year}}"><span></span> Bank</a>
-        <a routerLink="/fire/{{year}}"><span></span> Fire</a>
-        <a routerLink="/health/{{year}}"><span></span> Health</a>
-        <a routerLink="/mutual-funds/{{year}}"><span></span> Mutual Funds</a>
+        <a routerLink="/life/{{year}}" [queryParams]="{ cur_month: curMonth }"><span></span> Life</a>
+        <a routerLink="/auto/{{year}}" [queryParams]="{ cur_month: curMonth }"><span></span> Auto</a>
+        <a routerLink="/bank/{{year}}" [queryParams]="{ cur_month: curMonth }"><span></span> Bank</a>
+        <a routerLink="/fire/{{year}}" [queryParams]="{ cur_month: curMonth }"><span></span> Fire</a>
+        <a routerLink="/health/{{year}}" [queryParams]="{ cur_month: curMonth }"><span></span> Health</a>
+        <a routerLink="/mutual-funds/{{year}}" [queryParams]="{ cur_month: curMonth }"><span></span> Mutual Funds</a>
         <a routerLink="/bonuses/{{year}}"><span></span> Bonuses</a>
         <a routerLink="/timesheet/{{year}}"><span></span> Timesheet</a>
     </div>

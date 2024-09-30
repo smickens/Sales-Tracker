@@ -2,7 +2,9 @@
   <div class="message-box" id="messageBox" *ngIf="isSuccess">
     <button class="close-btn" (click)="closeMessage()">×</button>
     <div class="message-title">Success</div>
-    <div class="message-text">Added new application for {{name}}, view all <a href="{{returnToLink}}">here</a>.</div>
+    <div class="message-text">Added new application for {{name}}, view all 
+      <span (click)="goBack()" id="returnLink">here</span>.
+    </div>
   </div>
 
   <div class="message-box" id="messageBox" *ngIf="!isSuccess">

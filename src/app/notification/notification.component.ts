@@ -1,5 +1,6 @@
 import { INFERRED_TYPE } from '@angular/compiler/src/output/output_ast';
 import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Location } from '@angular/common';
 
 @Component({
   selector: 'app-notification',
@@ -11,11 +12,17 @@ export class NotificationComponent {
   @Input() shouldDisplay: Boolean;
   @Input() name: string;
   @Input() returnToLink: string;
+  @Input() curMonth: string;
 
   @Output() dismissedEvent = new EventEmitter();
 
+  constructor(private location: Location) {}
+
   closeMessage() {
     this.dismissedEvent.emit();
-    console.log("dismiss");
+  }
+
+  goBack() {
+    this.location.back();
   }
 }

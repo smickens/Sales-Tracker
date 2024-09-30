@@ -41,8 +41,6 @@ export class AddMutualFundComponent implements OnInit {
   constructor(private db: AngularFireDatabase, private fb: FormBuilder, private dataService: DataService, public  db_auth:  AngularFireAuth, private route: ActivatedRoute, private router: Router) { }
   
   ngOnInit(): void {
-    this.allAppRoute = 'mutual-funds/' + this.today.getFullYear();
-
     this.dataService.auth_state_ob.pipe(take(1)).subscribe(user => {
       if (user) {
         // loads producers
@@ -195,6 +193,7 @@ export class AddMutualFundComponent implements OnInit {
 
   showNotification(success: Boolean) {
     this.didAddApplication = success;
+    this.clientName = this.get("client_name");
     this.showMessage = true;
   }
 

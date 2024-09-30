@@ -47,3 +47,13 @@ body {
 .close-btn:hover {
   color: #d1e7dd; /* Lighter shade on hover */
 }
+
+#returnLink {
+  color: #007bff;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+#returnLink:hover {
+  text-decoration: none;
+}
