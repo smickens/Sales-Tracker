@@ -588,8 +588,10 @@ export class MainViewComponent implements OnInit {
   }
 
   changeTrackerTo(year: number) {
-    this.router.navigateByUrl('/', {skipLocationChange: true}).then(()=>
-    this.router.navigate(['home/'+year]));
+    this.router.navigate(['home', year]).then(() => {
+      // Force a full page refresh after navigation, ensures every part of the site is reloaded
+      window.location.reload();
+    });
   }
 }
 
