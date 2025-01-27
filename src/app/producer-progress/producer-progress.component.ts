@@ -72,7 +72,7 @@ export class ProducerProgressComponent implements OnInit {
   }
 
   async loadApplications() {
-    await this.dataService.until(_ => this.dataService.apps_loaded == true);
+    await this.dataService.until(_ => this.dataService.apps_loaded_by_year.has(this.year));
     this.loadGoals();
   }
 

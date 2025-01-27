@@ -80,7 +80,7 @@ export class BonusesComponent implements OnInit {
 
   async loadApplications() {
     this.dataService.loadApplications(this.selected_year);
-    await this.dataService.until(_ => this.dataService.apps_loaded == true);
+    await this.dataService.until(_ => this.dataService.apps_loaded_by_year.has(this.selected_year));
   }
 
   async loadProducers() {

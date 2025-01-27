@@ -86,7 +86,7 @@ export class AppsListComponent implements OnInit {
     this.getHeaders();
 
     this.dataService.loadApplications(year);
-    await this.dataService.until(_ => this.dataService.apps_loaded == true);
+    await this.dataService.until(_ => this.dataService.apps_loaded_by_year.has(year));
 
     // by default it sorts the apps by most recent
     this.apps = this.dataService.getAppsByMonth(this.app_type, this.month, this.year);

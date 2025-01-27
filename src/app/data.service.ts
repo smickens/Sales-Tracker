@@ -33,7 +33,7 @@ export class DataService {
   notes_ob: Observable<any[]>;
 
   prod_loaded = false;
-  apps_loaded = false;
+  apps_loaded_by_year = new Set<number>();
   
   constructor(private db: AngularFireDatabase, public  db_auth:  AngularFireAuth, private router: Router) {
     let auth_sub = db_auth.authState.subscribe(user => {
@@ -106,8 +106,6 @@ export class DataService {
       return;
     }
 
-    this.apps_loaded = false;
-
     // clear application list
     this.applications[year] = {
       'life': [],
@@ -131,7 +129,7 @@ export class DataService {
       }),
       (error: any) => { console.log(error); },
       () => { 
-        this.apps_loaded = true;
+        this.apps_loaded_by_year.add(year);
         // console.log("done loading apps for year " + year);
       } 
     );
@@ -229,7 +227,7 @@ export class DataService {
       } 
     }
 
-    await this.until(_ => this.apps_loaded);
+    await this.until(_ => this.apps_loaded_by_year.has(year));
     // * then, gets production bonuses
     let all_apps: Application[] = await this.getAllApps(year);
     for (const app of all_apps) {
@@ -308,21 +306,19 @@ export class DataService {
   }
 
   // used for timesheet prior month bonus
-  async loadBonusesForTimesheet(year: number) {
+  async loadCorporateBonusesForTimesheet(year: number) {
     if (year in this.corporate_bonuses) {
-      // console.log("already loaded bonuses for year " + year);
+      // console.log("already loaded corporate bonuses for year " + year);
       return;
     }
-    // console.log("loading bonuses for year " + year);
+    // console.log("loading corporate bonuses for year " + year);
     await this.until(_ => this.prod_loaded);
 
     this.corporate_bonuses[year] = {};
-    this.production_bonuses[year] = {};
 
     // * first, gets corporate bonuses
     for (const producer of this.producers) {
       this.corporate_bonuses[year][producer.id] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-      this.production_bonuses[year][producer.id] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
       
       if ("corporate_bonuses" in producer && year in producer.corporate_bonuses) {
         const corporate_bonus = producer["corporate_bonuses"][year];
@@ -331,10 +327,25 @@ export class DataService {
         }
       } 
     }
+  }
 
-    await this.until(_ => this.apps_loaded);
-    // * then, gets production bonuses
-    let all_apps: Application[] = await this.getAllApps(year);
+  // used for timesheet prior month bonus
+  async loadProductionBonusesForTimesheet(year: number) {
+    if (year in this.production_bonuses) {
+      // console.log("already loaded production bonuses for year " + year);
+      return;
+    }
+    // console.log("loading production bonuses for year " + year);
+    await this.until(_ => this.apps_loaded_by_year.has(year));
+    await this.until(_ => this.prod_loaded);
+
+    this.production_bonuses[year] = {};
+
+    for (const producer of this.producers) {
+      this.production_bonuses[year][producer.id] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    }
+
+    let all_apps: Application[] = this.getAllApps(year);
     for (const app of all_apps) {
       const app_date = app["date"] as string;
       let app_month = parseInt(app_date.substring(5, 7));
@@ -357,6 +368,7 @@ export class DataService {
       if (app_went_through == true && app_year == year && bonus > 0) {
         const producer_id = app["producer_id"];
         this.production_bonuses[year][producer_id][app_month-1] = ((this.production_bonuses[year][producer_id][app_month-1] * 100) + (bonus * 100)) / 100;
+        // console.log("production bonus for producer " + producer_id + " is " + this.production_bonuses[year][producer_id][app_month-1]);
       }
 
       if (app_year == year && app["co_producer_bonus"] > 0) {

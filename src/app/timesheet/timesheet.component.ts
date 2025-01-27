@@ -105,14 +105,21 @@ export class TimesheetComponent implements OnInit {
       year -= 1;
     }
 
+    // console.log("--- loading prior month bonuses for year " + year + " ---");
+
     this.dataService.loadApplications(year);
-    await this.dataService.loadBonusesForTimesheet(year);
+    await this.dataService.loadCorporateBonusesForTimesheet(year);
+    await this.dataService.loadProductionBonusesForTimesheet(year);
     for (const producer of this.dataService.producers) {
-      this.prior_month_bonuses[producer.id] = 0;
       let corp_bonus = this.dataService.corporate_bonuses[year][producer.id][last_month-1];
       let prod_bonus = this.dataService.production_bonuses[year][producer.id][last_month-1];
-      this.prior_month_bonuses[producer.id] = ((this.prior_month_bonuses[producer.id] * 100) + (corp_bonus * 100)) / 100;
-      this.prior_month_bonuses[producer.id] = ((this.prior_month_bonuses[producer.id] * 100) + (prod_bonus * 100)) / 100;
+      let prior_month_bonus = corp_bonus + prod_bonus;
+
+      // console.log("corp bonus for " + producer.id + " is " + prod_bonus);
+      // console.log("prod bonus for " + producer.id + " is " + prod_bonus);
+  
+      this.prior_month_bonuses[producer.id] = (prior_month_bonus * 100) / 100;
+      // console.log("prior month bonus for " + producer.id + " is " + this.prior_month_bonuses[producer.id]);
     }
   }
 
