@@ -100,8 +100,9 @@
                 <table class="table table-sm table-hover" style="max-width: 500px;">
                     <thead>
                         <tr>
+                            <th></th>
                             <th *ngFor="let type of app_types;">
-                                {{ type == 'mutual-funds' ? 'Mutual Funds' : type | titlecase }}
+                                {{ type == 'mutual-funds' ? 'Mutual Funds' : (type == 'auto-rn' ? 'Auto (RN)' : type | titlecase) }}
                             </th>
                         </tr>
                     </thead>

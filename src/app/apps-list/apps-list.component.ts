@@ -49,7 +49,6 @@ export class AppsListComponent implements OnInit {
     let date: Date = new Date(); 
 
     this.route.queryParams.subscribe(params => {
-      // console.log(params);
       if (params['cur_month']) {
         this.month = params['cur_month'];
         this.monthForm = this.fb.group({

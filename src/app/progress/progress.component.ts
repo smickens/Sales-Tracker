@@ -12,12 +12,13 @@ import { ActivatedRoute } from '@angular/router';
 })
 export class ProgressComponent implements OnInit {
 
-  app_types = ["life", "auto", "fire", "health", "bank", "mutual-funds"];
+  app_types = ["life", "auto", "auto-rn", "fire", "health", "bank", "mutual-funds"];
 
   // week, month, quarter, year
   goals = {
     'life': { 'week': 0, 'month': 0, 'year': 0 },
     'auto': { 'week': 0, 'month': 0, 'year': 0 },
+    'auto-rn': { 'week': 0, 'month': 0, 'year': 0 },
     'fire': { 'week': 0, 'month': 0, 'year': 0 },
     'health': { 'week': 0, 'month': 0, 'year': 0 },
     'bank': { 'week': 0, 'month': 0, 'year': 0 },
@@ -26,6 +27,7 @@ export class ProgressComponent implements OnInit {
   totals = {
     'life': { 'week': 0, 'month': 0, 'year': 0 },
     'auto': { 'week': 0, 'month': 0, 'year': 0 },
+    'auto-rn': { 'week': 0, 'month': 0, 'year': 0 },
     'fire': { 'week': 0, 'month': 0, 'year': 0 },
     'health': { 'week': 0, 'month': 0, 'year': 0 },
     'bank': { 'week': 0, 'month': 0, 'year': 0 },
@@ -110,6 +112,12 @@ export class ProgressComponent implements OnInit {
         this.auto_rn_quarter_1 += 1;
       }
 
+      if (is_raw_new) {
+        this.totals["auto-rn"]['week'] += in_week ? 1 : 0;
+        this.totals["auto-rn"]['month'] += in_month ? 1 : 0;
+        this.totals["auto-rn"]['year'] += 1;
+      }
+
       if (app_type == "life" && app["status"] == "Taken") {
         this.life_quarter_1 += 1;
       }
@@ -184,6 +192,9 @@ export class ProgressComponent implements OnInit {
   getTitle(str) {
     if (str == "mutual-funds") {
       return "Mutual Funds";
+    }
+    if (str == "auto-rn") {
+      return "Auto (RN)";
     }
     return str[0].toUpperCase() + str.slice(1);
   }

@@ -31,7 +31,7 @@ export class SettingsComponent implements OnInit {
     header: ['default']
   });
 
-  app_types = ["life", "auto", "bank", "fire", "health", "mutual-funds"];
+  app_types = ["life", "auto", "auto-rn", "bank", "fire", "health", "mutual-funds"];
 
   constructor(private db: AngularFireDatabase, private fb: FormBuilder, private dataService: DataService, public  db_auth:  AngularFireAuth, private router: Router) { }
 
