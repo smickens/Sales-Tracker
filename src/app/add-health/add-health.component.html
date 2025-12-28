@@ -59,14 +59,6 @@
                             <input type="number" min="0" class="form-control" formControlName="annual_premium" id="annual_premium" autocomplete="off" style="max-width: 120px;" readonly>
                         </div>
                     </div>
-
-                    <div class="col-auto form-group">
-                        <label for="status">STATUS</label>
-                        <select class="custom-select" formControlName="status" id="status" (focus)="setValid($event)">
-                            <option value="" selected>Select Status</option>
-                            <option *ngFor="let option of constants['status_options']" value="{{option}}"> {{ option }} </option>
-                        </select>
-                    </div>
                 </div>
         
                 <div class="form-row mb-2">   
@@ -95,9 +87,36 @@
                             <option *ngFor="let option of constants['marketing_source']" value="{{option}}"> {{ option }} </option>
                         </select>
                     </div>
+
+                    <div class="col form-group">
+                        <label for="status">STATUS</label>
+                        <select class="custom-select" formControlName="status" id="status" (focus)="setValid($event)">
+                            <option value="" selected>Select Status</option>
+                            <option *ngFor="let option of constants['status_options']" value="{{option}}"> {{ option }} </option>
+                        </select>
+                    </div>
                 </div>
 
                 <div class="form-row mb-2">
+                    <div class="col form-group">
+                        <label for="issue_month">ISSUE / BONUS MONTH</label>
+                        <select class="custom-select" formControlName="issue_month" id="issue_month" (focus)="setValid($event)" (change)="updateAnnualPremium()">
+                            <option value="" selected>Select Issue Month</option>
+                            <option value="1">January</option>
+                            <option value="2">February</option>
+                            <option value="3">March</option>
+                            <option value="4">April</option>
+                            <option value="5">May</option>
+                            <option value="6">June</option>
+                            <option value="7">July</option>
+                            <option value="8">August</option>
+                            <option value="9">September</option>
+                            <option value="10">October</option>
+                            <option value="11">November</option>
+                            <option value="12">December</option>
+                        </select>
+                    </div>
+
                     <div class="col form-group">
                         <label for="co_producer_id">CO-PRODUCER</label>
                         <select class="custom-select" formControlName="co_producer_id" id="co_producer_id">

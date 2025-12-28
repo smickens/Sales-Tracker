@@ -437,6 +437,7 @@
                       <tr>
                         <th></th>
                         <th *ngFor="let month of months" scope="col">{{month}}</th>
+                        <th>Total</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -451,6 +452,7 @@
                                             {{ health_dots[producer.id+'_'+i+'_total'] ? health_dots[producer.id+'_'+i+'_total'] : 0 }}
                                         </ng-container>
                                     </td>
+                                    <td>{{ getTotalAppsByProducer(health_dots, producer.id) }}</td>
                                 </tr>
                                 <tr>
                                     <td style="text-align: right;">Health Bonus</td> 
@@ -470,6 +472,16 @@
                                     {{ health_totals[i+'_total'] ? health_totals[i+'_total'] : 0 }}
                                 </ng-container>
                             </td>
+                            <td>{{ getYearTotal(health_totals) }}</td>
+                        </tr>
+                        <tr>
+                            <th>Total Health Issued</th>
+                            <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
+                                <ng-container *ngIf="i <= month_number">
+                                    {{ health_totals[i+'_issued'] ? health_totals[i+'_issued'] : 0 }}
+                                </ng-container>
+                            </td>
+                            <td>{{ getYearTotalHealthIssued() }}</td>
                         </tr>
                         
                     </tbody>

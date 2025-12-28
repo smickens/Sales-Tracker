@@ -243,24 +243,20 @@ export class DataService {
       if (app.type == "auto" && app["status"] != "Declined" && app["status"] != "Cancelled") {
         app_went_through = true;
       }
+      let issue_month = app["issue_month"];
       if (app.type == "life") {
-        app_month = app["issue_month"];
+        app_month = issue_month;
         //console.log("changed month to issue month - " + app_month);
         bonus = app["paid_bonus"];
       }
-
-      // console.log("here");
+      if (app.type == "health" && issue_month) {
+        app_month = issue_month;
+        //console.log("health - bonuses - changed month to issue month - " + app_month + " - bonus = $" + bonus + " - producer_id = " + app["producer_id"]);
+      }
       
       if (app_went_through == true && app_year == year && bonus > 0) {
         const producer_id = app["producer_id"];
         this.production_bonuses[year][producer_id][app_month-1] = ((this.production_bonuses[year][producer_id][app_month-1] * 100) + (bonus * 100)) / 100;
-        if (app_month == 3 && producer_id == "mSn9") {
-          if (bonus > 100) {
-            console.log("large one");
-            console.log(app.type);
-          }
-          console.log("Name: " + producer_id + "    Month: " + app_month + "   Bonus: " + bonus + " cur total = $" + this.production_bonuses[year][producer_id][3-1]);
-        }
         let i = this.getProducerIndex(producer_id);
         if (this.isHired(producer_id)) {
           this.barChartData[(i*2)+1].data[app_month-1] += bonus;
@@ -359,10 +355,15 @@ export class DataService {
       if (app.type == "auto" && app["status"] != "Declined" && app["status"] != "Cancelled") {
         app_went_through = true;
       }
+      let issue_month = app["issue_month"];
       if (app.type == "life") {
-        app_month = app["issue_month"];
+        app_month = issue_month;
         //console.log("changed month to issue month - " + app_month);
         bonus = app["paid_bonus"];
+      }
+      if (app.type == "health" && issue_month) {
+        app_month = issue_month;
+        //console.log("health - production bonuses - changed month to issue month - " + app_month + " - bonus = $" + bonus);
       }
       
       if (app_went_through == true && app_year == year && bonus > 0) {

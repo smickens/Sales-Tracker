@@ -33,7 +33,7 @@ export class AppsListComponent implements OnInit {
   auto_headers: string[] = ["Auto Type", "Tiers", "Bonus", "Submitted Premium", "Status", "Issued Premium", "Marketing Source"];
   bank_headers: string[] = ["Product Type", "Bonus", "Status", "Marketing Source"];
   fire_headers: string[] = ["Product", "Submitted Premium", "Status", "Issued Premium", "Marketing Source"];
-  health_headers: string[] = ["Premium", "Mode", "Status", "Annual Premium", "Product", "Bonus", "Marketing Source"];
+  health_headers: string[] = ["Premium", "Mode", "Status", "Annual Premium", "Product", "Bonus", "Issue / Bonus Month", "Marketing Source"];
   mutual_funds_headers: string[] = ["Product Type", "Contribution Type", "Contribution Amount", "Marketing Source"];
 
   year: number = 0;
@@ -49,7 +49,7 @@ export class AppsListComponent implements OnInit {
     let date: Date = new Date(); 
 
     this.route.queryParams.subscribe(params => {
-      console.log(params);
+      // console.log(params);
       if (params['cur_month']) {
         this.month = params['cur_month'];
         this.monthForm = this.fb.group({

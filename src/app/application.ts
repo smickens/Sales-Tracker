@@ -62,6 +62,7 @@ export interface HealthApp extends Application {
     annual_premium?: number;
     product?: string;
     bonus?: number;
+    issue_month?: string;
     marketing_source?: string;
 }
 

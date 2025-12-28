@@ -97,6 +97,7 @@ export class AddHealthComponent implements OnInit {
         product: ['Disability Income'],
         bonus: [0], // keep manual
         marketing_source: ['Current Client'],
+        issue_month: [''],
         co_producer_id: [''],
         co_producer_bonus: [0] // keep manual
       });
@@ -197,6 +198,7 @@ export class AddHealthComponent implements OnInit {
       product: this.get("product"),
       bonus: this.get("bonus"),
       marketing_source: this.get("marketing_source"),
+      issue_month: this.get("issue_month"),
       co_producer_id: this.get("co_producer_id"),
       co_producer_bonus: this.get("co_producer_bonus")
     }

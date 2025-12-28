@@ -253,15 +253,29 @@ export class MainViewComponent implements OnInit {
             // if there is a co-producer, then split app count
             this.health_dots[app["producer_id"]+"_"+month+"_total"] = (this.health_dots[app["producer_id"]+"_"+month+"_total"] || 0) + 0.5;
             this.health_dots[app["co_producer_id"]+"_"+month+"_total"] = (this.health_dots[app["co_producer_id"]+"_"+month+"_total"] || 0) + 0.5;
-            this.health_dots[app["co_producer_id"]+"_"+month+"_bonus"] = ((this.health_dots[app["co_producer_id"]+"_"+month+"_bonus"] * 100 || 0) + app["co_producer_bonus"] * 100) / 100;
           }
+
+          // Keep for backwards compatibility for before changing health status options
           if (app["status"] == "Issued") {
             this.health_totals["year"] += 1;
+            this.health_totals[month+"_issued"] = (this.health_totals[month+"_issued"] || 0) + 1;
+            this.health_dots[app["producer_id"]+"_"+month+"_issued"] = (this.health_dots[app["producer_id"]+"_"+month+"_issued"] || 0) + 1;
+
             this.health_dots[app["producer_id"]+"_"+month+"_bonus"] = ((this.health_dots[app["producer_id"]+"_"+month+"_bonus"] * 100 || 0) + app["bonus"] * 100) / 100;
+            this.health_dots[app["co_producer_id"]+"_"+month+"_bonus"] = ((this.health_dots[app["co_producer_id"]+"_"+month+"_bonus"] * 100 || 0) + app["co_producer_bonus"] * 100) / 100;
+          } else if (app["status"] == "Taken") {
+            this.health_totals["year"] += 1;
+            this.health_totals[month+"_issued"] = (this.health_totals[month+"_issued"] || 0) + 1;
+            this.health_dots[app["producer_id"]+"_"+month+"_issued"] = (this.health_dots[app["producer_id"]+"_"+month+"_issued"] || 0) + 1;
+
+            if (app["issue_month"] != "") {
+              this.health_dots[app["producer_id"]+"_"+issue_month+"_bonus"] = ((this.health_dots[app["producer_id"]+"_"+issue_month+"_bonus"] * 100 || 0) + app["bonus"] * 100) / 100;
+              if (app["co_producer_id"] != "") {
+                this.health_dots[app["co_producer_id"]+"_"+issue_month+"_bonus"] = ((this.health_dots[app["co_producer_id"]+"_"+issue_month+"_bonus"] * 100 || 0) + app["co_producer_bonus"] * 100) / 100;
+              }
+            }
           }
         }
-        //console.log("Health");
-        //console.log(this.health_dots);
 
         if (type == "mutual-funds") {
           this.mutual_funds_totals[month+"_total"] = (this.mutual_funds_totals[month+"_total"] || 0) + 1;
@@ -334,6 +348,14 @@ export class MainViewComponent implements OnInit {
     let total = 0;
     for (let i = 1; i <= 12; i++) {
       total += totals[i+'_total'] ? totals[i+'_total'] : 0;
+    }
+    return total;
+  }
+
+  getYearTotalHealthIssued() {
+    let total = 0;
+    for (let i = 1; i <= 12; i++) {
+      total += this.health_totals[i+'_issued'] ? this.health_totals[i+'_issued'] : 0;
     }
     return total;
   }
