@@ -1,113 +1,48 @@
 <div>
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
         <h4 class="header">Progress for</h4>
-        <select class="custom-select noPrintPdf" style="width: 100px;" id="timeframe" (change)="updateProgressChart($event.target.value)">
+        <select class="custom-select noPrintPdf" style="width: 120px;" id="timeframe" (change)="updateProgressChart($event.target.value)">
             <option value="week">Week</option>
             <option value="month" selected>Month</option>
-            <option value="quarter">Quarter</option>
+            <option value="fast-start">Fast Start</option>
             <option value="year">Year</option>
         </select>
     </div>
-    <!-- applications by category totals for the month and the year -->
-    <!-- <ul>
-        <li>
-            <span id="life_progress" style="padding-right: 10px;">Life:</span>
-            <div id="life-progress-bar-week" class="progress mb-2">
-                <div class="progress-bar bg-success" id="life_yearly" role="progressbar" aria-valuenow="10" aria-valuemin="0" aria-valuemax="20"></div>
-            </div>
-        </li>
-        <li>
-            <span id="auto_progress" style="padding-right: 10px;">Auto:</span>
-            <div id="auto-progress-bar-week" class="progress mb-2">
-                <div class="progress-bar bg-info" id="auto_yearly" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="20"></div>
-            </div>
-        </li>
-        <li>
-            <span id="fire_progress" style="padding-right: 10px;">Fire:</span>
-            <div id="fire-progress-bar-week" class="progress mb-2">
-                <div class="progress-bar bg-warning" role="progressbar" id="fire_yearly" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
-            </div>
-        </li>
-        <li>
-            <span id="bank_progress" style="padding-right: 10px;">Bank:</span>
-            <div id="bank-progress-bar-week" class="progress mb-2">
-                <div class="progress-bar bg-danger" id="bank_yearly" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
-            </div>
-        </li>
-        <li>
-            <span id="health_progress" style="padding-right: 10px;">Health:</span>
-            <div id="health-progress-bar-week" class="progress mb-2">
-                <div class="progress-bar" id="health_yearly" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
-            </div>
-        </li>
-        <li>
-            <span id="mutual-funds_progress">Mutual Funds:</span>
-            <div id="mutual-funds-progress-bar-year" class="progress mb-2">
-                <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" id="mutual-funds_yearly" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
-            </div>
-        </li>
-    </ul> -->
-    <!-- <div class="row" style="padding-bottom: 0px;">
-        <div class="col-6" style="padding: 0px;">
-            <table class="table table-sm table-hover table-bordered">
-                <thead>
+    <table class="table table-sm table-hover table-bordered">
+        <thead>
+        <tr>
+            <th></th>
+            <th scope="col">Goal</th>
+            <th scope="col">Current</th>
+            <th scope="col">Left</th>
+        </tr>
+        </thead>
+        <tbody id="stats_table">
+            <ng-container *ngFor="let app_type of app_types">
                 <tr>
-                    <th>MONTH</th>
-                    <th scope="col"><span style="font-size: 14px; padding-left: 0px; padding-right: 0px;" class="col">Current</span></th>
-                    <th scope="col"><span style="font-size: 14px; padding-left: 0px; padding-right: 0px;" class="col">Goal</span></th>
-                    <th scope="col"><span style="font-size: 14px; padding-left: 0px; padding-right: 0px;" class="col">Left</span></th>
-                </tr>
-                </thead>
-                <tbody id="stats_table">
-                    <ng-container *ngFor="let app_type of app_types">
-                        <tr>
-                            <th><span style="font-size: 14px; padding-left: 0px; padding-right: 0px;" class="col">{{ getTitle(app_type) }}</span></th>
-                            <td>{{ totals[app_type][2] }}</td>
-                            <td>{{ goals[app_type][2] }}</td>
-                            <td>{{ goals[app_type][2] - totals[app_type][2] > 0 ? goals[app_type][2] - totals[app_type][2] : 0 }}</td>
-                        </tr>
-                    </ng-container>
-                </tbody>
-            </table>
-        </div> -->
-        <!-- <div class="col-6" style="padding: 0px;"> -->
-            <table class="table table-sm table-hover table-bordered">
-                <thead>
-                <tr>
-                    <th></th>
-                    <th scope="col">Goal</th>
-                    <th scope="col">Current</th>
-                    <th scope="col">Left</th>
-                </tr>
-                </thead>
-                <tbody id="stats_table">
-                    <ng-container *ngFor="let app_type of app_types">
-                        <tr>
-                            <th style="font-size: 14px;">{{ getTitle(app_type) }}</th>
+                    <th style="font-size: 14px;">{{ getTitle(app_type) }}</th>
 
-                            <ng-container *ngIf="timeframe != 'quarter'">
-                                <td>{{ goals[app_type][timeframe] }}</td>
-                                <td>{{ totals[app_type][timeframe] }}</td>
-                                <td>{{ goals[app_type][timeframe] - totals[app_type][timeframe] > 0 ? goals[app_type][timeframe] - totals[app_type][timeframe] : 0 }}</td>
-                            </ng-container>
-
-                            <ng-container *ngIf="timeframe == 'quarter'">
-                                <ng-container *ngIf="app_type == 'life'">
-                                    <td>{{ 35 }}</td>
-                                    <td>{{ life_quarter_1 }}</td>
-                                    <td>{{ 35 - life_quarter_1 }}</td>
-                                </ng-container>
-    
-                                <ng-container *ngIf="app_type == 'auto'">
-                                    <td>{{ 175 }}</td>
-                                    <td>{{ auto_rn_quarter_1 }}</td>
-                                    <td>{{ 175 - auto_rn_quarter_1 }}</td>
-                                </ng-container>
-                            </ng-container>
-                        </tr>
+                    <ng-container *ngIf="timeframe != 'fast-start'">
+                        <td>{{ goals[app_type][timeframe] }}</td>
+                        <td>{{ totals[app_type][timeframe] }}</td>
+                        <td>{{ goals[app_type][timeframe] - totals[app_type][timeframe] > 0 ? goals[app_type][timeframe] - totals[app_type][timeframe] : '✅' }}</td>
                     </ng-container>
-                </tbody>
-            </table>
-        <!-- </div> -->
-    <!-- </div> -->
+
+                    <ng-container *ngIf="timeframe == 'fast-start'">
+                        <ng-container *ngIf="app_type == 'life'">
+                            <td>{{ 35 }}</td>
+                            <td>{{ life_quarter_1 }}</td>
+                            <td>{{ 35 - life_quarter_1 > 0 ? 35 - life_quarter_1 : '✅' }}</td>
+                        </ng-container>
+
+                        <ng-container *ngIf="app_type == 'auto-rn'">
+                            <td>{{ 175 }}</td>
+                            <td>{{ auto_rn_quarter_1 }}</td>
+                            <td>{{ 175 - auto_rn_quarter_1 > 0 ? 175 - auto_rn_quarter_1 : '✅' }}</td>
+                        </ng-container>
+                    </ng-container>
+                </tr>
+            </ng-container>
+        </tbody>
+    </table>
 </div>
