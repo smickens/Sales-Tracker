@@ -30,6 +30,7 @@ export class AddHealthComponent implements OnInit {
   allAppRoute = "";
 
   producers: Producer[] = [];
+  all_producers: Producer[] = [];
   constants = {};
 
   private today = new Date();
@@ -99,7 +100,10 @@ export class AddHealthComponent implements OnInit {
         marketing_source: ['Current Client'],
         issue_month: [''],
         co_producer_id: [''],
-        co_producer_bonus: [0] // keep manual
+        co_producer_bonus: [0], // keep manual
+        pivot_team_member_id: [''],
+        pivot_bonus_mode: ['Default - $15'],
+        pivot_paid_bonus: [0]
       });
       this.app_loaded = true;
     }
@@ -114,8 +118,11 @@ export class AddHealthComponent implements OnInit {
   async loadProducers() {
     await this.dataService.until(_ => this.dataService.prod_loaded == true);
     for (const producer of this.dataService.producers) {
-      if (producer.hired && producer.licensed) {
-        this.producers.push(producer);
+      if (producer.hired) {
+        this.all_producers.push(producer);
+        if (producer.licensed) {
+          this.producers.push(producer);
+        }
       }
     }
   }
@@ -143,6 +150,22 @@ export class AddHealthComponent implements OnInit {
       this.addHealthAppForm.get('bonus').setValue(bonusValue);
     } else {
       this.addHealthAppForm.get('bonus').setValue(0);
+    }
+
+    let inManualMode = this.get("pivot_bonus_mode") == "Manual";
+    let hasIssueMonth = this.get("issue_month") != "";
+    if (inManualMode && hasIssueMonth) {
+      // in manual mode this can be manually edited
+      document.getElementById('pivot_paid_bonus').removeAttribute('readonly');
+    } else if (hasIssueMonth && this.get("pivot_bonus_mode") != "" && this.get("pivot_team_member_id") != "") {
+      // otherwise, if issued give pre-set bonus value
+      document.getElementById('pivot_paid_bonus').setAttribute('readonly', 'true');
+
+      let bonusValue = Number(this.get("pivot_bonus_mode").substring(11, this.get("pivot_bonus_mode").length)) * 100 / 100;
+      this.addHealthAppForm.get('pivot_paid_bonus').setValue(bonusValue);
+    } else {
+      document.getElementById('pivot_paid_bonus').setAttribute('readonly', 'true');
+      this.addHealthAppForm.get('pivot_paid_bonus').setValue(0);
     }
   }
 
@@ -203,7 +226,10 @@ export class AddHealthComponent implements OnInit {
       marketing_source: this.get("marketing_source"),
       issue_month: this.get("issue_month"),
       co_producer_id: this.get("co_producer_id"),
-      co_producer_bonus: this.get("co_producer_bonus")
+      co_producer_bonus: this.get("co_producer_bonus"),
+      pivot_team_member_id: this.get("pivot_team_member_id"),
+      pivot_bonus_mode: this.get("pivot_bonus_mode"),
+      pivot_paid_bonus: this.get("pivot_paid_bonus")
     }
     //console.log(app);
 

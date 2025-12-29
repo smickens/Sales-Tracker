@@ -522,6 +522,42 @@
                         
                     </tbody>
                 </table>
+
+                <h4 class="header">Health Pivots</h4>
+                <table class="table table-sm table-hover table-bordered" style="font-size: smaller;">
+                    <thead>
+                      <tr>
+                        <th></th>
+                        <th *ngFor="let month of months" scope="col">{{month}}</th>
+                        <th>Total</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                        <ng-container *ngFor="let producer of all_producers">
+                            <ng-container *ngIf="producer.id != 'napD'">
+                                <tr> <th>{{ producer.name }}</th> <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]"><hr style="margin-top: 0.5rem; margin-bottom: 0.5rem;"/></td> </tr>
+                                <tr>
+                                    <td style="text-align: right;">Health Pivots Made</td>
+                                    <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
+                                        <ng-container *ngIf="i <= month_number">
+                                            {{ health_dots[producer.id+'_'+i+'_pivots_total'] ? health_dots[producer.id+'_'+i+'_pivots_total'] : 0 }}
+                                        </ng-container>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="text-align: right;">Health Pivot Bonus</td>
+                                    <td *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]">
+                                        <ng-container *ngIf="i <= month_number">
+                                            {{ (health_dots[producer.id+'_'+i+'_pivot_bonus'] ? health_dots[producer.id+'_'+i+'_pivot_bonus'] : 0) | currency:'USD' }}
+                                        </ng-container>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                            </ng-container>
+                        </ng-container>
+
+                    </tbody>
+                </table>
             </div>
         </div>
 

@@ -111,11 +111,11 @@ export class MainViewComponent implements OnInit {
         this.all_producers.push(producer);
 
         if (producer.licensed) {
-        this.app_totals_by_producer[producer["id"]] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-        this.app_totals_by_co_producer[producer["id"]] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-        this.app_totals[producer["id"]] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+          this.app_totals_by_producer[producer["id"]] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+          this.app_totals_by_co_producer[producer["id"]] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+          this.app_totals[producer["id"]] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
-        this.producers.push(producer);
+          this.producers.push(producer);
         }
       }
     }
@@ -282,10 +282,17 @@ export class MainViewComponent implements OnInit {
             this.health_totals[month+"_issued"] = (this.health_totals[month+"_issued"] || 0) + 1;
             this.health_dots[app["producer_id"]+"_"+month+"_issued"] = (this.health_dots[app["producer_id"]+"_"+month+"_issued"] || 0) + 1;
 
+            if (app["pivot_team_member_id"] != "") {
+              this.health_dots[app["pivot_team_member_id"]+"_"+month+"_pivots_total"] = (this.health_dots[app["pivot_team_member_id"]+"_"+month+"_pivots_total"] || 0) + 1;
+            }
+
             if (app["issue_month"] != "") {
               this.health_dots[app["producer_id"]+"_"+issue_month+"_bonus"] = ((this.health_dots[app["producer_id"]+"_"+issue_month+"_bonus"] * 100 || 0) + app["bonus"] * 100) / 100;
               if (app["co_producer_id"] != "") {
                 this.health_dots[app["co_producer_id"]+"_"+issue_month+"_bonus"] = ((this.health_dots[app["co_producer_id"]+"_"+issue_month+"_bonus"] * 100 || 0) + app["co_producer_bonus"] * 100) / 100;
+              }
+              if (app["pivot_team_member_id"] != "") {
+                this.health_dots[app["pivot_team_member_id"]+"_"+issue_month+"_pivot_bonus"] = ((this.health_dots[app["pivot_team_member_id"]+"_"+issue_month+"_pivot_bonus"] * 100 || 0) + app["pivot_paid_bonus"] * 100) / 100;
               }
             }
           }

@@ -67,6 +67,9 @@ export interface HealthApp extends Application {
     bonus?: number;
     issue_month?: string;
     marketing_source?: string;
+    pivot_team_member_id?: string;
+    pivot_bonus_mode?: string;
+    pivot_paid_bonus?: number;
 }
 
 export interface MutualFundApp extends Application {

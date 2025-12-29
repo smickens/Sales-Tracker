@@ -94,6 +94,8 @@
                           <td>{{ app.bonus | currency }}</td>
                           <td>{{ months[app.issue_month-1] }}</td>
                           <td>{{ app.marketing_source }}</td>
+                          <td>{{ getProducerName(app.pivot_team_member_id) }}</td>
+                          <td>{{ app.pivot_paid_bonus | currency }}</td>
                         </ng-container>
 
                         <ng-container *ngIf="app.type === 'mutual-funds'">

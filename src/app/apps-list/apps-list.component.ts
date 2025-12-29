@@ -33,7 +33,7 @@ export class AppsListComponent implements OnInit {
   auto_headers: string[] = ["Auto Type", "Tiers", "Bonus", "Submitted Premium", "Status", "Issued Premium", "Marketing Source"];
   bank_headers: string[] = ["Product Type", "Bonus", "Status", "Marketing Source"];
   fire_headers: string[] = ["Product", "Submitted Premium", "Status", "Issued Premium", "Marketing Source"];
-  health_headers: string[] = ["Premium", "Mode", "Status", "Annual Premium", "Product", "Bonus", "Issue / Bonus Month", "Marketing Source"];
+  health_headers: string[] = ["Premium", "Mode", "Status", "Annual Premium", "Product", "Bonus", "Issue / Bonus Month", "Marketing Source", "Pivot Team Member", "Pivot Paid Bonus"];
   mutual_funds_headers: string[] = ["Product Type", "Contribution Type", "Contribution Amount", "Marketing Source"];
 
   year: number = 0;

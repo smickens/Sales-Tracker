@@ -196,7 +196,6 @@ export class AddLifeComponent implements OnInit {
       // otherwise, if issued give pre-set bonus value
       document.getElementById('pivot_paid_bonus').setAttribute('readonly', 'true');
 
-      console.log(this.get("pivot_bonus_mode"));
       let bonusValue = Number(this.get("pivot_bonus_mode").substring(11, this.get("pivot_bonus_mode").length)) * 100 / 100;
       this.addLifeAppForm.get('pivot_paid_bonus').setValue(bonusValue);
     } else {

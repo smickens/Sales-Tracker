@@ -136,6 +136,33 @@
                     </div>
                 </div>
         
+                <div class="form-row mb-2">
+                    <div class="col form-group">
+                        <label for="pivot_team_member_id">PIVOT - TEAM MEMBER</label>
+                        <select class="custom-select" formControlName="pivot_team_member_id" id="pivot_team_member_id" (focus)="setValid($event)" (change)="updateBonus()">
+                            <option value="" selected>Select Team Member Pivot</option>
+                            <option *ngFor="let producer of all_producers" value="{{producer.id}}"> {{ producer.name }} </option>
+                        </select>
+                    </div>
+
+                    <div class="col form-group">
+                        <label for="pivot_bonus_mode">PIVOT - BONUS MODE</label>
+                        <select class="custom-select" formControlName="pivot_bonus_mode" id="pivot_bonus_mode" (focus)="setValid($event)" (change)="updateBonus()">
+                            <option *ngFor="let option of constants['pivot_bonus_mode']" value="{{option}}"> {{ option }} </option>
+                        </select>
+                    </div>
+
+                    <div class="col form-group">
+                        <label for="pivot_paid_bonus">PIVOT - PAID BONUS</label>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text">$</span>
+                            </div>
+                            <input type="number" min="0" class="form-control" formControlName="pivot_paid_bonus" id="pivot_paid_bonus" autocomplete="off" readonly>
+                        </div>
+                    </div>
+                </div>
+
                 <div style="display: flex; justify-content: center;">
                     <input class="submit_btn" type="submit" value="{{ button_text }}" (click)="onSubmit()">
                 </div>
