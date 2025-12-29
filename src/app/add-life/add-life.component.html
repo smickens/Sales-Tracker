@@ -63,7 +63,7 @@
         
                     <div class="col form-group">
                         <label for="policy_type">POLICY TYPE</label>
-                        <select class="custom-select" formControlName="policy_type" id="policy_type" (focus)="setValid($event)">
+                        <select class="custom-select" formControlName="policy_type" id="policy_type" (focus)="setValid($event)" (change)="updateBonus()">
                             <option value="" selected>Select Policy Type</option>
                             <option *ngFor="let option of constants['policy_types']" value="{{option}}"> {{ option }} </option>
                         </select>

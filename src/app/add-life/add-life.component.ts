@@ -139,10 +139,10 @@ export class AddLifeComponent implements OnInit {
   updateBonus() {
     let bonus = this.get('annual_premium') / 12;
     if (this.get("policy_type") == "Permanent") {
-      console.log("perm")
-      bonus = Math.round(0.25 * this.get('annual_premium') * 100) / 100;
+      // 20% annual premium on permanent life policies (2026 bonus structure)
+      bonus = Math.round(0.20 * this.get('annual_premium') * 100) / 100;
     } else if (this.get("policy_type") == "Term") {
-      console.log("term")
+      // 15% annual premium on term life policies (2026 bonus structure)
       bonus = Math.round(0.15 * this.get('annual_premium') * 100) / 100;
     }
     this.addLifeAppForm.get('bonus').setValue(bonus);
