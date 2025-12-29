@@ -279,18 +279,14 @@ export class AddAutoComponent implements OnInit {
           }
         }
         if (snapshot.length == index+1) {
-          if (count <= 11) {
-            calculated_tier = 1; // tier 1 - up to 11 ($5 each)
-          } else if (count <= 16) {
-            calculated_tier = 2; // tier 2 - 12 to 16 ($8 each)
-          } else if (count <= 20) {
-            calculated_tier = 3; // tier 3 - 17 to 20 ($12 each)
+          if (count <= 15) {
+            calculated_tier = 1; // tier 1 - up to 15 ($5 each)
           } else if (count <= 24) {
-            calculated_tier = 4; // tier 4 - 21 to 24 ($14 each)
-          } else if (count <= 29) {
-            calculated_tier = 5; // tier 5 - 25 to 29 ($16 each)
+            calculated_tier = 2; // tier 2 - 16 to 24 ($8 each)
+          } else if (count <= 39) {
+            calculated_tier = 3; // tier 3 - 25 to 39 ($12 each)
           } else {
-            calculated_tier = 6; // tier 6 - 30+ ($20 each)
+            calculated_tier = 4; // tier 4 - 40+ ($14 each)
           }
           // console.log("count - " + count, "  tier - ", calculated_tier);
           // console.log(raw_new_app_ids.length);
