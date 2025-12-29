@@ -23,6 +23,9 @@ export interface LifeApp extends Application {
     life_pivot_bonus: string;
     issue_month?: string;
     marketing_source?: string;
+    pivot_team_member_id?: string;
+    pivot_bonus_mode?: string;
+    pivot_paid_bonus?: number;
 }
 
 export interface AutoApp extends Application {

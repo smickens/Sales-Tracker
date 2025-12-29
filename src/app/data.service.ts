@@ -271,10 +271,22 @@ export class DataService {
           this.production_bonuses[year][co_producer_id][app_month-1] = ((this.production_bonuses[year][co_producer_id][app_month-1] * 100) + (co_producer_bonus * 100)) / 100;
           let i = this.getProducerIndex(co_producer_id);
           if (this.isHired(co_producer_id)) {
-            if (app_month == 3 && co_producer_id == "mSn9") {
-              console.log("Co- ID: " + co_producer_id + "   Bonus: " + co_producer_bonus + "  " + i  + " cur total = $" + this.production_bonuses[year][co_producer_id][3-1]);
-            }
             this.barChartData[(i*2)+1].data[app_month-1] += co_producer_bonus;
+          }
+        }
+      }
+
+      if (app_year == year && app["pivot_paid_bonus"] > 0) {
+        // pivot team member bonus
+        const pivot_team_member_id = app["pivot_team_member_id"];
+        const pivot_paid_bonus = app["pivot_paid_bonus"];
+
+        if (pivot_team_member_id != "" && pivot_paid_bonus > 0) {
+          this.production_bonuses[year][pivot_team_member_id][app_month-1] = ((this.production_bonuses[year][pivot_team_member_id][app_month-1] * 100) + (pivot_paid_bonus * 100)) / 100;
+
+          let i = this.getProducerIndex(pivot_team_member_id);
+          if (this.isHired(pivot_team_member_id)) {
+            this.barChartData[(i*2)+1].data[app_month-1] += pivot_paid_bonus;
           }
         }
       }
@@ -378,6 +390,15 @@ export class DataService {
         if (co_producer_bonus > 0 && co_producer_bonus != null) {
           const co_producer_id = app["co_producer_id"];
           this.production_bonuses[year][co_producer_id][app_month-1] = ((this.production_bonuses[year][co_producer_id][app_month-1] * 100) + (co_producer_bonus * 100)) / 100;
+        }
+      }
+
+      if (app_year == year && app["pivot_paid_bonus"] > 0) {
+        // pivot team member bonus
+        const pivot_team_member_id = app["pivot_team_member_id"];
+        const pivot_paid_bonus = app["pivot_paid_bonus"];
+        if (pivot_paid_bonus > 0 && pivot_paid_bonus != null) {
+          this.production_bonuses[year][pivot_team_member_id][app_month-1] = ((this.production_bonuses[year][pivot_team_member_id][app_month-1] * 100) + (pivot_paid_bonus * 100)) / 100;
         }
       }
     }

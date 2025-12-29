@@ -29,7 +29,7 @@ export class AppsListComponent implements OnInit {
   all_producers: Producer[] = [];
   producers: Producer[] = [];
 
-  life_headers: string[] = ["Premium", "Mode", "Annual Premium", "Policy Type", "Product", "Client Type", "Bonus", "Status", "Paid Bonus", "Issue / Bonus Month", "Life Pivot Bonus"];
+  life_headers: string[] = ["Premium", "Mode", "Annual Premium", "Policy Type", "Product", "Client Type", "Bonus", "Status", "Paid Bonus", "Issue / Bonus Month", "Life Pivot Bonus", "Pivot Team Member", "Pivot Paid Bonus"];
   auto_headers: string[] = ["Auto Type", "Tiers", "Bonus", "Submitted Premium", "Status", "Issued Premium", "Marketing Source"];
   bank_headers: string[] = ["Product Type", "Bonus", "Status", "Marketing Source"];
   fire_headers: string[] = ["Product", "Submitted Premium", "Status", "Issued Premium", "Marketing Source"];

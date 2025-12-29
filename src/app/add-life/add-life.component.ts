@@ -29,7 +29,8 @@ export class AddLifeComponent implements OnInit {
   clientName = "";
   allAppRoute = "";
 
-  producers: Producer[] = [];
+  licensed_producers: Producer[] = [];
+  all_producers: Producer[] = [];
   constants = {};
 
   private today = new Date();
@@ -104,7 +105,10 @@ export class AddLifeComponent implements OnInit {
         issue_month: [''],
         marketing_source: ['Current Client'],
         co_producer_id: [''],
-        co_producer_bonus: [0]
+        co_producer_bonus: [0],
+        pivot_team_member_id: [''],
+        pivot_bonus_mode: ['Default - $50'],
+        pivot_paid_bonus: [0]
       });
       this.app_loaded = true;
     }
@@ -119,8 +123,12 @@ export class AddLifeComponent implements OnInit {
   async loadProducers() {
     await this.dataService.until(_ => this.dataService.prod_loaded == true);
     for (const producer of this.dataService.producers) {
-      if (producer.hired && producer.licensed) {
-        this.producers.push(producer);
+      if (producer.hired) {
+        this.all_producers.push(producer);
+
+        if (producer.licensed) {
+        this.licensed_producers.push(producer);
+        }
       }
     }
   }
@@ -177,6 +185,23 @@ export class AddLifeComponent implements OnInit {
     } else {
       this.addLifeAppForm.get('paid_bonus').setValue(0);
       this.addLifeAppForm.get('co_producer_bonus').setValue(0);
+    }
+
+    let inManualMode = this.get("pivot_bonus_mode") == "Manual";
+    let hasIssueMonth = this.get("issue_month") != "";
+    if (inManualMode && hasIssueMonth) {
+      // in manual mode this can be manually edited
+      document.getElementById('pivot_paid_bonus').removeAttribute('readonly');
+    } else if (hasIssueMonth && this.get("pivot_bonus_mode") != "" && this.get("pivot_team_member_id") != "") {
+      // otherwise, if issued give pre-set bonus value
+      document.getElementById('pivot_paid_bonus').setAttribute('readonly', 'true');
+
+      console.log(this.get("pivot_bonus_mode"));
+      let bonusValue = Number(this.get("pivot_bonus_mode").substring(11, this.get("pivot_bonus_mode").length)) * 100 / 100;
+      this.addLifeAppForm.get('pivot_paid_bonus').setValue(bonusValue);
+    } else {
+      document.getElementById('pivot_paid_bonus').setAttribute('readonly', 'true');
+      this.addLifeAppForm.get('pivot_paid_bonus').setValue(0);
     }
   }
 
@@ -250,7 +275,10 @@ export class AddLifeComponent implements OnInit {
       issue_month: this.get("issue_month"),
       marketing_source: this.get("marketing_source"),
       co_producer_id: this.get("co_producer_id"),
-      co_producer_bonus: this.get("co_producer_bonus")
+      co_producer_bonus: this.get("co_producer_bonus"),
+      pivot_team_member_id: this.get("pivot_team_member_id"),
+      pivot_bonus_mode: this.get("pivot_bonus_mode"),
+      pivot_paid_bonus: this.get("pivot_paid_bonus")
     }
 
     let app_with_id = app;

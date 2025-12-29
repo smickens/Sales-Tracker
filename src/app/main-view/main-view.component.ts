@@ -46,6 +46,7 @@ export class MainViewComponent implements OnInit {
   };
 
   producers: Producer[] = [];
+  all_producers: Producer[] = [];
 
   month_number = 0;
   year = 0;
@@ -106,12 +107,16 @@ export class MainViewComponent implements OnInit {
     await this.dataService.until(_ => this.dataService.prod_loaded == true);
 
     for (const producer of this.dataService.producers) {
-      if (producer.hired && producer.licensed) {
+      if (producer.hired) {
+        this.all_producers.push(producer);
+
+        if (producer.licensed) {
         this.app_totals_by_producer[producer["id"]] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
         this.app_totals_by_co_producer[producer["id"]] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
         this.app_totals[producer["id"]] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
         this.producers.push(producer);
+        }
       }
     }
 
@@ -161,10 +166,19 @@ export class MainViewComponent implements OnInit {
             }
             this.life_dots[app["producer_id"]+"_"+month+"_issued"] = (this.life_dots[app["producer_id"]+"_"+month+"_issued"] || 0) + 1;
             this.life_premiums[month+"_issued"] = (this.life_premiums[month+"_issued"] || 0) + app["premium"];
+            
+            if (app["pivot_team_member_id"] != "") {
+              this.life_dots[app["pivot_team_member_id"]+"_"+month+"_pivots_total"] = (this.life_dots[app["pivot_team_member_id"]+"_"+month+"_pivots_total"] || 0) + 1;
+            }
+
+            // life bonuses
             if (app["issue_month"] != "") {
               this.life_dots[app["producer_id"]+"_"+issue_month+"_bonus"] = ((this.life_dots[app["producer_id"]+"_"+issue_month+"_bonus"] * 100 || 0) + app["paid_bonus"] * 100) / 100;
               if (app["co_producer_id"] != "") {
                 this.life_dots[app["co_producer_id"]+"_"+issue_month+"_bonus"] = ((this.life_dots[app["co_producer_id"]+"_"+issue_month+"_bonus"] * 100 || 0) + app["co_producer_bonus"] * 100) / 100;
+              }
+              if (app["pivot_team_member_id"] != "") {
+                this.life_dots[app["pivot_team_member_id"]+"_"+issue_month+"_pivot_bonus"] = ((this.life_dots[app["pivot_team_member_id"]+"_"+issue_month+"_pivot_bonus"] * 100 || 0) + app["pivot_paid_bonus"] * 100) / 100;
               }
             }
           }
@@ -616,4 +630,3 @@ export class MainViewComponent implements OnInit {
     });
   }
 }
-
