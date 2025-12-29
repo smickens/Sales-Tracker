@@ -136,10 +136,13 @@ export class AddHealthComponent implements OnInit {
 
   updateBonus() {
     let premium = this.get("premium");
-    if (this.get("product") == "Blue Cross" || (premium > 0 && premium < 50)) {
-      this.addHealthAppForm.get('bonus').setValue(50);
+    let isDisabilityIncome = this.get("product") == "Disability Income";
+    let isSupplementalHealthApp = this.get("product") == "SF Supplemental Health";
+    if (isDisabilityIncome || isSupplementalHealthApp) {
+      let bonusValue = (premium > 20) ? premium : 20;
+      this.addHealthAppForm.get('bonus').setValue(bonusValue);
     } else {
-      this.addHealthAppForm.get('bonus').setValue(premium);
+      this.addHealthAppForm.get('bonus').setValue(0);
     }
   }
 
