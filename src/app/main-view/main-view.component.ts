@@ -443,19 +443,19 @@ export class MainViewComponent implements OnInit {
     );
   }
 
-  toggleRow(e, producer_id) {
-    let mainRow = document.getElementById(producer_id+"_prod");
-    let coRow = document.getElementById(producer_id+"_co");
-    if (e.innerHTML == '+') {
-      e.innerHTML = '-';
-      coRow.classList.remove('d-none');
-      mainRow.classList.remove('d-none');
-    } else {
-      e.innerHTML = '+';
-      coRow.classList.add('d-none');
-      mainRow.classList.add('d-none');
-    }
-  }
+  // toggleRow(e, producer_id) {
+  //   let mainRow = document.getElementById(producer_id+"_prod");
+  //   let coRow = document.getElementById(producer_id+"_co");
+  //   if (e.innerHTML == '+') {
+  //     e.innerHTML = '-';
+  //     coRow.classList.remove('d-none');
+  //     mainRow.classList.remove('d-none');
+  //   } else {
+  //     e.innerHTML = '+';
+  //     coRow.classList.add('d-none');
+  //     mainRow.classList.add('d-none');
+  //   }
+  // }
 
   addNote() {
     // updates notes on screen
