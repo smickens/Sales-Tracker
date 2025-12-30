@@ -27,6 +27,7 @@ export class BonusesComponent implements OnInit {
 
   production_bonuses = {};
   corporate_bonuses = {};
+  apps_written_bonuses = {};
 
   public barChartData = [];
   bonus_chart: any;
@@ -97,6 +98,7 @@ export class BonusesComponent implements OnInit {
 
     this.production_bonuses = this.dataService.production_bonuses[this.selected_year];
     this.corporate_bonuses = this.dataService.corporate_bonuses[this.selected_year];
+    this.apps_written_bonuses = this.dataService.apps_written_bonuses[this.selected_year];
 
     this.bonus_chart.update();
 
@@ -122,12 +124,23 @@ export class BonusesComponent implements OnInit {
     if (!(id in this.production_bonuses)) { return 0; }
     return this.corporate_bonuses[id].reduce((a, b) => a + b);
   }
+
+  getProducerAppWrittenBonus(id: string, month: number) {
+    if (!(id in this.apps_written_bonuses)) { return 0; }
+    return this.apps_written_bonuses[id][month];
+  }
+
+  getTotalProducerAppWrittenBonus(id: string) {
+    if (!(id in this.apps_written_bonuses)) { return 0; }
+    return this.apps_written_bonuses[id].reduce((a, b) => a + b);
+  }
   
   getOfficeBonusTotal() {
     let total = 0;
     for(const producer of this.producers) {
       total += parseFloat(this.getTotalProductionBonus(producer["id"]));
       total += parseFloat(this.getTotalCorporateBonus(producer["id"]));
+      total += parseFloat(this.getTotalProducerAppWrittenBonus(producer["id"]));
     }
     return total;
   }

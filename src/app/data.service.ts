@@ -22,6 +22,7 @@ export class DataService {
   barChartData = [];
   production_bonuses = {};
   corporate_bonuses = {};
+  apps_written_bonuses = {};
 
   subscriptions: Subscription[] = [];
 
@@ -34,6 +35,10 @@ export class DataService {
 
   prod_loaded = false;
   apps_loaded_by_year = new Set<number>();
+
+  app_totals_by_producer = {};
+  app_totals_by_co_producer = {};
+  app_totals = {};
   
   constructor(private db: AngularFireDatabase, public  db_auth:  AngularFireAuth, private router: Router) {
     let auth_sub = db_auth.authState.subscribe(user => {
@@ -92,6 +97,10 @@ export class DataService {
           backgroundColor: producer.color, 
           hoverBackgroundColor: producer.hover_color
         }); 
+  
+        this.app_totals_by_producer[producer["id"]] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+        this.app_totals_by_co_producer[producer["id"]] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+        this.app_totals[producer["id"]] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
       }
 
       if (snapshot.length == index+1) { 
@@ -203,6 +212,7 @@ export class DataService {
 
     this.corporate_bonuses[year] = {};
     this.production_bonuses[year] = {};
+    this.apps_written_bonuses[year] = {};
 
     // clears out bar chart data values
     for (let category of this.barChartData) {
@@ -232,9 +242,11 @@ export class DataService {
     let all_apps: Application[] = await this.getAllApps(year);
     for (const app of all_apps) {
       const app_date = app["date"] as string;
-      let app_month = parseInt(app_date.substring(5, 7));
+      let month = parseInt(app_date.substring(5, 7));
       const app_year = parseInt(app_date.substring(0, 4));
       let bonus = app["bonus"];
+      let issue_month = app["issue_month"];
+      let bonus_month = month;
 
       let app_went_through = false;
       if (app["status"] == "Taken" || app["status"] == "Issued") {
@@ -243,23 +255,20 @@ export class DataService {
       if (app.type == "auto" && app["status"] != "Declined" && app["status"] != "Cancelled") {
         app_went_through = true;
       }
-      let issue_month = app["issue_month"];
       if (app.type == "life") {
-        app_month = issue_month;
-        //console.log("changed month to issue month - " + app_month);
+        bonus_month = issue_month;
         bonus = app["paid_bonus"];
       }
       if (app.type == "health" && issue_month) {
-        app_month = issue_month;
-        //console.log("health - bonuses - changed month to issue month - " + app_month + " - bonus = $" + bonus + " - producer_id = " + app["producer_id"]);
+        bonus_month = issue_month;
       }
       
       if (app_went_through == true && app_year == year && bonus > 0) {
         const producer_id = app["producer_id"];
-        this.production_bonuses[year][producer_id][app_month-1] = ((this.production_bonuses[year][producer_id][app_month-1] * 100) + (bonus * 100)) / 100;
+        this.production_bonuses[year][producer_id][bonus_month-1] = ((this.production_bonuses[year][producer_id][bonus_month-1] * 100) + (bonus * 100)) / 100;
         let i = this.getProducerIndex(producer_id);
         if (this.isHired(producer_id)) {
-          this.barChartData[(i*2)+1].data[app_month-1] += bonus;
+          this.barChartData[(i*2)+1].data[bonus_month-1] += bonus;
         }
       }
 
@@ -268,10 +277,10 @@ export class DataService {
         const co_producer_bonus = app["co_producer_bonus"];
         if (co_producer_bonus > 0 && co_producer_bonus != null) {
           const co_producer_id = app["co_producer_id"];
-          this.production_bonuses[year][co_producer_id][app_month-1] = ((this.production_bonuses[year][co_producer_id][app_month-1] * 100) + (co_producer_bonus * 100)) / 100;
+          this.production_bonuses[year][co_producer_id][bonus_month-1] = ((this.production_bonuses[year][co_producer_id][bonus_month-1] * 100) + (co_producer_bonus * 100)) / 100;
           let i = this.getProducerIndex(co_producer_id);
           if (this.isHired(co_producer_id)) {
-            this.barChartData[(i*2)+1].data[app_month-1] += co_producer_bonus;
+            this.barChartData[(i*2)+1].data[bonus_month-1] += co_producer_bonus;
           }
         }
       }
@@ -282,15 +291,49 @@ export class DataService {
         const pivot_paid_bonus = app["pivot_paid_bonus"];
 
         if (pivot_team_member_id != "" && pivot_paid_bonus > 0) {
-          this.production_bonuses[year][pivot_team_member_id][app_month-1] = ((this.production_bonuses[year][pivot_team_member_id][app_month-1] * 100) + (pivot_paid_bonus * 100)) / 100;
+          this.production_bonuses[year][pivot_team_member_id][bonus_month-1] = ((this.production_bonuses[year][pivot_team_member_id][bonus_month-1] * 100) + (pivot_paid_bonus * 100)) / 100;
 
           let i = this.getProducerIndex(pivot_team_member_id);
           if (this.isHired(pivot_team_member_id)) {
-            this.barChartData[(i*2)+1].data[app_month-1] += pivot_paid_bonus;
+            this.barChartData[(i*2)+1].data[bonus_month-1] += pivot_paid_bonus;
           }
         }
       }
+
+      // app count
+      if (app.type != "life" && "co_producer_id" in app && app["co_producer_id"] != "") {
+        // always check that producer is in dictionary (that is they are still hired) before incrementing count
+
+        // for non-life apps w/ co producer the app count is split
+        if (Object.keys(this.app_totals_by_producer).includes(app["producer_id"])) { 
+          this.app_totals[app["producer_id"]][Number(month)-1] += 0.5;
+          this.app_totals_by_producer[app["producer_id"]][Number(month)-1] += 1;
+        }
+
+        if (Object.keys(this.app_totals_by_producer).includes(app["co_producer_id"])) {
+          this.app_totals[app["co_producer_id"]][Number(month)-1] += 0.5;
+          this.app_totals_by_co_producer[app["co_producer_id"]][Number(month)-1] += 1;
+        }
+      } else {
+        // full app count goes to main producer
+        if (Object.keys(this.app_totals_by_producer).includes(app["producer_id"])) {
+          this.app_totals[app["producer_id"]][Number(month)-1] += 1;
+          this.app_totals_by_producer[app["producer_id"]][Number(month)-1] += 1;
+        }
+      }
     }
+
+    // Loads apps written bonuses
+    for (const producer of this.producers) {
+      this.apps_written_bonuses[year][producer.id] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+
+      for (let month = 0; month < 12; month++) {
+        let written_bonus = this.getProducerAppWrittenBonus(producer.id, month, year);
+        this.apps_written_bonuses[year][producer.id][month] = written_bonus;
+      }
+    }
+
+    console.log("done loading bonuses for year " + year);
 
     return this.barChartData;
   }
@@ -402,6 +445,85 @@ export class DataService {
         }
       }
     }
+  }
+
+  async loadAppsWrittenBonusesForTimesheet(year: number) {
+    if (year in this.apps_written_bonuses) {
+      console.log("already loaded apps written bonuses for year " + year);
+      return;
+    }
+    console.log("loading apps written bonuses for year " + year);
+    await this.until(_ => this.apps_loaded_by_year.has(year));
+    await this.until(_ => this.prod_loaded);
+
+    this.apps_written_bonuses[year] = {};
+
+    for (const producer of this.producers) {
+      this.apps_written_bonuses[year][producer.id] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    }
+
+    let all_apps: Application[] = await this.getAllApps(year);
+    for (const app of all_apps) {
+      const app_date = app["date"] as string;
+      let month = parseInt(app_date.substring(5, 7));
+
+      // app count
+      if (app.type != "life" && "co_producer_id" in app && app["co_producer_id"] != "") {
+        // always check that producer is in dictionary (that is they are still hired) before incrementing count
+
+        // for non-life apps w/ co producer the app count is split
+        if (Object.keys(this.app_totals_by_producer).includes(app["producer_id"])) { 
+          this.app_totals[app["producer_id"]][Number(month)-1] += 0.5;
+          this.app_totals_by_producer[app["producer_id"]][Number(month)-1] += 1;
+        }
+
+        if (Object.keys(this.app_totals_by_producer).includes(app["co_producer_id"])) {
+          this.app_totals[app["co_producer_id"]][Number(month)-1] += 0.5;
+          this.app_totals_by_co_producer[app["co_producer_id"]][Number(month)-1] += 1;
+        }
+      } else {
+        // full app count goes to main producer
+        if (Object.keys(this.app_totals_by_producer).includes(app["producer_id"])) {
+          this.app_totals[app["producer_id"]][Number(month)-1] += 1;
+          this.app_totals_by_producer[app["producer_id"]][Number(month)-1] += 1;
+        }
+      }
+    }
+
+    // Loads apps written bonuses
+    for (const producer of this.producers) {
+      this.apps_written_bonuses[year][producer.id] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+
+      for (let month = 0; month < 12; month++) {
+        let written_bonus = this.getProducerAppWrittenBonus(producer.id, month, year);
+        this.apps_written_bonuses[year][producer.id][month] = written_bonus;
+      }
+    }
+
+    console.log("done loading apps written bonuses for year " + year);
+    // console.log("apps written bonuses: " + this.apps_written_bonuses);
+  }
+
+  getProducerAppWrittenBonus(id: string, month: number, year: number) {
+    // Added for 2026 bonus structure
+    if (year < 2026) {
+      // console.log("SKIP - apps written bonus since prior to 2026")
+      return 0;
+    }
+
+    if (!(id in this.app_totals)) { return 0; }
+
+    let appsWrittenCount = this.app_totals[id][month];
+    if (appsWrittenCount < 32) {
+      return 0;
+    } else if (appsWrittenCount <= 44) {
+      return 150;
+    } else if (appsWrittenCount <= 59) {
+      return 250;
+    } else if (appsWrittenCount <= 79) {
+      return 400;
+    }
+    return 600; // 80+ appsWrittenCount 
   }
 
   isHired(id: string) {
