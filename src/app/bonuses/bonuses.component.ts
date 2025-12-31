@@ -29,8 +29,6 @@ export class BonusesComponent implements OnInit {
   corporate_bonuses = {};
   apps_written_bonuses = {};
 
-  public barChartData = [];
-  bonus_chart: any;
   bonuses_loaded = false;
 
   constructor(private db: AngularFireDatabase, private fb: FormBuilder, private dataService: DataService, public db_auth:  AngularFireAuth, private route: ActivatedRoute, private router: Router) { }
@@ -45,36 +43,6 @@ export class BonusesComponent implements OnInit {
       } else {
         // if user is not logged in, reroute them to the login page
         this.router.navigate(['login']);
-      }
-    });
-
-    var ctx = document.getElementById('canvas') as HTMLCanvasElement;
-    this.bonus_chart = new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'], // your labels array
-        datasets: []
-      },
-      options: {
-        responsive: true,
-        scales: {
-          yAxes: [{
-              id: 'left-y-axis',
-              type: 'linear',
-              position: 'left',
-              stacked: true,
-              ticks: {
-                min: 0//,
-                //max: 100
-              }
-          }]
-        },
-        legend: {
-          display: true,
-          labels: {
-              // fontColor: 'rgb(255, 99, 132)'
-          }
-        }
       }
     });
   }
@@ -94,13 +62,11 @@ export class BonusesComponent implements OnInit {
   }
 
   async loadBonuses() {
-    this.bonus_chart.data.datasets = await this.dataService.loadBonuses(this.selected_year);
+    await this.dataService.loadBonuses(this.selected_year);
 
     this.production_bonuses = this.dataService.production_bonuses[this.selected_year];
     this.corporate_bonuses = this.dataService.corporate_bonuses[this.selected_year];
     this.apps_written_bonuses = this.dataService.apps_written_bonuses[this.selected_year];
-
-    this.bonus_chart.update();
 
     this.bonuses_loaded = true;
   }
@@ -143,39 +109,6 @@ export class BonusesComponent implements OnInit {
       total += parseFloat(this.getTotalProducerAppWrittenBonus(producer["id"]));
     }
     return total;
-  }
-
-  showData(id: string) {
-    for (let category of this.bonus_chart.data.datasets) {
-      if (category['stack'] == id) {
-        category['hidden'] = false;
-      } 
-    }
-  }
-
-  hideData(id: string) {
-    for (let category of this.bonus_chart.data.datasets) {
-      if (category['stack'] == id) {
-        category['hidden'] = true;
-      } 
-    }
-  }
-
-  updateList(filter: string) { 
-    for (const producer of this.dataService.producers) {
-      if (producer["name"] == filter || filter == "All Producers") {
-        this.showData(producer["id"]);
-      } else {
-        this.hideData(producer["id"]);
-      }
-    }
-    
-    document.getElementById("canvas").style.display = 'none';
-    if (filter != "All Producers") {
-      document.getElementById("canvas").style.display = 'flex';
-    }
-
-    this.bonus_chart.update();
   }
 
   updateBonus(e, producer_id: string, month: number) {

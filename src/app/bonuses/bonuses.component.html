@@ -4,10 +4,6 @@
             <div style="display: flex; justify-content: space-between;">
               <div style="display: flex; align-items: center;">
                 <h4 class="header" style="margin-bottom: 0px; padding-right: 15px; page-break-before: always;"> Bonuses - </h4>
-                <select class="custom-select noPrintPdf" style="width: 250px;" id="producer" (change)="updateList($event.target.value)">
-                    <option selected>All Producers</option>
-                    <option *ngFor="let producer of producers" value="{{producer.name}}">{{ producer.name }}</option>
-                </select>
               </div>
               <!-- <div style="display: flex; align-items: center;">
                 <p class="noPrintPdf" style="margin: 0px; padding-right: 10px;">Year: </p>
@@ -16,18 +12,6 @@
             </div>
             
             <div style="overflow-x: auto; overflow-y: auto; margin-top: 15px;">
-
-              <div class="container mb-3 noPrintPdf" style="display: flex; justify-content: center;">
-                <div class="row" style="width: 95%;">
-                  <!-- 
-                      guides to install chart setup 
-                      - https://medium.com/codingthesmartway-com-blog/angular-chart-js-with-ng2-charts-e21c8262777f 
-                      - https://www.npmjs.com/package/ng2-charts
-                  -->
-                  <canvas id="canvas" style="display: none;" #lineChart>{{ bonus_chart }}</canvas>
-                </div>
-              </div>
-              
               <div *ngFor="let producer of producers">
                 <table class="table table-sm table-hover table-bordered">
                   <thead>

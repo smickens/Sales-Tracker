@@ -19,7 +19,6 @@ export class DataService {
 
   applications = {}
 
-  barChartData = [];
   production_bonuses = {};
   corporate_bonuses = {};
   apps_written_bonuses = {};
@@ -82,22 +81,6 @@ export class DataService {
       this.production_bonuses[producer.id] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
       if (producer.hired) {
-        this.barChartData.push({
-          data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
-          label: this.getFirstName(producer.name) + " CB", 
-          stack: producer.id, 
-          backgroundColor: producer.corp_color, 
-          hoverBackgroundColor: producer.hover_color
-        });
-  
-        this.barChartData.push({
-          data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
-          label: this.getFirstName(producer.name) + " PB", 
-          stack: producer.id, 
-          backgroundColor: producer.color, 
-          hoverBackgroundColor: producer.hover_color
-        }); 
-  
         this.app_totals_by_producer[producer["id"]] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
         this.app_totals_by_co_producer[producer["id"]] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
         this.app_totals[producer["id"]] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
@@ -204,8 +187,6 @@ export class DataService {
   async loadBonuses(year: number) {
     if (year in this.corporate_bonuses) {
       // console.log("already loaded bonuses for year " + year);
-      this.fillInBarChartData(year);
-      return this.barChartData;
     }
     // console.log("loading bonuses for year " + year);
     await this.until(_ => this.prod_loaded);
@@ -213,11 +194,6 @@ export class DataService {
     this.corporate_bonuses[year] = {};
     this.production_bonuses[year] = {};
     this.apps_written_bonuses[year] = {};
-
-    // clears out bar chart data values
-    for (let category of this.barChartData) {
-      category['data'] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
-    }
 
     // * first, gets corporate bonuses
     for (const producer of this.producers) {
@@ -228,11 +204,6 @@ export class DataService {
         const corporate_bonus = producer["corporate_bonuses"][year];
         for (let month in corporate_bonus) {
           this.corporate_bonuses[year][producer["id"]][parseInt(month)-1] += corporate_bonus[month];
-
-          let i: number = this.getProducerIndex(producer.id);
-          if (producer.hired) {
-            this.barChartData[i*2].data[month] += corporate_bonus[month];
-          }
         }
       } 
     }
@@ -266,10 +237,6 @@ export class DataService {
       if (app_went_through == true && app_year == year && bonus > 0) {
         const producer_id = app["producer_id"];
         this.production_bonuses[year][producer_id][bonus_month-1] = ((this.production_bonuses[year][producer_id][bonus_month-1] * 100) + (bonus * 100)) / 100;
-        let i = this.getProducerIndex(producer_id);
-        if (this.isHired(producer_id)) {
-          this.barChartData[(i*2)+1].data[bonus_month-1] += bonus;
-        }
       }
 
       if (app_year == year && app["co_producer_bonus"] > 0) {
@@ -278,10 +245,6 @@ export class DataService {
         if (co_producer_bonus > 0 && co_producer_bonus != null) {
           const co_producer_id = app["co_producer_id"];
           this.production_bonuses[year][co_producer_id][bonus_month-1] = ((this.production_bonuses[year][co_producer_id][bonus_month-1] * 100) + (co_producer_bonus * 100)) / 100;
-          let i = this.getProducerIndex(co_producer_id);
-          if (this.isHired(co_producer_id)) {
-            this.barChartData[(i*2)+1].data[bonus_month-1] += co_producer_bonus;
-          }
         }
       }
 
@@ -292,11 +255,6 @@ export class DataService {
 
         if (pivot_team_member_id != "" && pivot_paid_bonus > 0) {
           this.production_bonuses[year][pivot_team_member_id][bonus_month-1] = ((this.production_bonuses[year][pivot_team_member_id][bonus_month-1] * 100) + (pivot_paid_bonus * 100)) / 100;
-
-          let i = this.getProducerIndex(pivot_team_member_id);
-          if (this.isHired(pivot_team_member_id)) {
-            this.barChartData[(i*2)+1].data[bonus_month-1] += pivot_paid_bonus;
-          }
         }
       }
 
