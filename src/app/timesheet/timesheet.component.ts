@@ -226,9 +226,12 @@ export class TimesheetComponent implements OnInit {
   // called on month change
   updateSheet(month: number) {
     this.dates = [];
+
     let date: Date = new Date(); 
+    date.setDate(1); // KEEP - prevents bug for jumping to next month when today's date is a 31st
     date.setFullYear(this.selected_year);
     date.setMonth(month-1);
+
     let path = this.months[Number(month)-1];
     path += "_" + this.selected_year;
     if ((document.getElementById("first_half") as HTMLInputElement).checked) {
