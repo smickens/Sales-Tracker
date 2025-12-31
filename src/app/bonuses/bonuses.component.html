@@ -60,8 +60,46 @@
                 </table>
               </div>
 
-              <div>
+              <div *ngIf="!show_bonus_breakdown">
                 <h5>Office Bonus Total = {{ (getOfficeBonusTotal()) | currency:'USD' }}</h5>
+              </div>
+
+              <div *ngIf="show_bonus_breakdown" style="margin-top: 30px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <h4 class="header" style="margin-bottom: 0;">Bonus Breakdown Details</h4>
+                    <select class="custom-select" style="width: 150px;" (change)="updateBreakdownMonth($event.target.value)">
+                        <option value="all" [selected]="breakdown_month == 'all'">All Months</option>
+                        <option *ngFor="let month of months; index as i" value="{{i}}" [selected]="breakdown_month == i">{{ month }}</option>
+                    </select>
+                </div>
+                <div *ngFor="let producer of filtered_producers">
+                    <ng-container *ngIf="bonus_breakdown[producer.id]">
+                        <table class="table table-sm table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Month</th>
+                                    <th>Type</th>
+                                    <th>Client / Label</th>
+                                    <th>Bonus</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <ng-container *ngFor="let month of [0,1,2,3,4,5,6,7,8,9,10,11]">
+                                    <ng-container *ngIf="breakdown_month == 'all' || breakdown_month == month">
+                                        <ng-container *ngFor="let item of bonus_breakdown[producer.id][month]">
+                                            <tr>
+                                                <td>{{ months[month] }}</td>
+                                                <td>{{ item.type | titlecase }}</td>
+                                                <td>{{ item.client_name }}</td>
+                                                <td>{{ item.bonus | currency:'USD' }}</td>
+                                            </tr>
+                                        </ng-container>
+                                    </ng-container>
+                                </ng-container>
+                            </tbody>
+                        </table>
+                    </ng-container>
+                </div>
               </div>
             </div>
         </div>

@@ -29,6 +29,10 @@ export class BonusesComponent implements OnInit {
   production_bonuses = {};
   corporate_bonuses = {};
   apps_written_bonuses = {};
+  bonus_breakdown = {};
+
+  show_bonus_breakdown = false;
+  breakdown_month: any = this.today.getMonth();
 
   bonuses_loaded = false;
 
@@ -65,11 +69,12 @@ export class BonusesComponent implements OnInit {
   }
 
   async loadBonuses() {
-    await this.dataService.loadBonuses(this.selected_year);
+    await this.dataService.loadBonuses(this.selected_year, true);
 
     this.production_bonuses = this.dataService.production_bonuses[this.selected_year];
     this.corporate_bonuses = this.dataService.corporate_bonuses[this.selected_year];
     this.apps_written_bonuses = this.dataService.apps_written_bonuses[this.selected_year];
+    this.bonus_breakdown = this.dataService.bonus_breakdown[this.selected_year];
 
     this.bonuses_loaded = true;
   }
@@ -155,5 +160,9 @@ export class BonusesComponent implements OnInit {
 
   chartHovered(): void {
     //console.log("chart hovered");
+  }
+
+  updateBreakdownMonth(month: any) {
+    this.breakdown_month = month;
   }
 }
