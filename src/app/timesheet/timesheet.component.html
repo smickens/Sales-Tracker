@@ -137,9 +137,31 @@
                     <p class="col"><ng-container *ngIf="isSecondHalf()">Prior Month Bonus - ${{ prior_month_bonuses_override[timesheet.key] ? prior_month_bonuses_override[timesheet.key] : prior_month_bonuses[timesheet.key] }}</ng-container></p>
                   </div>
                   
-                  <div style="display: flex; justify-content: center; padding-bottom: 35px;">
+                  <div style="display: flex; justify-content: center; padding-bottom: 25px;">
                       <input class="submit_btn noPrintPdf" type="submit" [value]="submit_btn_text" (click)="onSubmit()" data-toggle="modal" data-target="#popupModal">
                   </div>
+
+                  <div *ngIf="isSecondHalf() && bonus_breakdown[timesheet.key] && bonus_breakdown[timesheet.key].length > 0" style="margin-bottom: 35px;">
+                      <h6>Prior Month Bonus Breakdown</h6>
+                      <table class="table table-sm table-bordered" style="width: 80%;">
+                          <thead>
+                              <tr>
+                                  <th>Type</th>
+                                  <th>Client / Label</th>
+                                  <th>Bonus</th>
+                              </tr>
+                          </thead>
+                          <tbody>
+                              <tr *ngFor="let item of bonus_breakdown[timesheet.key]">
+                                  <td>{{ item.type | titlecase }}</td>
+                                  <td>{{ item.client_name }}</td>
+                                  <td>{{ item.bonus | currency:'USD' }}</td>
+                              </tr>
+                          </tbody>
+                      </table>
+                  </div>
+
+                  <div style="page-break-after: always;"></div>
                 </div>
         </div>
 

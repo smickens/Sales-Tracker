@@ -28,6 +28,7 @@ export class TimesheetComponent implements OnInit {
   sick_vacation_hours = 0;
   prior_month_bonuses = {};
   prior_month_bonuses_override = {};
+  bonus_breakdown = {};
 
   popup_message = "";
   popup_title = "";
@@ -108,12 +109,19 @@ export class TimesheetComponent implements OnInit {
     // console.log("--- loading prior month bonuses for year " + year + " ---");
 
     this.dataService.loadApplications(year);
-    await this.dataService.loadBonuses(year);
+    await this.dataService.loadBonuses(year, true);
     for (const producer of this.dataService.producers) {
       let corp_bonus = this.dataService.corporate_bonuses[year][producer.id][last_month-1];
       let prod_bonus = this.dataService.production_bonuses[year][producer.id][last_month-1];
       let apps_written_bonus = this.dataService.apps_written_bonuses[year][producer.id][last_month-1];
       let prior_month_bonus = corp_bonus + prod_bonus + apps_written_bonus;
+
+      if (this.dataService.bonus_breakdown[year] && this.dataService.bonus_breakdown[year][producer.id]) {
+        this.bonus_breakdown[producer.id] = this.dataService.bonus_breakdown[year][producer.id][last_month-1];
+      }
+
+      // console.log("bonus breakdown for " + producer.id + " is ");
+      // console.log(this.bonus_breakdown[producer.id]);
 
       // console.log("corp bonus for " + producer.id + " is " + prod_bonus);
       // console.log("prod bonus for " + producer.id + " is " + prod_bonus);
