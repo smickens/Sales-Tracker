@@ -22,6 +22,7 @@ export class DataService {
   production_bonuses = {};
   corporate_bonuses = {};
   apps_written_bonuses = {};
+  bonus_breakdown = {};
 
   subscriptions: Subscription[] = [];
 
@@ -184,7 +185,7 @@ export class DataService {
   }
 
   // used for bonuses page
-  async loadBonuses(year: number) {
+  async loadBonuses(year: number, trackBreakdown: boolean = false) {
     if (year in this.corporate_bonuses) {
       // console.log("already loaded bonuses for year " + year);
     }
@@ -194,19 +195,43 @@ export class DataService {
     this.corporate_bonuses[year] = {};
     this.production_bonuses[year] = {};
     this.apps_written_bonuses[year] = {};
+    if (trackBreakdown) {
+      this.bonus_breakdown[year] = {};
+    }
+
+    // console.log("loading corporate bonuses for year " + year);
 
     // * first, gets corporate bonuses
     for (const producer of this.producers) {
       this.corporate_bonuses[year][producer.id] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
       this.production_bonuses[year][producer.id] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
       
+      if (trackBreakdown) {
+        this.bonus_breakdown[year][producer.id] = {};
+        for (let i = 0; i < 12; i++) {
+          this.bonus_breakdown[year][producer.id][i] = [];
+        }
+      }
+      
       if ("corporate_bonuses" in producer && year in producer.corporate_bonuses) {
         const corporate_bonus = producer["corporate_bonuses"][year];
         for (let month in corporate_bonus) {
-          this.corporate_bonuses[year][producer["id"]][parseInt(month)-1] += corporate_bonus[month];
+          let monthIndex = parseInt(month)-1;
+          let monthBonus = corporate_bonus[month];
+          this.corporate_bonuses[year][producer["id"]][monthIndex] += monthBonus;
+
+          if (trackBreakdown) {
+            this.bonus_breakdown[year][producer["id"]][monthIndex].push({
+              type: "Corporate",
+              client_name: "--",
+              bonus: monthBonus
+            });
+          }
         }
-      } 
+      }
     }
+
+    // console.log("loading production bonuses for year " + year);
 
     await this.until(_ => this.apps_loaded_by_year.has(year));
     // * then, gets production bonuses
@@ -237,6 +262,14 @@ export class DataService {
       if (app_went_through == true && app_year == year && bonus > 0) {
         const producer_id = app["producer_id"];
         this.production_bonuses[year][producer_id][bonus_month-1] = ((this.production_bonuses[year][producer_id][bonus_month-1] * 100) + (bonus * 100)) / 100;
+        
+        if (trackBreakdown) {
+          this.bonus_breakdown[year][producer_id][bonus_month-1].push({
+            type: app.type+ " App",
+            client_name: app.client_name,
+            bonus: bonus
+          });
+        }
       }
 
       if (app_year == year && app["co_producer_bonus"] > 0) {
@@ -245,6 +278,14 @@ export class DataService {
         if (co_producer_bonus > 0 && co_producer_bonus != null) {
           const co_producer_id = app["co_producer_id"];
           this.production_bonuses[year][co_producer_id][bonus_month-1] = ((this.production_bonuses[year][co_producer_id][bonus_month-1] * 100) + (co_producer_bonus * 100)) / 100;
+          
+          if (trackBreakdown) {
+            this.bonus_breakdown[year][co_producer_id][bonus_month-1].push({
+              type: app.type + " App (Co-Producer)",
+              client_name: app.client_name,
+              bonus: co_producer_bonus
+            });
+          }
         }
       }
 
@@ -255,6 +296,14 @@ export class DataService {
 
         if (pivot_team_member_id != "" && pivot_paid_bonus > 0) {
           this.production_bonuses[year][pivot_team_member_id][bonus_month-1] = ((this.production_bonuses[year][pivot_team_member_id][bonus_month-1] * 100) + (pivot_paid_bonus * 100)) / 100;
+          
+          if (trackBreakdown) {
+            this.bonus_breakdown[year][pivot_team_member_id][bonus_month-1].push({
+              type: app.type + " Pivot",
+              client_name: app.client_name,
+              bonus: pivot_paid_bonus
+            });
+          }
         }
       }
 
@@ -281,6 +330,8 @@ export class DataService {
       }
     }
 
+    // console.log("loading apps written bonuses for year " + year);
+
     // Loads apps written bonuses
     for (const producer of this.producers) {
       this.apps_written_bonuses[year][producer.id] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
@@ -288,10 +339,19 @@ export class DataService {
       for (let month = 0; month < 12; month++) {
         let written_bonus = this.getProducerAppWrittenBonus(producer.id, month, year);
         this.apps_written_bonuses[year][producer.id][month] = written_bonus;
+
+        if (trackBreakdown && written_bonus > 0) {
+          this.bonus_breakdown[year][producer.id][month].push({
+            type: "Apps Written Monthly Production",
+            client_name: "--",
+            bonus: written_bonus
+          });
+        }
       }
     }
 
-    console.log("done loading bonuses for year " + year);
+    // console.log("done loading bonuses for year " + year);
+    // console.log(this.bonus_breakdown);
   }
 
   getProducerAppWrittenBonus(id: string, month: number, year: number) {
