@@ -108,9 +108,7 @@ export class TimesheetComponent implements OnInit {
     // console.log("--- loading prior month bonuses for year " + year + " ---");
 
     this.dataService.loadApplications(year);
-    await this.dataService.loadCorporateBonusesForTimesheet(year);
-    await this.dataService.loadProductionBonusesForTimesheet(year);
-    await this.dataService.loadAppsWrittenBonusesForTimesheet(year);
+    await this.dataService.loadBonuses(year);
     for (const producer of this.dataService.producers) {
       let corp_bonus = this.dataService.corporate_bonuses[year][producer.id][last_month-1];
       let prod_bonus = this.dataService.production_bonuses[year][producer.id][last_month-1];
