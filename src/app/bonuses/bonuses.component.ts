@@ -17,7 +17,8 @@ import { take } from 'rxjs/operators';
 export class BonusesComponent implements OnInit {
 
   @Input() display_all: string = "";
-  producers: Producer[] = [];
+  all_producers: Producer[] = [];
+  filtered_producers: Producer[] = [];
   one_producer_selected = false;
   months = ['Jan.', 'Feb.', 'March', 'April', 'May', 'June', 'July', 'Aug.', 'Sept.', 'Oct.', 'Nov.', 'Dec.'];
   
@@ -56,9 +57,11 @@ export class BonusesComponent implements OnInit {
     await this.dataService.until(_ => this.dataService.prod_loaded == true);
     for (const producer of this.dataService.producers) {
       if (producer.hired || this.display_all == "true") {
-        this.producers.push(producer);
+        this.all_producers.push(producer);
       }
     }
+
+    this.filtered_producers = this.all_producers;
   }
 
   async loadBonuses() {
@@ -103,7 +106,7 @@ export class BonusesComponent implements OnInit {
   
   getOfficeBonusTotal() {
     let total = 0;
-    for(const producer of this.producers) {
+    for(const producer of this.all_producers) {
       total += parseFloat(this.getTotalProductionBonus(producer["id"]));
       total += parseFloat(this.getTotalCorporateBonus(producer["id"]));
       total += parseFloat(this.getTotalProducerAppWrittenBonus(producer["id"]));
@@ -115,6 +118,25 @@ export class BonusesComponent implements OnInit {
     let corporate_bonus = {};
     corporate_bonus[month] = Number(e.target.value);
     this.db.list('producers/'+producer_id+'/corporate_bonuses/'+this.selected_year).update('/', corporate_bonus);
+  }
+
+  updateList(selected_producer_id: string) { 
+    if (selected_producer_id == "All Producers") {
+      this.filtered_producers = this.all_producers;
+      this.show_bonus_breakdown = false;
+    } else {
+      this.filtered_producers = [this.getProducerBy(selected_producer_id)];
+      this.show_bonus_breakdown = true;
+    }
+  }
+  
+  getProducerBy(id: string) {
+    for (const producer of this.all_producers) {
+      if (producer.id == id) {
+        return producer
+      }
+    }
+    return null;
   }
 
   filterByYear(year: number) {

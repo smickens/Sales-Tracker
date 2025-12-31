@@ -4,6 +4,10 @@
             <div style="display: flex; justify-content: space-between;">
               <div style="display: flex; align-items: center;">
                 <h4 class="header" style="margin-bottom: 0px; padding-right: 15px; page-break-before: always;"> Bonuses - </h4>
+                <select class="custom-select noPrintPdf" style="width: 250px;" id="producer" (change)="updateList($event.target.value)">
+                    <option selected>All Producers</option>
+                    <option *ngFor="let producer of all_producers" value="{{producer.id}}">{{ producer.name }}</option>
+                </select>
               </div>
               <!-- <div style="display: flex; align-items: center;">
                 <p class="noPrintPdf" style="margin: 0px; padding-right: 10px;">Year: </p>
@@ -12,7 +16,7 @@
             </div>
             
             <div style="overflow-x: auto; overflow-y: auto; margin-top: 15px;">
-              <div *ngFor="let producer of producers">
+              <div *ngFor="let producer of filtered_producers">
                 <table class="table table-sm table-hover table-bordered">
                   <thead>
                     <tr>
