@@ -257,29 +257,31 @@ export class AddAutoComponent implements OnInit {
     let raw_new_app_ids = [];
     let calculated_tier = 1;
     let bonus_values = { 1: 5, 2: 8, 3: 12, 4: 14, 5: 16, 6: 20};
+
     this.dataService.getApplications(cur_year).pipe(take(1)).subscribe(
-      (snapshot: any) => snapshot.map((snap, index) => {
-        const app = snap.payload.val();
-        const app_id = snap.key;
-        const app_date = app["date"] as string;
-        const app_month = parseInt(app_date.substring(5, 7));
-        const app_producer_id = app["producer_id"] as string;
-        const app_type = app["type"] as string;
-        const app_auto_type = app["auto_type"] as string;
-        const app_status = app["status"] as string;
-        if (app_month == cur_month && app_producer_id == producer_id && app_type == "auto" && app_auto_type == "RN") {
-          let status = app_status;
-          if (app_id == this.app_id) {
-            status = auto_app["status"]
+      (snapshot: any) => {
+        snapshot.forEach(snap => {
+          const app = snap.payload.val();
+          const app_id = snap.key;
+          const app_date = app["date"] as string;
+          const app_month = parseInt(app_date.substring(5, 7));
+          const app_producer_id = app["producer_id"] as string;
+          const app_type = app["type"] as string;
+          const app_auto_type = app["auto_type"] as string;
+          const app_status = app["status"] as string;
+          if (app_month == cur_month && app_producer_id == producer_id && app_type == "auto" && app_auto_type == "RN") {
+            let status = app_status;
+            if (app_id == this.app_id) {
+              status = auto_app["status"]
+            }
+            if (status != "Declined") {
+              count += 1;
+              raw_new_app_ids.push(snap.key);
+            }
           }
-          if (status != "Declined") {
-            count += 1;
-            raw_new_app_ids.push(snap.key);
-            //console.log(count);
-          }
-        }
-        if (snapshot.length == index+1) {
-          if (count <= 15) {
+        });
+
+        if (count <= 15) {
             calculated_tier = 1; // tier 1 - up to 15 ($5 each)
           } else if (count <= 24) {
             calculated_tier = 2; // tier 2 - 16 to 24 ($8 each)
@@ -296,8 +298,7 @@ export class AddAutoComponent implements OnInit {
           auto_app["tiers"] = "Tier " + calculated_tier;
           auto_app["bonus"] = bonus_values[calculated_tier];
           this.addAutoApp(auto_app, year);
-        }
-       })
+      }
     );
   }
 
